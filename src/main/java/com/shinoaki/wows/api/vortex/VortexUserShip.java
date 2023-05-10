@@ -9,6 +9,7 @@ import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @param type          战斗类型
@@ -25,6 +26,12 @@ import java.util.*;
 public record VortexUserShip(WowsBattlesType type, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipInfo> shipMap, double created_at,
                              double activated_at, long recordTime) {
 
+    /**
+     * 请使用 toShipInfoMap()
+     *
+     * @return
+     */
+    @Deprecated(forRemoval = true, since = "0.1.2")
     public Map<WowsBattlesType, List<ShipInfo>> toShipInfo() {
         return Map.of(this.type, this.shipMap.entrySet().stream().map(map ->
                 ShipInfo.to(map.getKey(), map.getValue(), recordTime)).toList());
@@ -47,6 +54,10 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
         }
         //抛出解析status 异常的问题
         throw new StatusException(status);
+    }
+
+    public static Map<WowsBattlesType, List<ShipInfo>> toShipInfoMap(Map<WowsBattlesType, VortexUserShip> map) {
+        return map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().toShipInfoList()));
     }
 
     private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws JsonProcessingException {
