@@ -98,4 +98,17 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.controlCapturedAndDroppedPoints().subtraction(history.controlCapturedAndDroppedPoints()), this.ratioMain(), this.ratioAtba(),
                 this.ratioTpd(), this.ratioTbomb(), this.ratioBomb(), this.ratioRocket(), this.ratioSkip(), this.lastBattleTime(), history.recordTime());
     }
+
+    /**
+     * 场均数据
+     *
+     * @return 用户每场平均输出
+     */
+    public double gameDamage() {
+        return battle.battle() <= 0 ? damageDealt : battle.battle() * damageDealt;
+    }
+
+    public double gameWins() {
+        return battle.battle() <= 0 ? 0.0 : battle.gameWins();
+    }
 }
