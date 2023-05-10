@@ -1,16 +1,20 @@
 package com.shinoaki.wows;
 
-import com.shinoaki.wows.api.error.HttpStatusException;
+import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
+import com.shinoaki.wows.api.error.HttpStatusException;
+import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsHttpUrl;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.error.StatusException;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Xun
@@ -27,5 +31,7 @@ public class DevelopersTest {
         HttpClient client = builder.build();
         DevelopersUserShip developers = WowsHttpUrl.sendRequestShipListDevelopers(client, WowsServer.ASIA, "907d9c6bfc0d896a2c156e57194a97cf", 2022515210);
         System.out.println(developers);
+        Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
+        System.out.println(shipInfoMap);
     }
 }
