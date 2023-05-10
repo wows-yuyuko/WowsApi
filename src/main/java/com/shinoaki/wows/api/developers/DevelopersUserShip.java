@@ -2,14 +2,15 @@ package com.shinoaki.wows.api.developers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.warships.DevelopersMeta;
 import com.shinoaki.wows.api.developers.warships.DevelopersShipBattleInfo;
 import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.type.WowsBattlesType;
+import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.utils.JsonUtils;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Xun
@@ -35,5 +36,16 @@ public record DevelopersUserShip(DevelopersMeta developersMeta, long accountId, 
         }
         //抛出解析status 异常的问题
         throw new StatusException(status);
+    }
+
+    public Map<WowsBattlesType, List<ShipInfo>> toShipInfoMap() {
+        Map<WowsBattlesType, List<ShipInfo>> map = new EnumMap<>(WowsBattlesType.class);
+        for (DevelopersShipBattleInfo info : infoList) {
+            for (var entry : info.shipBattleTypeMap().entrySet()) {
+                map.computeIfAbsent(entry.getKey(), list -> new ArrayList<>()).add(ShipInfo.to(info.ship_id(), entry.getValue(), info.last_battle_time(),
+                        DateUtils.toEpochMilli()));
+            }
+        }
+        return map;
     }
 }
