@@ -105,10 +105,14 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
      * @return 用户每场平均输出
      */
     public double gameDamage() {
-        return battle.battle() <= 0 ? damageDealt : battle.battle() * damageDealt;
+        return battle.battle() <= 0 ? damageDealt : damageDealt / (double) battle.battle();
     }
 
     public double gameWins() {
-        return battle.battle() <= 0 ? 0.0 : battle.gameWins();
+        return battle.gameWins();
+    }
+
+    public double gameFrags() {
+        return fragsInfo.gameFrags(battle);
     }
 }
