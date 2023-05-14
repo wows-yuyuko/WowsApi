@@ -38,7 +38,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        long recordTime) {
     public static ShipInfo to(long shipId, VortexShipInfo info, long recordTime) {
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info),
-                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(info),
+                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.shots_by_main(), info.hits_by_main()), new HitRatio(info.shots_by_atba(),
                 info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.shots_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
                 new HitRatio(info.shots_by_bomb(), info.hits_by_bomb()), new HitRatio(info.shots_by_rocket(), info.hits_by_rocket()),
@@ -57,7 +57,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 (int) info.planes_killed(),
                 info.art_agro(),
                 info.torpedo_agro(),
-                MaxInfo.to(info),
+                MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info),
                 new HitRatio(info.main_battery().shots(), info.main_battery().hits()),
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()),
@@ -79,7 +79,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(this.shipId(), this.battle().addition(history.battle()), this.xp() + history.xp(), this.basicXp() + history.basicXp(),
                 this.damageDealt() + history.damageDealt(), this.scoutingDamage() + history.scoutingDamage(), this.fragsInfo().addition(history.fragsInfo()),
                 this.shipsSpotted() + history.shipsSpotted(), this.planesKilled() + history.planesKilled(), this.artAgro() + history.artAgro(),
-                this.tpdAgro() + history.tpdAgro(), this.maxInfo(),
+                this.tpdAgro() + history.tpdAgro(), this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().addition(history.controlCapturedAndDroppedPoints()), this.ratioMain(), this.ratioAtba(),
                 this.ratioTpd(), this.ratioTbomb(), this.ratioBomb(), this.ratioRocket(), this.ratioSkip(), this.lastBattleTime(), history.recordTime());
     }
@@ -94,7 +94,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(this.shipId(), this.battle().subtraction(history.battle()), this.xp() - history.xp(), this.basicXp() - history.basicXp(),
                 this.damageDealt() - history.damageDealt(), this.scoutingDamage() - history.scoutingDamage(),
                 this.fragsInfo().subtraction(history.fragsInfo()), this.shipsSpotted() - history.shipsSpotted(), this.planesKilled() - history.planesKilled()
-                , this.artAgro() - history.artAgro(), this.tpdAgro() - history.tpdAgro(), this.maxInfo(),
+                , this.artAgro() - history.artAgro(), this.tpdAgro() - history.tpdAgro(), this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().subtraction(history.controlCapturedAndDroppedPoints()), this.ratioMain(), this.ratioAtba(),
                 this.ratioTpd(), this.ratioTbomb(), this.ratioBomb(), this.ratioRocket(), this.ratioSkip(), this.lastBattleTime(), history.recordTime());
     }
