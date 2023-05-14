@@ -29,6 +29,6 @@ public class PrUtils {
         double maxNd = Math.max(0, (nd - 0.4) / (1 - 0.4));
         double maxNf = Math.max(0, (nf - 0.1) / (1 - 0.1));
         double maxNw = Math.max(0, (nw - 0.7) / (1 - 0.7));
-        return (int) Math.ceil(700 * maxNd + 300 * maxNf + 150 * maxNw);
+        return (int) Math.round(700 * maxNd + 300 * maxNf + 150 * maxNw);
     }
 }

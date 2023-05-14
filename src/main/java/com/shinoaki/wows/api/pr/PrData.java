@@ -15,7 +15,7 @@ public record PrData(int battle, double damage, double frags, double wins) {
     public static PrData user(ShipInfo shipInfo) {
         return new PrData(shipInfo.battle().battle(),
                 shipInfo.gameDamage(),
-                shipInfo.fragsInfo().gameFrags(shipInfo.battle()),
-                shipInfo.battle().battle() * shipInfo.gameWins() / 100.0);
+                shipInfo.gameFrags(),
+                shipInfo.gameWins());
     }
 }
