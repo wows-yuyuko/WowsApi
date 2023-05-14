@@ -109,6 +109,51 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
     }
 
     /**
+     * 潜在
+     *
+     * @return
+     */
+    public double gameScoutingDamage() {
+        return battle.battle() <= 0 ? scoutingDamage : scoutingDamage / (double) battle.battle();
+    }
+
+    /**
+     * 发现战舰
+     *
+     * @return
+     */
+    public double gameShipsSpotted() {
+        return battle.battle() <= 0 ? shipsSpotted : shipsSpotted / (double) battle.battle();
+    }
+
+    /**
+     * 飞机击落
+     *
+     * @return
+     */
+    public double gamePlanesKilled() {
+        return battle.battle() <= 0 ? planesKilled : planesKilled / (double) battle.battle();
+    }
+
+    /**
+     * 主武器潜在
+     *
+     * @return
+     */
+    public double gameArtAgro() {
+        return battle.battle() <= 0 ? artAgro : artAgro / (double) battle.battle();
+    }
+
+    /**
+     * 鱼雷潜在
+     *
+     * @return
+     */
+    public double gameTpdAgro() {
+        return battle.battle() <= 0 ? tpdAgro : tpdAgro / (double) battle.battle();
+    }
+
+    /**
      * 平均胜率
      *
      * @return
@@ -124,5 +169,32 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
      */
     public double gameFrags() {
         return fragsInfo.gameFrags(battle);
+    }
+
+    /**
+     * 战损(k/d)
+     *
+     * @return
+     */
+    public double gameKd() {
+        return battle.gameKd(fragsInfo);
+    }
+
+    /**
+     * 经验-会员加成
+     *
+     * @return
+     */
+    public double gameXp() {
+        return battle.battle() <= 0 ? xp : xp / (double) battle.battle();
+    }
+
+    /**
+     * 基础经验
+     *
+     * @return
+     */
+    public double gameBasicXp() {
+        return battle.battle() <= 0 ? basicXp : basicXp / (double) battle.battle();
     }
 }
