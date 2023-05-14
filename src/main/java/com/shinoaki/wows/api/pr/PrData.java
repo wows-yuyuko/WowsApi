@@ -18,4 +18,22 @@ public record PrData(int battle, double damage, double frags, double wins) {
                 shipInfo.gameFrags(),
                 shipInfo.gameWins());
     }
+
+    public static PrData empty() {
+        return new PrData(0, 0.0, 0.0, 0.0);
+    }
+
+    /**
+     * 相加
+     */
+    public PrData addition(PrData history) {
+        return new PrData(history.battle, damage + history.damage, frags + history.frags, wins + history.wins);
+    }
+
+    /**
+     * 减去
+     */
+    public PrData subtraction(PrData history) {
+        return new PrData(history.battle, damage - history.damage, frags - history.frags, wins - history.wins);
+    }
 }
