@@ -53,7 +53,7 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
         return new MaxInfo(new MaxShipInfo(shipId, (int) info.max_frags_battle()),
                 new MaxShipInfo(shipId, info.main_battery().max_frags_battle()),
                 new MaxShipInfo(shipId, info.torpedoes().max_frags_battle()),
-                new MaxShipInfo(shipId, -1),
+                new MaxShipInfo(shipId, 0),
                 new MaxShipInfo(shipId, info.ramming().max_frags_battle()),
                 new MaxShipInfo(shipId, info.second_battery().max_frags_battle()),
                 new MaxShipInfo(shipId, (int) info.max_damage_dealt_to_buildings()),
@@ -65,7 +65,7 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                 new MaxShipInfo(shipId, (int) info.max_total_agro()),
                 new MaxShipInfo(shipId, (int) info.max_suppressions_count()),
                 new MaxShipInfo(shipId, info.max_xp()),
-                new MaxShipInfo(shipId, -1));
+                new MaxShipInfo(shipId, 0));
     }
 
     /**

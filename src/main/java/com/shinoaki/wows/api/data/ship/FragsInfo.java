@@ -41,7 +41,7 @@ public record FragsInfo(
                 info.aircraft().frags(),
                 info.torpedoes().frags(),
                 info.ramming().frags(),
-                -1);
+                0);
     }
 
     /**

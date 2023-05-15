@@ -49,7 +49,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(shipId,
                 Battle.to(info),
                 info.xp(),
-                -1,
+                0,
                 info.damage_dealt(),
                 info.damage_scouting(),
                 FragsInfo.to(info),
@@ -62,10 +62,10 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 new HitRatio(info.main_battery().shots(), info.main_battery().hits()),
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()),
                 new HitRatio(info.torpedoes().shots(), info.torpedoes().hits()),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
                 lastBattleTime, recordTime);
     }
 
