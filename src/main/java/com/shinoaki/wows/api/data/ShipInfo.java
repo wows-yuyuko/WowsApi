@@ -38,7 +38,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        long recordTime) {
     public static ShipInfo to(long shipId, VortexShipInfo info, long recordTime) {
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info),
-                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(info),
+                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.shots_by_main(), info.hits_by_main()), new HitRatio(info.shots_by_atba(),
                 info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.shots_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
                 new HitRatio(info.shots_by_bomb(), info.hits_by_bomb()), new HitRatio(info.shots_by_rocket(), info.hits_by_rocket()),
@@ -49,7 +49,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(shipId,
                 Battle.to(info),
                 info.xp(),
-                -1,
+                0,
                 info.damage_dealt(),
                 info.damage_scouting(),
                 FragsInfo.to(info),
@@ -57,15 +57,15 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 (int) info.planes_killed(),
                 info.art_agro(),
                 info.torpedo_agro(),
-                MaxInfo.to(info),
+                MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info),
                 new HitRatio(info.main_battery().shots(), info.main_battery().hits()),
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()),
                 new HitRatio(info.torpedoes().shots(), info.torpedoes().hits()),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
-                new HitRatio(-1, -1),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
+                new HitRatio(0, 0),
                 lastBattleTime, recordTime);
     }
 
@@ -79,7 +79,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(this.shipId(), this.battle().addition(history.battle()), this.xp() + history.xp(), this.basicXp() + history.basicXp(),
                 this.damageDealt() + history.damageDealt(), this.scoutingDamage() + history.scoutingDamage(), this.fragsInfo().addition(history.fragsInfo()),
                 this.shipsSpotted() + history.shipsSpotted(), this.planesKilled() + history.planesKilled(), this.artAgro() + history.artAgro(),
-                this.tpdAgro() + history.tpdAgro(), this.maxInfo(),
+                this.tpdAgro() + history.tpdAgro(), this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().addition(history.controlCapturedAndDroppedPoints()), this.ratioMain(), this.ratioAtba(),
                 this.ratioTpd(), this.ratioTbomb(), this.ratioBomb(), this.ratioRocket(), this.ratioSkip(), this.lastBattleTime(), history.recordTime());
     }
@@ -94,7 +94,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(this.shipId(), this.battle().subtraction(history.battle()), this.xp() - history.xp(), this.basicXp() - history.basicXp(),
                 this.damageDealt() - history.damageDealt(), this.scoutingDamage() - history.scoutingDamage(),
                 this.fragsInfo().subtraction(history.fragsInfo()), this.shipsSpotted() - history.shipsSpotted(), this.planesKilled() - history.planesKilled()
-                , this.artAgro() - history.artAgro(), this.tpdAgro() - history.tpdAgro(), this.maxInfo(),
+                , this.artAgro() - history.artAgro(), this.tpdAgro() - history.tpdAgro(), this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().subtraction(history.controlCapturedAndDroppedPoints()), this.ratioMain(), this.ratioAtba(),
                 this.ratioTpd(), this.ratioTbomb(), this.ratioBomb(), this.ratioRocket(), this.ratioSkip(), this.lastBattleTime(), history.recordTime());
     }
@@ -106,6 +106,51 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
      */
     public double gameDamage() {
         return battle.battle() <= 0 ? damageDealt : damageDealt / (double) battle.battle();
+    }
+
+    /**
+     * 潜在
+     *
+     * @return
+     */
+    public double gameScoutingDamage() {
+        return battle.battle() <= 0 ? scoutingDamage : scoutingDamage / (double) battle.battle();
+    }
+
+    /**
+     * 发现战舰
+     *
+     * @return
+     */
+    public double gameShipsSpotted() {
+        return battle.battle() <= 0 ? shipsSpotted : shipsSpotted / (double) battle.battle();
+    }
+
+    /**
+     * 飞机击落
+     *
+     * @return
+     */
+    public double gamePlanesKilled() {
+        return battle.battle() <= 0 ? planesKilled : planesKilled / (double) battle.battle();
+    }
+
+    /**
+     * 主武器潜在
+     *
+     * @return
+     */
+    public double gameArtAgro() {
+        return battle.battle() <= 0 ? artAgro : artAgro / (double) battle.battle();
+    }
+
+    /**
+     * 鱼雷潜在
+     *
+     * @return
+     */
+    public double gameTpdAgro() {
+        return battle.battle() <= 0 ? tpdAgro : tpdAgro / (double) battle.battle();
     }
 
     /**
@@ -124,5 +169,32 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
      */
     public double gameFrags() {
         return fragsInfo.gameFrags(battle);
+    }
+
+    /**
+     * 战损(k/d)
+     *
+     * @return
+     */
+    public double gameKd() {
+        return battle.gameKd(fragsInfo);
+    }
+
+    /**
+     * 经验-会员加成
+     *
+     * @return
+     */
+    public double gameXp() {
+        return battle.battle() <= 0 ? xp : xp / (double) battle.battle();
+    }
+
+    /**
+     * 基础经验
+     *
+     * @return
+     */
+    public double gameBasicXp() {
+        return battle.battle() <= 0 ? basicXp : basicXp / (double) battle.battle();
     }
 }

@@ -29,8 +29,8 @@ public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, lo
                 info.capture_points(),
                 info.team_dropped_capture_points(),
                 info.dropped_capture_points(),
-                -1,
-                -1);
+                0,
+                0);
     }
 
     /**
