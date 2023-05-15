@@ -27,27 +27,30 @@ public record PrData(double damage, double frags, double wins) {
      * 相加
      */
     public PrData addition(int battle, PrData history) {
-        return new PrData(gameDamage(battle, damage + history.damage),
-                gameFrags(battle, frags + history.frags),
-                gameWins(battle, wins + history.wins));
+        return new PrData(damage + gameDamage(battle, history.damage),
+                frags + gameFrags(battle, history.frags),
+                wins + gameWins(battle, history.wins));
+    }
+
+    /**
+     * 是否存在0
+     *
+     * @return 值
+     */
+    public boolean checkZero() {
+        return damage <= 0.0 || frags <= 0.0 || wins <= 0.0;
     }
 
     private static double gameDamage(int battle, double damage) {
-        return battle <= 0 ? damage : damage / battle;
+        return battle <= 0 ? damage : battle * damage;
     }
 
     private static double gameWins(int battle, double wins) {
-        if (battle <= 0 || wins <= 0.0) {
-            return 0.0;
-        }
-        return 100.0 * (wins / battle);
+        return battle <= 0 ? wins : battle * wins / 100;
     }
 
     private static double gameFrags(int battle, double frags) {
-        if (frags <= 0 || battle <= 0) {
-            return 0.0;
-        }
-        return frags / battle;
+        return battle <= 0 ? frags : battle * frags;
     }
 
 }
