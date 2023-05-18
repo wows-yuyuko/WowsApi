@@ -81,11 +81,13 @@ public record Battle(
      * @return kd
      */
     public double gameKd(FragsInfo info) {
-        int v = this.battle() - this.survived();
-        if (v <= 0 || info.frags() <= 0) {
-            return 0.0;
-        } else {
-            return (double) info.frags() / v;
+        double v = (this.battle() - this.survived());
+        if (v <= 0) {
+            return info.frags();
         }
+        if (info.frags() <= 0) {
+            return 0.0;
+        }
+        return info.frags() / v;
     }
 }
