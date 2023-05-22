@@ -2,7 +2,7 @@ package com.shinoaki.wows.api.codec.http;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.HttpSend;
-import com.shinoaki.wows.api.data.account.DevelopersSearchUser;
+import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
 import com.shinoaki.wows.api.error.HttpStatusException;
 import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.type.WowsServer;

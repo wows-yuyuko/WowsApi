@@ -1,4 +1,4 @@
-package com.shinoaki.wows.api.data.account;
+package com.shinoaki.wows.api.developers.account;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
