@@ -1,6 +1,8 @@
 package com.shinoaki.wows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.shinoaki.wows.api.codec.SyncResult;
+import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.error.HttpStatusException;
@@ -8,7 +10,6 @@ import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.pr.PrData;
 import com.shinoaki.wows.api.pr.PrUtils;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsHttpUrl;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import org.junit.Test;
@@ -27,13 +28,14 @@ import java.util.concurrent.ExecutionException;
  */
 public class DevelopersTest {
     private static final long id = 2022515210;
-    String token = "907d9c6bfc0d896a2c156e57194a97cf";
+    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
     WowsServer server = WowsServer.ASIA;
     HttpClient client = HttpClient.newBuilder().proxy(ProxySelector.of(new InetSocketAddress("127.0.0.1", 7890))).build();
 
     @Test
     public void shipTest() throws IOException, InterruptedException, StatusException, HttpStatusException {
-        DevelopersUserShip developers = WowsHttpUrl.sendRequestShipListDevelopers(client, server, token, id);
+        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        DevelopersUserShip developers = tools.sendRequestShipListDevelopers(token);
         System.out.println(developers);
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         System.out.println(shipInfoMap);
@@ -44,7 +46,8 @@ public class DevelopersTest {
         //检查山雾的  期望值:1631
         long s = 4178458320L;
         PrData serverPR = PrData.server(51931.05774853801, 0.7302046783625733, 48.481991959064615);
-        DevelopersUserShip developers = WowsHttpUrl.sendRequestShipListDevelopers(client, server, token, id);
+        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        DevelopersUserShip developers = tools.sendRequestShipListDevelopers(token);
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         List<ShipInfo> infoList = shipInfoMap.get(WowsBattlesType.PVP);
         ShipInfo shipInfo = infoList.stream().filter(x -> x.shipId() == s).findFirst().get();
@@ -54,7 +57,8 @@ public class DevelopersTest {
 
     @Test
     public void shipTestAsync() throws ExecutionException, InterruptedException, JsonProcessingException, StatusException {
-        WowsHttpUrl.SyncResult syncResult = WowsHttpUrl.sendRequestShipListDevelopersAsync(client, server, token, id);
+        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        SyncResult syncResult = tools.sendRequestShipListDevelopersAsync(token);
         if (syncResult.isErr()) {
             System.out.println("请求异常！");
         } else {
