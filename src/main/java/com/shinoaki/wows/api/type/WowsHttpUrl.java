@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
  * @author Xun
  * @date 2023/4/24 23:49 星期一
  */
+@Deprecated(forRemoval = true, since = "0.2.1")
 public class WowsHttpUrl {
     private WowsHttpUrl() {
 

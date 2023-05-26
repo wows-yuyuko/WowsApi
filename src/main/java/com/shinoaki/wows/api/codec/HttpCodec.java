@@ -5,8 +5,10 @@ import com.shinoaki.wows.api.error.HttpStatusException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +27,12 @@ public class HttpCodec {
     public static final String MARK = "?";
     public static final String CONTENT_ENCODING = "Content-Encoding";
     public static final String GZIP = "gzip";
+
+
+    public static HttpRequest request(URI uri) {
+        return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate, br").build();
+    }
+
 
     public static String fromDataAsString(Map<String, String> fromData) {
         StringBuilder builder = new StringBuilder();
