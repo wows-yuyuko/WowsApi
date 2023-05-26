@@ -44,16 +44,13 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
 
     public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws StatusException, JsonProcessingException {
         //判断status
-        JsonNode status = node.get("status");
-        if (!status.isNull() && status.asText().equalsIgnoreCase("ok")) {
-            Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
-            if (iterator.hasNext()) {
-                Map.Entry<String, JsonNode> map = iterator.next();
-                return parse(type, Long.parseLong(map.getKey()), map.getValue());
-            }
+        StatusException.status(node);
+        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
+        if (iterator.hasNext()) {
+            Map.Entry<String, JsonNode> map = iterator.next();
+            return parse(type, Long.parseLong(map.getKey()), map.getValue());
         }
-        //抛出解析status 异常的问题
-        throw new StatusException(status);
+        return null;
     }
 
     public static Map<WowsBattlesType, List<ShipInfo>> toShipInfoMap(Map<WowsBattlesType, VortexUserShip> map) {

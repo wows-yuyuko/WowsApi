@@ -14,13 +14,11 @@ import java.util.List;
  */
 public record DevelopersSearchUser(String nickname, long account_id) {
     public static List<DevelopersSearchUser> parse(JsonUtils utils, JsonNode node) throws StatusException, JsonProcessingException {
-        if ("ok".equalsIgnoreCase(node.get("status").asText())) {
-            List<DevelopersSearchUser> list = new ArrayList<>();
-            for (var data : node.get("data")) {
-                list.add(utils.parse(data, DevelopersSearchUser.class));
-            }
-            return list;
+        StatusException.status(node);
+        List<DevelopersSearchUser> list = new ArrayList<>();
+        for (var data : node.get("data")) {
+            list.add(utils.parse(data, DevelopersSearchUser.class));
         }
-        throw new StatusException(node.get("error"));
+        return list;
     }
 }
