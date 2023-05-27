@@ -20,13 +20,12 @@ import java.util.List;
  * @author Xun
  * @date 2023/5/22 21:42 星期一
  */
-public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
+public record WowsHttpUserTools(JsonUtils utils, HttpClient httpClient, WowsServer server) {
 
 
     public List<VortexSearchUser> searchUserVortexCn(String userName) throws IOException, InterruptedException, HttpStatusException {
         try {
             String sent = HttpSend.sendGet(httpClient, uriVortex(userName));
-            JsonUtils utils = new JsonUtils();
             return VortexSearchUser.parse(utils, utils.parse(sent));
         } catch (HttpStatusException e) {
             if (e.getCode() == 503) {
@@ -38,14 +37,12 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public List<VortexSearchUser> searchUserVortex(String userName) throws HttpStatusException, IOException, InterruptedException {
         String sent = HttpSend.sendGet(httpClient, uriVortex(userName));
-        JsonUtils utils = new JsonUtils();
         return VortexSearchUser.parse(utils, utils.parse(sent));
     }
 
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws IOException, HttpStatusException, InterruptedException,
             StatusException {
         String sent = HttpSend.sendGet(httpClient, uriDeveloper(token, userName));
-        JsonUtils utils = new JsonUtils();
         return DevelopersSearchUser.parse(utils, utils.parse(sent));
     }
 
