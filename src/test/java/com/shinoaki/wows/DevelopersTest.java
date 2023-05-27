@@ -1,7 +1,5 @@
 package com.shinoaki.wows;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.shinoaki.wows.api.codec.SyncResult;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
@@ -11,7 +9,6 @@ import com.shinoaki.wows.api.pr.PrData;
 import com.shinoaki.wows.api.pr.PrUtils;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.JsonUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,7 +17,6 @@ import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Xun
@@ -35,7 +31,7 @@ public class DevelopersTest {
     @Test
     public void shipTest() throws IOException, InterruptedException, StatusException, HttpStatusException {
         WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-        DevelopersUserShip developers = tools.sendRequestShipListDevelopers(token);
+        DevelopersUserShip developers = tools.developers(token).shipList();
         System.out.println(developers);
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         System.out.println(shipInfoMap);
@@ -47,22 +43,11 @@ public class DevelopersTest {
         long s = 4178458320L;
         PrData serverPR = PrData.server(51931.05774853801, 0.7302046783625733, 48.481991959064615);
         WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-        DevelopersUserShip developers = tools.sendRequestShipListDevelopers(token);
+        DevelopersUserShip developers = tools.developers(token).shipList();
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         List<ShipInfo> infoList = shipInfoMap.get(WowsBattlesType.PVP);
         ShipInfo shipInfo = infoList.stream().filter(x -> x.shipId() == s).findFirst().get();
         PrData user = PrData.user(shipInfo);
         System.out.println(PrUtils.pr(user, serverPR));
-    }
-
-    @Test
-    public void shipTestAsync() throws ExecutionException, InterruptedException, JsonProcessingException, StatusException {
-        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-        SyncResult syncResult = tools.sendRequestShipListDevelopersAsync(token);
-        if (syncResult.isErr()) {
-            System.out.println("请求异常！");
-        } else {
-            System.out.println(DevelopersUserShip.parse(new JsonUtils().parse(syncResult.data())).accountId());
-        }
     }
 }
