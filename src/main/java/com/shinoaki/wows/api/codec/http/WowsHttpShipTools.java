@@ -41,7 +41,7 @@ public record WowsHttpShipTools(JsonUtils utils, HttpClient httpClient, WowsServ
             return vortexShipList(server, type, accountId);
         }
 
-        public VortexUserShip shipList(WowsBattlesType type, JsonUtils utils) throws HttpStatusException, IOException, InterruptedException, StatusException {
+        public VortexUserShip shipList(WowsBattlesType type) throws HttpStatusException, IOException, InterruptedException, StatusException {
             return VortexUserShip.parse(type, utils.parse(HttpSend.sendGet(httpClient, vortexShipList(server, type, accountId))));
         }
 
