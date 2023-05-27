@@ -9,6 +9,7 @@ import com.shinoaki.wows.api.pr.PrData;
 import com.shinoaki.wows.api.pr.PrUtils;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
+import com.shinoaki.wows.api.utils.JsonUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class DevelopersTest {
 
     @Test
     public void shipTest() throws IOException, InterruptedException, StatusException, HttpStatusException {
-        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        WowsHttpShipTools tools = new WowsHttpShipTools(new JsonUtils(), client, server, id);
         DevelopersUserShip developers = tools.developers(token).shipList();
         System.out.println(developers);
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
@@ -42,7 +43,7 @@ public class DevelopersTest {
         //检查山雾的  期望值:1631
         long s = 4178458320L;
         PrData serverPR = PrData.server(51931.05774853801, 0.7302046783625733, 48.481991959064615);
-        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        WowsHttpShipTools tools = new WowsHttpShipTools(new JsonUtils(), client, server, id);
         DevelopersUserShip developers = tools.developers(token).shipList();
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         List<ShipInfo> infoList = shipInfoMap.get(WowsBattlesType.PVP);

@@ -26,16 +26,16 @@ import java.util.concurrent.ExecutionException;
  * @author Xun
  * @date 2023/4/24 23:49 星期一
  */
-public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long accountId) {
+public record WowsHttpShipTools(JsonUtils utils, HttpClient httpClient, WowsServer server, long accountId) {
     public Vortex vortex() {
-        return new Vortex(httpClient, server, accountId);
+        return new Vortex(utils, httpClient, server, accountId);
     }
 
     public Developers developers(String token) {
-        return new Developers(httpClient, server, accountId, token);
+        return new Developers(utils, httpClient, server, accountId, token);
     }
 
-    public record Vortex(HttpClient httpClient, WowsServer server, long accountId) {
+    public record Vortex(JsonUtils utils, HttpClient httpClient, WowsServer server, long accountId) {
 
         public URI shipListUri(WowsBattlesType type) {
             return vortexShipList(server, type, accountId);
@@ -53,7 +53,6 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             }
             Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
             //解码
-            JsonUtils utils = new JsonUtils();
             for (var entry : map.entrySet()) {
                 shipMap.put(entry.getKey(), VortexUserShip.parse(entry.getKey(), utils.parse(new String(HttpCodec.response(entry.getValue().get())))));
             }
@@ -65,10 +64,10 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
     }
 
-    public record Developers(HttpClient httpClient, WowsServer server, long accountId, String token) {
+    public record Developers(JsonUtils utils, HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public DevelopersUserShip shipList() throws HttpStatusException, IOException, InterruptedException, StatusException {
-            return DevelopersUserShip.parse(new JsonUtils().parse(HttpSend.sendGet(httpClient, shipListUri())));
+            return DevelopersUserShip.parse(utils.parse(HttpSend.sendGet(httpClient, shipListUri())));
         }
 
         public URI shipListUri() {

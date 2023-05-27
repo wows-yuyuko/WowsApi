@@ -25,29 +25,29 @@ import java.util.List;
  * @author Xun
  * @date 2023/5/22 21:42 星期一
  */
-public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
+public record WowsHttpClanTools(JsonUtils utils, HttpClient httpClient, WowsServer server) {
 
     public Developers developers(String token) {
-        return new Developers(httpClient, server, token);
+        return new Developers(utils, httpClient, server, token);
     }
 
     public Vortex vortex() {
-        return new Vortex(httpClient, server);
+        return new Vortex(utils, httpClient, server);
     }
 
-    public record Developers(HttpClient httpClient, WowsServer server, String token) {
+    public record Developers(JsonUtils utils, HttpClient httpClient, WowsServer server, String token) {
 
         public DevelopersSearchUserClan userSearchClanDevelopers(long accountId) throws HttpStatusException, IOException, InterruptedException,
                 StatusException {
-            return DevelopersSearchUserClan.parse(new JsonUtils(), accountId, HttpSend.sendGet(httpClient, userSearchClanDevelopersUri(accountId)));
+            return DevelopersSearchUserClan.parse(utils, accountId, HttpSend.sendGet(httpClient, userSearchClanDevelopersUri(accountId)));
         }
 
         public DevelopersClanInfo clanInfoDevelopers(long clanId) throws HttpStatusException, IOException, InterruptedException, StatusException {
-            return DevelopersClanInfo.parse(new JsonUtils(), clanId, HttpSend.sendGet(httpClient, clanInfoDevelopersUri(clanId)));
+            return DevelopersClanInfo.parse(utils, clanId, HttpSend.sendGet(httpClient, clanInfoDevelopersUri(clanId)));
         }
 
         public List<DevelopersSearchClan> searchClanDevelopers(String clanTag) throws HttpStatusException, IOException, InterruptedException, StatusException {
-            return DevelopersSearchClan.parse(new JsonUtils(), HttpSend.sendGet(httpClient, searchClanDevelopersUri(clanTag)));
+            return DevelopersSearchClan.parse(utils, HttpSend.sendGet(httpClient, searchClanDevelopersUri(clanTag)));
         }
 
         public URI userSearchClanDevelopersUri(long accountId) {
@@ -63,7 +63,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
     }
 
-    public record Vortex(HttpClient httpClient, WowsServer server) {
+    public record Vortex(JsonUtils utils, HttpClient httpClient, WowsServer server) {
 
         /**
          * 搜索用户公会信息
@@ -76,7 +76,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          * @throws StatusException
          */
         public VortexSearchClanUser userSearchClanVortex(long accountId) throws HttpStatusException, IOException, InterruptedException, StatusException {
-            return VortexSearchClanUser.to(new JsonUtils().parse(HttpSend.sendGet(httpClient, userSearchClanVortexUri(accountId))));
+            return VortexSearchClanUser.to(utils.parse(HttpSend.sendGet(httpClient, userSearchClanVortexUri(accountId))));
         }
 
         /**
@@ -89,15 +89,15 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          * @throws InterruptedException
          */
         public List<VortexSearchClan> searchClanVortex(String clanTag) throws HttpStatusException, IOException, InterruptedException {
-            return VortexSearchClan.parse(new JsonUtils(), HttpSend.sendGet(httpClient, searchClanVortexUri(clanTag)));
+            return VortexSearchClan.parse(utils, HttpSend.sendGet(httpClient, searchClanVortexUri(clanTag)));
         }
 
         public VortexClanInfo clanInfoVortex(long clanId) throws HttpStatusException, IOException, InterruptedException {
-            return VortexClanInfo.to(server, clanId, new JsonUtils().parse(HttpSend.sendGet(httpClient, clanInfoVortexUri(clanId))));
+            return VortexClanInfo.to(server, clanId, utils.parse(HttpSend.sendGet(httpClient, clanInfoVortexUri(clanId))));
         }
 
         public List<VortexClanUserInfo> clanUserListInfoVortex(long clanId) throws HttpStatusException, IOException, InterruptedException {
-            return VortexClanUserInfo.to(server, new JsonUtils().parse(HttpSend.sendGet(httpClient, clanUserListInfoVortexUri(clanId))));
+            return VortexClanUserInfo.to(server, utils.parse(HttpSend.sendGet(httpClient, clanUserListInfoVortexUri(clanId))));
         }
 
         public URI userSearchClanVortexUri(long accountId) {
