@@ -1,7 +1,6 @@
 package com.shinoaki.wows.api.vortex.clan.account;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.codec.HttpSend;
 import com.shinoaki.wows.api.error.StatusException;
 
 /**
@@ -20,5 +19,21 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
                 VortexSearchClanInfo.to(data.get("clan")),
                 data.get("joined_at").asText(),
                 clanId.isNull() ? 0 : clanId.asLong());
+    }
+
+
+    public record VortexSearchClanInfo(String tag, String color, int members_count, String name) {
+
+        public static VortexSearchClanInfo to(JsonNode node) {
+            if (!node.isEmpty()) {
+                return new VortexSearchClanInfo(node.get("tag").asText(), node.get("color").asText(), node.get("members_count").asInt(),
+                        node.get("name").asText());
+            }
+            return empty();
+        }
+
+        public static VortexSearchClanInfo empty() {
+            return new VortexSearchClanInfo(null, null, 0, null);
+        }
     }
 }

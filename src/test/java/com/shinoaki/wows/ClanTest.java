@@ -1,21 +1,13 @@
 package com.shinoaki.wows;
 
-import com.shinoaki.wows.api.codec.HttpSend;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
-import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
-import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
-import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
 import com.shinoaki.wows.api.error.HttpStatusException;
 import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
-import com.shinoaki.wows.api.vortex.clan.account.VortexSearchClanUser;
-import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
-import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
 
 /**
@@ -31,8 +23,8 @@ public class ClanTest {
     public void searchDev() throws HttpStatusException, IOException, InterruptedException, StatusException {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(DevelopersSearchClan.parse(utils, HttpSend.sendGet(tools.httpClient(), tools.developoers().searchClanDevelopers(token, "YU_RI"))));
-        System.out.println(DevelopersSearchClan.parse(utils, HttpSend.sendGet(tools.httpClient(), tools.developoers().searchClanDevelopers(token, "YU_RI2"))));
+        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI"));
+        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI2"));
     }
 
     @Test
@@ -40,7 +32,7 @@ public class ClanTest {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2000022706L;
-        System.out.println(DevelopersClanInfo.parse(utils, id, HttpSend.sendGet(tools.httpClient(), tools.developoers().clanInfoDevelopers(token, id))));
+        System.out.println(tools.developers(token).clanInfoDevelopers(id));
     }
 
     @Test
@@ -48,8 +40,7 @@ public class ClanTest {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2007474948;
-        System.out.println(DevelopersSearchUserClan.parse(utils, id, HttpSend.sendGet(tools.httpClient(), tools.developoers().userSearchClanDevelopers(token,
-                id))));
+        System.out.println(tools.developers(token).userSearchClanDevelopers(id));
     }
 
     @Test
@@ -71,21 +62,16 @@ public class ClanTest {
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException {
         var tools = new WowsHttpClanTools(client, server);
-        String sent = HttpSend.sendGet(tools.httpClient(), tools.vortex().clanUserListInfoVortex(id));
-        System.out.println(VortexClanUserInfo.to(server, utils.parse(sent)));
+        System.out.println(tools.vortex().clanUserListInfoVortex(id));
     }
 
     public void clanInfoVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException {
         var tools = new WowsHttpClanTools(client, server);
-        String sent = HttpSend.sendGet(tools.httpClient(), tools.vortex().clanInfoVortex(id));
-        System.out.println(VortexClanInfo.to(server, id, utils.parse(sent)));
+        System.out.println(tools.vortex().clanInfoVortex(id));
     }
 
     public void searchUserVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException, StatusException {
         var tools = new WowsHttpClanTools(client, server);
-        URI uri = tools.vortex().userSearchClanVortex(id);
-        String sent = HttpSend.sendGet(tools.httpClient(), uri);
-        VortexSearchClanUser vortexSearchClanUser = VortexSearchClanUser.to(utils.parse(sent));
-        System.out.println(vortexSearchClanUser);
+        System.out.println(tools.vortex().userSearchClanVortex(id));
     }
 }
