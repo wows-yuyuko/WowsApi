@@ -31,8 +31,8 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         return new Vortex(httpClient, server, accountId);
     }
 
-    public Developers developers() {
-        return new Developers(httpClient, server, accountId);
+    public Developers developers(String token) {
+        return new Developers(httpClient, server, accountId, token);
     }
 
     public record Vortex(HttpClient httpClient, WowsServer server, long accountId) {
@@ -65,13 +65,13 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
     }
 
-    public record Developers(HttpClient httpClient, WowsServer server, long accountId) {
+    public record Developers(HttpClient httpClient, WowsServer server, long accountId, String token) {
 
-        public DevelopersUserShip shipList(String token) throws HttpStatusException, IOException, InterruptedException, StatusException {
-            return DevelopersUserShip.parse(new JsonUtils().parse(HttpSend.sendGet(httpClient, shipListUri(token))));
+        public DevelopersUserShip shipList() throws HttpStatusException, IOException, InterruptedException, StatusException {
+            return DevelopersUserShip.parse(new JsonUtils().parse(HttpSend.sendGet(httpClient, shipListUri())));
         }
 
-        public URI shipListUri(String token) {
+        public URI shipListUri() {
             StringBuilder builder = new StringBuilder();
             for (var type : WowsBattlesType.values()) {
                 if (WowsBattlesType.PVP != type) {
