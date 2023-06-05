@@ -51,7 +51,7 @@ public record WowsHttpClanTools(JsonUtils utils, HttpClient httpClient, WowsServ
         }
 
         public URI userSearchClanDevelopersUri(long accountId) {
-            return URI.create(server.api() + String.format("/wows/clans/accountinfo/?application_id=%s&account_id=%s", token, accountId));
+            return URI.create(server.api() + String.format("/wows/clans/accountinfo/?application_id=%s&account_id=%s&extra=clan", token, accountId));
         }
 
         public URI clanInfoDevelopersUri(long clanId) {
