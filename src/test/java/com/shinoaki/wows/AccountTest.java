@@ -26,13 +26,15 @@ public class AccountTest {
         System.out.println(asia.searchUserVortex(u1));
         System.out.println("=================");
         System.out.println(asia.searchUserDevelopers(DevelopersTest.token, u1));
+        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
+        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
     }
 
     @Test
     public void searchUserCn() throws HttpStatusException, IOException, InterruptedException, StatusException {
         String u1 = "西行寺雨季";
         HttpClient client = HttpClient.newBuilder().build();
-        WowsHttpUserTools asia = new WowsHttpUserTools(new JsonUtils(),client, WowsServer.CN);
+        WowsHttpUserTools asia = new WowsHttpUserTools(new JsonUtils(), client, WowsServer.CN);
         List<VortexSearchUser> vortex = asia.searchUserVortex(u1);
         List<VortexSearchUser> vortex2 = asia.searchUserVortexCn("西行寺");
         System.out.println(vortex);
