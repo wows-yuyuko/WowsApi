@@ -48,7 +48,7 @@ public class DevelopersTest {
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         List<ShipInfo> infoList = shipInfoMap.get(WowsBattlesType.PVP);
         ShipInfo shipInfo = infoList.stream().filter(x -> x.shipId() == s).findFirst().get();
-        PrData user = PrData.user(shipInfo);
+        PrData user = serverPR.userOneShip(shipInfo);
         System.out.println(PrUtils.pr(user, serverPR));
     }
 }
