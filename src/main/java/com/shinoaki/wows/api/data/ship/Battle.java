@@ -46,7 +46,7 @@ public record Battle(
                 this.wins() + history.wins(),
                 this.losses() + history.losses(),
                 this.survived() + history.survived(),
-                this.winAndSurvived() + history.survived());
+                this.winAndSurvived() + history.winAndSurvived());
     }
 
     /**
@@ -60,7 +60,7 @@ public record Battle(
                 this.wins() - history.wins(),
                 this.losses() - history.losses(),
                 this.survived() - history.survived(),
-                this.winAndSurvived() - history.survived());
+                this.winAndSurvived() - history.winAndSurvived());
     }
 
     /**
