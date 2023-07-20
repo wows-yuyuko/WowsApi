@@ -26,7 +26,7 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
 
         public static VortexSearchClanInfo to(JsonNode node) {
             if (!node.isEmpty()) {
-                return new VortexSearchClanInfo(node.get("tag").asText(), node.get("color").asText(), node.get("members_count").asInt(),
+                return new VortexSearchClanInfo(node.get("tag").asText(), "#" + Long.toHexString(node.get("color").asLong()), node.get("members_count").asInt(),
                         node.get("name").asText());
             }
             return empty();

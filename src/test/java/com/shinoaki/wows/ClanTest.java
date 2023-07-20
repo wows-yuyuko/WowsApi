@@ -22,7 +22,7 @@ public class ClanTest {
     @Test
     public void searchDev() throws HttpStatusException, IOException, InterruptedException, StatusException {
         WowsServer server = WowsServer.ASIA;
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         System.out.println(tools.developers(token).searchClanDevelopers("YU_RI"));
         System.out.println(tools.developers(token).searchClanDevelopers("YU_RI2"));
     }
@@ -30,7 +30,7 @@ public class ClanTest {
     @Test
     public void clanInfoDev() throws HttpStatusException, IOException, InterruptedException, StatusException {
         WowsServer server = WowsServer.ASIA;
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         long id = 2000022706L;
         System.out.println(tools.developers(token).clanInfoDevelopers(id));
     }
@@ -38,7 +38,7 @@ public class ClanTest {
     @Test
     public void accountSearchClanDev() throws HttpStatusException, IOException, InterruptedException, StatusException {
         WowsServer server = WowsServer.ASIA;
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         long id = 2007474948;
         System.out.println(tools.developers(token).userSearchClanDevelopers(id));
     }
@@ -61,17 +61,17 @@ public class ClanTest {
     }
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException {
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         System.out.println(tools.vortex().clanUserListInfoVortex(id));
     }
 
     public void clanInfoVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException {
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         System.out.println(tools.vortex().clanInfoVortex(id));
     }
 
     public void searchUserVortex(WowsServer server, long id) throws HttpStatusException, IOException, InterruptedException, StatusException {
-        var tools = new WowsHttpClanTools(client, server);
+        var tools = new WowsHttpClanTools(new JsonUtils(), client, server);
         System.out.println(tools.vortex().userSearchClanVortex(id));
     }
 }

@@ -3,7 +3,6 @@ package com.shinoaki.wows.api.developers.clan;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.codec.HttpSend;
 import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.utils.JsonUtils;
 

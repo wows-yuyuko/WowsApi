@@ -1,5 +1,7 @@
 package com.shinoaki.wows.api.pr;
 
+import com.shinoaki.wows.api.data.ShipInfo;
+
 /**
  * https://wows-numbers.com/personal/rating
  *
@@ -8,6 +10,28 @@ package com.shinoaki.wows.api.pr;
  */
 public class PrUtils {
     private PrUtils() {
+    }
+
+    /**
+     * 单船
+     *
+     * @param info   战舰信息
+     * @param server 服务器数据
+     * @return pr
+     */
+    public static int prShip(ShipInfo info, PrData server) {
+        return pr(server.userOneShip(info), server);
+    }
+
+    /**
+     * 用户战绩信息集合体计算PR
+     *
+     * @param info   N艘战舰信息
+     * @param server 对应战舰的服务器数据
+     * @return pr
+     */
+    public static int prSum(ShipInfo info, PrData server) {
+        return pr(server.userSum(info), server);
     }
 
     public static int pr(PrData user, PrData server) {

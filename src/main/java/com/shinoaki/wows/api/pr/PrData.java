@@ -12,11 +12,23 @@ public record PrData(double damage, double frags, double wins) {
         return new PrData(damage, frags, wins);
     }
 
+    /**
+     * 不建议使用次方法，容易产生误会导致BUG，建议使用{@link PrUtils}的prShip()或prSum()方法
+     *
+     * @param shipInfo
+     * @return
+     */
+    @Deprecated(forRemoval = true, since = "0.2.9")
     public static PrData user(ShipInfo shipInfo) {
-        return new PrData(
-                shipInfo.gameDamage(),
-                shipInfo.gameFrags(),
-                shipInfo.gameWins());
+        return new PrData(shipInfo.gameDamage(), shipInfo.gameFrags(), shipInfo.gameWins());
+    }
+
+    public PrData userOneShip(ShipInfo shipInfo) {
+        return new PrData(shipInfo.gameDamage(), shipInfo.gameFrags(), shipInfo.gameWins());
+    }
+
+    public PrData userSum(ShipInfo shipInfo) {
+        return new PrData(shipInfo.damageDealt(), shipInfo.fragsInfo().frags(), shipInfo.battle().wins());
     }
 
     public static PrData empty() {
