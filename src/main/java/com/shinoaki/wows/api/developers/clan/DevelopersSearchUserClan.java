@@ -15,6 +15,9 @@ public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_a
         JsonNode node = utils.parse(response);
         StatusException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
+        if (data == null) {
+            return new DevelopersSearchUserClan(Clan.empty(), accountId, 0L, 0L, "", "");
+        }
         return new DevelopersSearchUserClan(
                 Clan.parse(data.get("clan")),
                 data.get("account_id").asLong(),
