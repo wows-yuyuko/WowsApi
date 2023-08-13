@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.vortex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.shinoaki.wows.api.data.CompletableInfo;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
@@ -9,7 +10,6 @@ import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @param type          战斗类型
@@ -26,43 +26,32 @@ import java.util.stream.Collectors;
 public record VortexUserShip(WowsBattlesType type, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipInfo> shipMap, double created_at,
                              double activated_at, long recordTime) {
 
-    /**
-     * 请使用 toShipInfoMap()
-     *
-     * @return
-     */
-    @Deprecated(forRemoval = true, since = "0.1.2")
-    public Map<WowsBattlesType, List<ShipInfo>> toShipInfo() {
-        return Map.of(this.type, this.shipMap.entrySet().stream().map(map ->
-                ShipInfo.to(map.getKey(), map.getValue(), recordTime)).toList());
-    }
-
     public List<ShipInfo> toShipInfoList() {
         return this.shipMap.entrySet().stream().map(map ->
                 ShipInfo.to(map.getKey(), map.getValue(), recordTime)).toList();
     }
 
-    public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws StatusException, JsonProcessingException {
+    public static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, JsonNode node) {
         //判断status
-        StatusException.status(node);
-        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
-        if (iterator.hasNext()) {
-            Map.Entry<String, JsonNode> map = iterator.next();
-            return parse(type, Long.parseLong(map.getKey()), map.getValue());
+        try {
+            StatusException.status(node);
+            Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
+            if (iterator.hasNext()) {
+                Map.Entry<String, JsonNode> map = iterator.next();
+                return parse(type, Long.parseLong(map.getKey()), map.getValue());
+            }
+        } catch (StatusException | JsonProcessingException e) {
+            return CompletableInfo.error(e);
         }
-        return null;
+        return CompletableInfo.NULL();
     }
 
-    public static Map<WowsBattlesType, List<ShipInfo>> toShipInfoMap(Map<WowsBattlesType, VortexUserShip> map) {
-        return map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().toShipInfoList()));
-    }
-
-    private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws JsonProcessingException {
+    private static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, long accountId, JsonNode node) throws JsonProcessingException {
         String name = node.get("name").asText();
         JsonNode hiddenProfile = node.get("hidden_profile");
         if (hiddenProfile != null && hiddenProfile.asBoolean()) {
             //用户隐藏了战绩
-            return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
+            return CompletableInfo.ok(new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L));
         }
         Map<Long, VortexShipInfo> shipMap = new HashMap<>();
         Iterator<Map.Entry<String, JsonNode>> iterator = node.get("statistics").fields();
@@ -70,7 +59,8 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
             var map = iterator.next();
             shipMap.put(Long.parseLong(map.getKey()), VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT))));
         }
-        return new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(), node.get("activated_at").asDouble(),
-                DateUtils.toEpochMilli());
+        return CompletableInfo.ok(new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),
+                node.get("activated_at").asDouble(),
+                DateUtils.toEpochMilli()));
     }
 }

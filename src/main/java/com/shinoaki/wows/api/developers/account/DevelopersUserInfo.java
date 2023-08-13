@@ -21,7 +21,8 @@ public record DevelopersUserInfo(
 
 ) {
 
-    public static DevelopersUserInfo parse(JsonUtils utils, long accountId, JsonNode node) throws StatusException, JsonProcessingException {
+    public static DevelopersUserInfo parse(JsonUtils utils, long accountId, String json) throws StatusException, JsonProcessingException {
+        JsonNode node = utils.parse(json);
         StatusException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {

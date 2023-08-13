@@ -13,7 +13,8 @@ import java.util.List;
  * @date 2023/5/22 22:45 星期一
  */
 public record DevelopersSearchUser(String nickname, long account_id) {
-    public static List<DevelopersSearchUser> parse(JsonUtils utils, JsonNode node) throws StatusException, JsonProcessingException {
+    public static List<DevelopersSearchUser> parse(JsonUtils utils, String json) throws StatusException, JsonProcessingException {
+        JsonNode node = utils.parse(json);
         StatusException.status(node);
         List<DevelopersSearchUser> list = new ArrayList<>();
         for (var data : node.get("data")) {
