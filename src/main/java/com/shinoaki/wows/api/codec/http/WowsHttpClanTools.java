@@ -96,6 +96,13 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         public CompletableFuture<CompletableInfo<VortexSearchClanUser>> userSearchClanVortex(long accountId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId))).thenApplyAsync(data -> {
                 try {
+                    if (server.isApi()) {
+                        return CompletableInfo.ok(VortexSearchClanUser.to(utils.parse(HttpCodec.response(data))));
+                    }
+                    //处理404的情况
+                    if (data.statusCode() == 404) {
+                        return CompletableInfo.ok(new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0));
+                    }
                     return CompletableInfo.ok(VortexSearchClanUser.to(utils.parse(HttpCodec.response(data))));
                 } catch (StatusException | HttpStatusException | IOException e) {
                     return CompletableInfo.error(e);
