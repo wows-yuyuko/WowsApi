@@ -36,6 +36,15 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        MaxInfo maxInfo, ControlCapturedAndDroppedPoints controlCapturedAndDroppedPoints, HitRatio ratioMain, HitRatio ratioAtba,
                        HitRatio ratioTpd, HitRatio ratioTbomb, HitRatio ratioBomb, HitRatio ratioRocket, HitRatio ratioSkip, long lastBattleTime,
                        long recordTime) {
+
+    public static ShipInfo prInfo(long shipId, int battle, long damageDealt, int wins, int frags) {
+        return new ShipInfo(shipId, new Battle(battle, wins, 0, 0, 0), 0, 0, damageDealt, 0,
+                new FragsInfo(frags, 0, 0, 0, 0, 0, 0),
+                0, 0, 0, 0, null,
+                null
+                , null, null, null, null, null, null, null, 0, 0);
+    }
+
     public static ShipInfo to(long shipId, VortexShipInfo info, long recordTime) {
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info)
                 , (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
