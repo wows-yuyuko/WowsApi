@@ -12,6 +12,10 @@ import java.io.IOException;
  */
 public record CompletableInfo<T>(Throwable throwable, HttpThrowableStatus status, T data) {
 
+    public boolean isErr() {
+        return HttpThrowableStatus.SUCCESS == status;
+    }
+
     public static <T> CompletableInfo<T> ok(T data) {
         return new CompletableInfo<>(null, HttpThrowableStatus.SUCCESS, data);
     }

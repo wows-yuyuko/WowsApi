@@ -57,7 +57,7 @@ public class ClanTest {
 
     @Test
     public void clanMembersVortex() throws InterruptedException, ExecutionException {
-        clanInfoMembersVortex(WowsServer.ASIA, 2000022706L);
+        clanInfoMembersVortex(WowsServer.ASIA, 2000025691L);
     }
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
