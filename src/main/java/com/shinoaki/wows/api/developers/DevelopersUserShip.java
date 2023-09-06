@@ -1,14 +1,13 @@
 package com.shinoaki.wows.api.developers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.warships.DevelopersMeta;
 import com.shinoaki.wows.api.developers.warships.DevelopersShipBattleInfo;
-import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 import java.util.*;
 
@@ -18,10 +17,10 @@ import java.util.*;
  */
 public record DevelopersUserShip(DevelopersMeta developersMeta, long accountId, List<DevelopersShipBattleInfo> infoList) {
 
-    public static DevelopersUserShip parse(JsonNode node) throws StatusException, JsonProcessingException {
+    public static DevelopersUserShip parse(JsonNode node) throws BasicException {
         //判断status
-        StatusException.status(node);
-        DevelopersMeta developersMeta = new JsonUtils().parse(node.get("meta"), DevelopersMeta.class);
+        BasicException.status(node);
+        DevelopersMeta developersMeta = new WowsJsonUtils().parse(node.get("meta"), DevelopersMeta.class);
         Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
         if (iterator.hasNext()) {
             Map.Entry<String, JsonNode> map = iterator.next();

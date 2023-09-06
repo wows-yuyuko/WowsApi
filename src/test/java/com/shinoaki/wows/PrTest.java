@@ -1,15 +1,11 @@
 package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.data.ShipInfo;
-import com.shinoaki.wows.api.data.ship.Battle;
 import com.shinoaki.wows.api.pr.PrCalculation;
 import com.shinoaki.wows.api.pr.PrCalculationDetails;
-import com.shinoaki.wows.api.pr.PrData;
-import com.shinoaki.wows.api.pr.PrUtils;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Xun
@@ -17,15 +13,6 @@ import java.util.Map;
  */
 public class PrTest {
 
-    @Test
-    public void prTest() {
-        PrData user = PrData.server(378514, 6, 4);
-        PrData server = PrData.server(257377.05176087, 3.569681586001, 2.528365056522);
-        int pr = PrUtils.pr(user, server);
-        System.out.println(pr);
-        //v2
-
-    }
 
     @Test
     public void prTestV2() {

@@ -1,11 +1,11 @@
-package com.shinoaki.wows.api.data;
+package com.shinoaki.wows.api.error;
 
 /**
  * @author Xun
  * create or update time = 2023/8/13 18:13 星期日
  */
 public enum HttpThrowableStatus {
-    SUCCESS,
+
     /**
      * 网络层次异常
      */
@@ -23,8 +23,11 @@ public enum HttpThrowableStatus {
      */
     DATA_PARSE,
     /**
-     * 未知异常
+     * 线程中断异常
      */
-    ERROR,
-    NULL
+    THREAD,
+    /**
+     * 检索异常
+     */
+    EXECUTION
 }

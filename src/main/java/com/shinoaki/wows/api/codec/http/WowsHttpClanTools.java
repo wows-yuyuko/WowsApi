@@ -1,20 +1,18 @@
 package com.shinoaki.wows.api.codec.http;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
-import com.shinoaki.wows.api.data.CompletableInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
-import com.shinoaki.wows.api.error.HttpStatusException;
-import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.clan.VortexSearchClan;
 import com.shinoaki.wows.api.vortex.clan.account.VortexSearchClanUser;
 import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -29,20 +27,20 @@ import java.util.concurrent.CompletableFuture;
 public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
 
     public Developers developers(String token) {
-        return new Developers(new JsonUtils(), httpClient, server, token);
+        return new Developers(new WowsJsonUtils(), httpClient, server, token);
     }
 
     public Vortex vortex() {
-        return new Vortex(new JsonUtils(), httpClient, server);
+        return new Vortex(new WowsJsonUtils(), httpClient, server);
     }
 
-    public record Developers(JsonUtils utils, HttpClient httpClient, WowsServer server, String token) {
+    public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, String token) {
 
         public CompletableFuture<CompletableInfo<DevelopersSearchUserClan>> userSearchClanDevelopers(long accountId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(userSearchClanDevelopersUri(accountId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersSearchUserClan.parse(utils, accountId, HttpCodec.response(data)));
-                } catch (StatusException | IOException | HttpStatusException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -52,7 +50,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanInfoDevelopersUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersClanInfo.parse(utils, clanId, HttpCodec.response(data)));
-                } catch (StatusException | IOException | HttpStatusException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -62,7 +60,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(searchClanDevelopersUri(clanTag))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersSearchClan.parse(utils, HttpCodec.response(data)));
-                } catch (StatusException | IOException | HttpStatusException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -81,17 +79,12 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
     }
 
-    public record Vortex(JsonUtils utils, HttpClient httpClient, WowsServer server) {
+    public record Vortex(WowsJsonUtils utils, HttpClient httpClient, WowsServer server) {
 
         /**
          * 搜索用户公会信息
          *
-         * @param accountId
-         * @return
-         * @throws HttpStatusException
-         * @throws IOException
-         * @throws InterruptedException
-         * @throws StatusException
+         * @param accountId aid
          */
         public CompletableFuture<CompletableInfo<VortexSearchClanUser>> userSearchClanVortex(long accountId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId))).thenApplyAsync(data -> {
@@ -104,7 +97,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                         return CompletableInfo.ok(new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0));
                     }
                     return CompletableInfo.ok(VortexSearchClanUser.to(utils.parse(HttpCodec.response(data))));
-                } catch (StatusException | HttpStatusException | IOException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -115,15 +108,12 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          *
          * @param clanTag 公会tag
          * @return
-         * @throws HttpStatusException
-         * @throws IOException
-         * @throws InterruptedException
          */
         public CompletableFuture<CompletableInfo<List<VortexSearchClan>>> searchClanVortex(String clanTag) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(searchClanVortexUri(clanTag))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexSearchClan.parse(utils, HttpCodec.response(data)));
-                } catch (HttpStatusException | IOException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -133,7 +123,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanInfoVortexUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanInfo.to(server, clanId, utils.parse(HttpCodec.response(data))));
-                } catch (HttpStatusException | IOException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });
@@ -143,7 +133,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
-                } catch (HttpStatusException | IOException e) {
+                } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
             });

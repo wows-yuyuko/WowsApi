@@ -1,6 +1,7 @@
 package com.shinoaki.wows.api.codec;
 
-import com.shinoaki.wows.api.error.HttpStatusException;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,8 +38,6 @@ public class HttpCodec {
     }
 
 
-
-
     public static String fromDataAsString(Map<String, String> fromData) {
         StringBuilder builder = new StringBuilder();
         Charset charset = StandardCharsets.UTF_8;
@@ -72,14 +71,18 @@ public class HttpCodec {
     }
 
 
-    public static String response(HttpResponse<byte[]> response) throws IOException, HttpStatusException {
-        if (response.statusCode() == 200) {
-            if (response.headers().firstValue(HttpCodec.CONTENT_ENCODING).isPresent()) {
-                return new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
+    public static String response(HttpResponse<byte[]> response) throws BasicException {
+        try {
+            if (response.statusCode() == 200) {
+                if (response.headers().firstValue(HttpCodec.CONTENT_ENCODING).isPresent()) {
+                    return new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
+                }
+                return new String(response.body(), StandardCharsets.UTF_8);
             }
-            return new String(response.body(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
         }
-        throw new HttpStatusException(response.statusCode());
+        throw new BasicException(HttpThrowableStatus.HTTP_STATUS, "http状态码异常 code=" + response.statusCode());
     }
 
     public static byte[] unGzip(byte[] bytes) throws IOException {

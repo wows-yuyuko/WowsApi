@@ -1,13 +1,9 @@
 package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
-import com.shinoaki.wows.api.error.HttpStatusException;
-import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.JsonUtils;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.concurrent.ExecutionException;
 

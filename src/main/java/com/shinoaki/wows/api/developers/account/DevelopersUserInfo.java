@@ -1,9 +1,8 @@
 package com.shinoaki.wows.api.developers.account;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.error.StatusException;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 /**
  * @param account_id     账号id -1表示没有这个用户
@@ -21,9 +20,9 @@ public record DevelopersUserInfo(
 
 ) {
 
-    public static DevelopersUserInfo parse(JsonUtils utils, long accountId, String json) throws StatusException, JsonProcessingException {
+    public static DevelopersUserInfo parse(WowsJsonUtils utils, long accountId, String json) throws BasicException {
         JsonNode node = utils.parse(json);
-        StatusException.status(node);
+        BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
             return new DevelopersUserInfo(-1, "", false, 0);

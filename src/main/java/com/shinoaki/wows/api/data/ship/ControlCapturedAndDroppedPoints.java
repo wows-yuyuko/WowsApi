@@ -15,6 +15,11 @@ import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
  */
 public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, long controlCapturedPoints, long teamControlDroppedPoints,
                                               long controlDroppedPoints, long droppedCapturePoints, long capturePoints) {
+
+    public static ControlCapturedAndDroppedPoints empty() {
+        return new ControlCapturedAndDroppedPoints(0, 0, 0, 0, 0, 0);
+    }
+
     public static ControlCapturedAndDroppedPoints to(VortexShipInfo info) {
         return new ControlCapturedAndDroppedPoints(info.team_control_captured_points(),
                 info.control_captured_points(),

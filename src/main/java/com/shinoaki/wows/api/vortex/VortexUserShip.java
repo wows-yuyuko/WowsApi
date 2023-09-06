@@ -1,10 +1,9 @@
 package com.shinoaki.wows.api.vortex;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.data.CompletableInfo;
 import com.shinoaki.wows.api.data.ShipInfo;
-import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
@@ -34,19 +33,19 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
     public static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, JsonNode node) {
         //判断status
         try {
-            StatusException.status(node);
+            BasicException.status(node);
             Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
             if (iterator.hasNext()) {
                 Map.Entry<String, JsonNode> map = iterator.next();
                 return parse(type, Long.parseLong(map.getKey()), map.getValue());
             }
-        } catch (StatusException | JsonProcessingException e) {
+        } catch (BasicException e) {
             return CompletableInfo.error(e);
         }
-        return CompletableInfo.NULL();
+        return CompletableInfo.ok(null);
     }
 
-    private static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, long accountId, JsonNode node) throws JsonProcessingException {
+    private static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
         String name = node.get("name").asText();
         JsonNode hiddenProfile = node.get("hidden_profile");
         if (hiddenProfile != null && hiddenProfile.asBoolean()) {

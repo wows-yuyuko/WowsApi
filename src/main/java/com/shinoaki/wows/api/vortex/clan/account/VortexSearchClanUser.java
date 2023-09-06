@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.clan.account;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.error.StatusException;
+import com.shinoaki.wows.api.error.BasicException;
 
 /**
  * https://vortex.worldofwarships.asia/api/accounts/2022515210/clans/
@@ -11,8 +11,8 @@ import com.shinoaki.wows.api.error.StatusException;
  */
 public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, String joined_at, long clan_id) {
 
-    public static VortexSearchClanUser to(JsonNode node) throws StatusException {
-        StatusException.status(node);
+    public static VortexSearchClanUser to(JsonNode node) throws BasicException {
+        BasicException.status(node);
         JsonNode data = node.get("data");
         JsonNode clanId = data.get("clan_id");
         return new VortexSearchClanUser(data.get("role").asText(),

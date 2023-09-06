@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Xun
@@ -75,78 +74,5 @@ public class VortexClanUserInfo {
             return list;
         }
         return List.of();
-    }
-
-    @Override
-    public String toString() {
-        return "ClanUserInfo{" + "accountId=" + accountId + ", nickName='" + nickName + '\'' + ", wowsServer=" + wowsServer + ", lastBattleTime=" + lastBattleTime + ", roleName='" + roleName + '\'' + ", roleCode=" + roleCode + ", daysInClan=" + daysInClan + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof VortexClanUserInfo that)) return false;
-        return getAccountId() == that.getAccountId() && getLastBattleTime() == that.getLastBattleTime() && getRoleCode() == that.getRoleCode() && getDaysInClan() == that.getDaysInClan() && Objects.equals(getNickName(), that.getNickName()) && getWowsServer() == that.getWowsServer() && Objects.equals(getRoleName(), that.getRoleName());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getAccountId(), getNickName(), getWowsServer(), getLastBattleTime(), getRoleName(), getRoleCode(), getDaysInClan());
-    }
-
-    public long getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(long accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
-    }
-
-    public WowsServer getWowsServer() {
-        return wowsServer;
-    }
-
-    public void setWowsServer(WowsServer wowsServer) {
-        this.wowsServer = wowsServer;
-    }
-
-    public long getLastBattleTime() {
-        return lastBattleTime;
-    }
-
-    public void setLastBattleTime(long lastBattleTime) {
-        this.lastBattleTime = lastBattleTime;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public int getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(int roleCode) {
-        this.roleCode = roleCode;
-    }
-
-    public int getDaysInClan() {
-        return daysInClan;
-    }
-
-    public void setDaysInClan(int daysInClan) {
-        this.daysInClan = daysInClan;
     }
 }

@@ -1,8 +1,8 @@
 package com.shinoaki.wows.api.vortex.ship;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 /**
  * 用户战绩信息
@@ -89,11 +89,11 @@ public record VortexShipInfo(long max_frags_by_main, long battles_count_512, lon
                              long win_and_survived, long damage_dealt, long battles_count_078, long frags_by_main, long team_control_dropped_points, long max_frags,
                              long exp, long max_exp, long battles_count_0910, long hits_by_tbomb, long shots_by_atba) {
 
-    public static VortexShipInfo parse(JsonNode node) throws JsonProcessingException {
+    public static VortexShipInfo parse(JsonNode node) throws BasicException {
         if (node.isEmpty()) {
             return VortexShipInfo.defaultValue();
         }
-        return new JsonUtils().parse(node, VortexShipInfo.class);
+        return new WowsJsonUtils().parse(node, VortexShipInfo.class);
     }
 
     public static VortexShipInfo defaultValue() {
