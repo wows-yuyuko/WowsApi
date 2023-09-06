@@ -30,6 +30,16 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                       MaxShipInfo maxDamageDealtToBuildings, MaxShipInfo maxFragsByPlanes, MaxShipInfo maxDamageDealt, MaxShipInfo maxScoutingDamage,
                       MaxShipInfo maxPlanesKilled,
                       MaxShipInfo maxShipsSpotted, MaxShipInfo maxTotalAgro, MaxShipInfo maxSuppressionsCount, MaxShipInfo maxXp, MaxShipInfo maxBasicXp) {
+
+    public static MaxInfo empty() {
+        return new MaxInfo(
+                MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(),
+                MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(),
+                MaxShipInfo.empty(),
+                MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty()
+        );
+    }
+
     public static MaxInfo to(long shipId, VortexShipInfo info) {
         return new MaxInfo(new MaxShipInfo(shipId, (int) info.max_frags()),
                 new MaxShipInfo(shipId, (int) info.max_frags_by_main()),
@@ -100,6 +110,10 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                 return info;
             }
             return this;
+        }
+
+        public static MaxShipInfo empty() {
+            return new MaxShipInfo(0, 0);
         }
     }
 }

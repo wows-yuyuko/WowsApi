@@ -1,13 +1,9 @@
 package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
-import com.shinoaki.wows.api.error.HttpStatusException;
-import com.shinoaki.wows.api.error.StatusException;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.JsonUtils;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.concurrent.ExecutionException;
 
@@ -57,7 +53,7 @@ public class ClanTest {
 
     @Test
     public void clanMembersVortex() throws InterruptedException, ExecutionException {
-        clanInfoMembersVortex(WowsServer.ASIA, 2000022706L);
+        clanInfoMembersVortex(WowsServer.ASIA, 2000025691L);
     }
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {

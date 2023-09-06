@@ -1,9 +1,8 @@
 package com.shinoaki.wows.api.developers.clan;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.error.StatusException;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 /**
  * @author Xun
@@ -11,9 +10,9 @@ import com.shinoaki.wows.api.utils.JsonUtils;
  */
 public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_at, long clan_id, String role, String account_name) {
 
-    public static DevelopersSearchUserClan parse(JsonUtils utils, long accountId, String response) throws JsonProcessingException, StatusException {
+    public static DevelopersSearchUserClan parse(WowsJsonUtils utils, long accountId, String response) throws BasicException {
         JsonNode node = utils.parse(response);
-        StatusException.status(node);
+        BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data.isNull()) {
             return new DevelopersSearchUserClan(Clan.empty(), accountId, 0L, 0L, "", "");

@@ -1,10 +1,9 @@
 package com.shinoaki.wows.api.developers.clan;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.error.StatusException;
-import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -34,9 +33,9 @@ public record DevelopersClanInfo(int members_count,
                                  String leader_id,
                                  String description) {
 
-    public static DevelopersClanInfo parse(JsonUtils utils, long clanId, String response) throws JsonProcessingException, StatusException {
+    public static DevelopersClanInfo parse(WowsJsonUtils utils, long clanId, String response) throws BasicException {
         JsonNode node = utils.parse(response);
-        StatusException.status(node);
+        BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(clanId));
         return new DevelopersClanInfo(
                 data.get("members_count").asInt(),

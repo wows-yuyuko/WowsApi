@@ -3,15 +3,10 @@ package com.shinoaki.wows;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
-import com.shinoaki.wows.api.error.HttpStatusException;
-import com.shinoaki.wows.api.error.StatusException;
-import com.shinoaki.wows.api.pr.PrData;
-import com.shinoaki.wows.api.pr.PrUtils;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
@@ -38,17 +33,4 @@ public class DevelopersTest {
         System.out.println(shipInfoMap);
     }
 
-    @Test
-    public void shipTestPr() throws InterruptedException, ExecutionException {
-        //检查山雾的  期望值:1631
-        long s = 4178458320L;
-        PrData serverPR = PrData.server(51931.05774853801, 0.7302046783625733, 48.481991959064615);
-        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-        DevelopersUserShip developers = tools.developers(token).shipList().get().data();
-        Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
-        List<ShipInfo> infoList = shipInfoMap.get(WowsBattlesType.PVP);
-        ShipInfo shipInfo = infoList.stream().filter(x -> x.shipId() == s).findFirst().get();
-        PrData user = serverPR.userOneShip(shipInfo);
-        System.out.println(PrUtils.pr(user, serverPR));
-    }
 }

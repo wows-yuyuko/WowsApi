@@ -8,6 +8,10 @@ package com.shinoaki.wows.api.data.ship;
  */
 public record HitRatio(long shots, long hits) {
 
+    public static HitRatio empty(){
+        return new HitRatio(0,0);
+    }
+
     /**
      * 命中率
      *

@@ -1,8 +1,12 @@
 package com.shinoaki.wows.api.vortex.clan.base.info;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Data;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 公会建筑信息
@@ -10,6 +14,7 @@ import java.util.*;
  * @author Xun
  * @date 2022/07/06 星期三 10:00
  */
+@Data
 public class VortexClanBuildingsInfo {
 
     /**
@@ -46,68 +51,5 @@ public class VortexClanBuildingsInfo {
             infoList.add(info);
         });
         return infoList;
-    }
-
-    @Override
-    public String toString() {
-        return "VortexClanBuildingsInfo{" +
-                "clanId=" + clanId +
-                ", buildingsId=" + buildingsId +
-                ", buildingsModifiers='" + buildingsModifiers + '\'' +
-                ", buildingsName='" + buildingsName + '\'' +
-                ", buildingsLevel=" + buildingsLevel +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof VortexClanBuildingsInfo that)) return false;
-        return Objects.equals(getClanId(), that.getClanId()) && Objects.equals(getBuildingsId(), that.getBuildingsId()) && Objects.equals(getBuildingsModifiers(), that.getBuildingsModifiers()) && Objects.equals(getBuildingsName(), that.getBuildingsName()) && Objects.equals(getBuildingsLevel(), that.getBuildingsLevel());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getClanId(), getBuildingsId(), getBuildingsModifiers(), getBuildingsName(), getBuildingsLevel());
-    }
-
-    public Long getClanId() {
-        return clanId;
-    }
-
-    public void setClanId(Long clanId) {
-        this.clanId = clanId;
-    }
-
-    public Integer getBuildingsId() {
-        return buildingsId;
-    }
-
-    public void setBuildingsId(Integer buildingsId) {
-        this.buildingsId = buildingsId;
-    }
-
-    public String getBuildingsModifiers() {
-        return buildingsModifiers;
-    }
-
-    public void setBuildingsModifiers(String buildingsModifiers) {
-        this.buildingsModifiers = buildingsModifiers;
-    }
-
-    public String getBuildingsName() {
-        return buildingsName;
-    }
-
-    public void setBuildingsName(String buildingsName) {
-        this.buildingsName = buildingsName;
-    }
-
-    public Integer getBuildingsLevel() {
-        return buildingsLevel;
-    }
-
-    public void setBuildingsLevel(Integer buildingsLevel) {
-        this.buildingsLevel = buildingsLevel;
     }
 }

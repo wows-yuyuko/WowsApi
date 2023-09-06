@@ -1,10 +1,10 @@
 package com.shinoaki.wows.api.developers.warships;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattleType> shipBattleTypeMap, long last_battle_time, long account_id, int distance,
                                        long updated_at, int battles, long ship_id) {
-    public static List<DevelopersShipBattleInfo> parse(JsonNode node) throws JsonProcessingException {
+    public static List<DevelopersShipBattleInfo> parse(JsonNode node) throws BasicException {
         List<DevelopersShipBattleInfo> list = new ArrayList<>();
         for (var data : node) {
             Map<WowsBattlesType, DevelopersShipBattleType> shipBattleTypeMap = new EnumMap<>(WowsBattlesType.class);
