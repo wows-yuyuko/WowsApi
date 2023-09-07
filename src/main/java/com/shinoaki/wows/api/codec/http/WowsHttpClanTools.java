@@ -139,6 +139,16 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
+        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId, String type) {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId, type))).thenApplyAsync(data -> {
+                try {
+                    return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
+                } catch (BasicException e) {
+                    return CompletableInfo.error(e);
+                }
+            });
+        }
+
         public URI userSearchClanVortexUri(long accountId) {
             return URI.create(server.vortex() + String.format("/api/accounts/%s/clans/", accountId));
         }
@@ -148,7 +158,11 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
 
         public URI clanUserListInfoVortexUri(long clanId) {
-            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=pvp", clanId));
+            return clanUserListInfoVortexUri(clanId, "pvp");
+        }
+
+        public URI clanUserListInfoVortexUri(long clanId, String type) {
+            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=%s", clanId, type));
         }
 
         public URI searchClanVortexUri(String clanTag) {
