@@ -14,6 +14,14 @@ import java.util.concurrent.ExecutionException;
 public class ClanTest {
     public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
     HttpClient client = HttpClient.newBuilder().build();
+    WowsServer WS = WowsServer.ASIA;
+    WowsHttpClanTools WT = new WowsHttpClanTools(client, WS);
+
+    @Test
+    public void season() throws ExecutionException, InterruptedException {
+        var data = WT.developers(token).season();
+        System.out.println(data.get());
+    }
 
     @Test
     public void searchDev() throws InterruptedException, ExecutionException {

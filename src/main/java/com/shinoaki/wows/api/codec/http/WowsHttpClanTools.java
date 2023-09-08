@@ -4,6 +4,7 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
+import com.shinoaki.wows.api.developers.clan.seasion.DevelopersSeasonInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsServer;
@@ -64,6 +65,20 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.error(e);
                 }
             });
+        }
+
+        public CompletableFuture<CompletableInfo<List<DevelopersSeasonInfo>>> season() {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(seasonUri())).thenApplyAsync(data -> {
+                try {
+                    return CompletableInfo.ok(DevelopersSeasonInfo.parse(utils, HttpCodec.response(data)));
+                } catch (BasicException e) {
+                    return CompletableInfo.error(e);
+                }
+            });
+        }
+
+        public URI seasonUri() {
+            return URI.create(server.api() + "/wows/clans/season/?language=zh-cn&application_id=" + token);
         }
 
         public URI userSearchClanDevelopersUri(long accountId) {
