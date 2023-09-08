@@ -139,8 +139,14 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId, String type) {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId, type))).thenApplyAsync(data -> {
+        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId, String type, Integer season) {
+            URI uri;
+            if (type.equalsIgnoreCase("cvc")) {
+                uri = clanUserListInfoVortexUriCvc(clanId, season);
+            } else {
+                uri = clanUserListInfoVortexUri(clanId, type);
+            }
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(uri)).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
@@ -163,6 +169,13 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
 
         public URI clanUserListInfoVortexUri(long clanId, String type) {
             return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=%s", clanId, type));
+        }
+
+        public URI clanUserListInfoVortexUriCvc(long clanId, Integer season) {
+            if (season != null) {
+                return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=cvc&season=%s", clanId, season));
+            }
+            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=cvc", clanId));
         }
 
         public URI searchClanVortexUri(String clanTag) {
