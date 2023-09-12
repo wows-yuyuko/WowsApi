@@ -12,6 +12,7 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.clan.VortexSearchClan;
 import com.shinoaki.wows.api.vortex.clan.account.VortexSearchClanUser;
 import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
+import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 
 import java.net.URI;
@@ -144,7 +145,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId) {
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
@@ -154,7 +155,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId, String type, Integer season) {
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId, String type, Integer season) {
             URI uri;
             if (type.equalsIgnoreCase("cvc")) {
                 uri = clanUserListInfoVortexUriCvc(clanId, season);

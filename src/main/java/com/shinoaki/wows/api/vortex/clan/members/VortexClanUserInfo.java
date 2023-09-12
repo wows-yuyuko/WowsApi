@@ -37,7 +37,7 @@ public class VortexClanUserInfo {
     private Boolean isBanned;
     private String profileLink;
 
-    public static List<VortexClanUserInfo> to(WowsServer server, JsonNode body) {
+    public static VortexClanStatisticsInfo to(WowsServer server, JsonNode body) {
         if (body.get("status").asText("error").contentEquals("ok")) {
             List<VortexClanUserInfo> list = new ArrayList<>();
             JsonNode items = body.get("items");
@@ -71,8 +71,13 @@ public class VortexClanUserInfo {
                 }
                 list.add(info);
             }
-            return list;
+            var statistics = body.get("clan_statistics");
+            return new VortexClanStatisticsInfo(statistics.get("battles_count").asDouble(),
+                    statistics.get("wins_percentage").asDouble(),
+                    statistics.get("exp_per_battle").asDouble(),
+                    statistics.get("damage_per_battle").asDouble(),
+                    list);
         }
-        return List.of();
+        return VortexClanStatisticsInfo.empty();
     }
 }
