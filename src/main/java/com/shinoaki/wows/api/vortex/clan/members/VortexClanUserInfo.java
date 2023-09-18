@@ -72,11 +72,13 @@ public class VortexClanUserInfo {
                 list.add(info);
             }
             var statistics = body.get("clan_statistics");
-            return new VortexClanStatisticsInfo(statistics.get("battles_count").asDouble(),
-                    statistics.get("wins_percentage").asDouble(),
-                    statistics.get("exp_per_battle").asDouble(),
-                    statistics.get("damage_per_battle").asDouble(),
-                    list);
+            if (!statistics.isEmpty()) {
+                return new VortexClanStatisticsInfo(statistics.get("battles_count").asDouble(),
+                        statistics.get("wins_percentage").asDouble(),
+                        statistics.get("exp_per_battle").asDouble(),
+                        statistics.get("damage_per_battle").asDouble(),
+                        list);
+            }
         }
         return VortexClanStatisticsInfo.empty();
     }
