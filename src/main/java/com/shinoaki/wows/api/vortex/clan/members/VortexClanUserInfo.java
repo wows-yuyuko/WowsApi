@@ -64,10 +64,10 @@ public class VortexClanUserInfo {
                     info.setOnlineStatus(js.get("online_status").asBoolean());
                     info.setBattlesCount(js.get("battles_count").asInt());
                     info.setIsPress(js.get("is_press").asBoolean());
-                    info.setSeasonId(js.get("season_id").asInt());
+                    info.setSeasonId(Optional.ofNullable(js.get("season_id")).map(JsonNode::asInt).orElse(0));
                     info.setWinsPercentage(js.get("wins_percentage").asInt());
                     info.setAbnormalResults(js.get("abnormal_results").asBoolean());
-                    info.setFragsPerBattle(js.get("frags_per_battle").asInt());
+                    info.setFragsPerBattle(Optional.ofNullable(js.get("frags_per_battle")).map(JsonNode::asInt).orElse(0));
                     info.setIsBanned(js.get("is_banned").asBoolean());
                 }
                 list.add(info);
