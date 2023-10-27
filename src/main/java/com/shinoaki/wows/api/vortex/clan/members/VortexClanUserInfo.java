@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Xun
@@ -55,10 +56,10 @@ public class VortexClanUserInfo {
                 //隐藏战绩以下为null
                 if (!info.getIsHiddenStatistics()) {
                     info.setLastBattleTime(js.get("last_battle_time").asInt());
-                    info.setIsBonusActivated(js.get("is_bonus_activated").asBoolean());
+                    info.setIsBonusActivated(Optional.ofNullable(js.get("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE));
                     info.setBattlesPerDay(js.get("battles_per_day").asInt());
                     info.setDamagePerBattle(js.get("damage_per_battle").asInt());
-                    info.setRank(js.get("rank").asInt());
+                    info.setRank(Optional.ofNullable(js.get("rank")).map(JsonNode::asInt).orElse(0));
                     info.setExpPerBattle(js.get("exp_per_battle").asInt());
                     info.setOnlineStatus(js.get("online_status").asBoolean());
                     info.setBattlesCount(js.get("battles_count").asInt());
