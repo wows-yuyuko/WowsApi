@@ -3,6 +3,8 @@ package com.shinoaki.wows.api.data.ship;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
+import java.io.Serializable;
+
 /**
  * @param teamControlCapturedPoints 团队控制占领点(机翻) 团队防御点
  * @param controlCapturedPoints     控制捕获点(机翻)   基地占领点
@@ -14,7 +16,7 @@ import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
  * @date 2023/4/9 15:27 星期日
  */
 public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, long controlCapturedPoints, long teamControlDroppedPoints,
-                                              long controlDroppedPoints, long droppedCapturePoints, long capturePoints) {
+                                              long controlDroppedPoints, long droppedCapturePoints, long capturePoints)  implements Serializable {
 
     public static ControlCapturedAndDroppedPoints empty() {
         return new ControlCapturedAndDroppedPoints(0, 0, 0, 0, 0, 0);

@@ -1,12 +1,14 @@
 package com.shinoaki.wows.api.data.ship;
 
+import java.io.Serializable;
+
 /**
  * @param shots 发射数量
  * @param hits  命中数量
  * @author Xun
  * @date 2023/4/8 16:21 星期六
  */
-public record HitRatio(long shots, long hits) {
+public record HitRatio(long shots, long hits)  implements Serializable {
 
     public static HitRatio empty(){
         return new HitRatio(0,0);

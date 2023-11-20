@@ -1,5 +1,6 @@
 package com.shinoaki.wows.api.type;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Locale;
  * @author Xun
  * @date 2023/3/18 11:26 星期六
  */
-public enum WowsBattlesType {
+public enum WowsBattlesType implements Serializable {
     /**
      * PVP对局
      */
