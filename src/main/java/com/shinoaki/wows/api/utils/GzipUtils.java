@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -33,6 +34,18 @@ public class GzipUtils {
             e.printStackTrace();
         }
         return out.toByteArray();
+    }
+
+    public static byte[] compress(byte[] data) throws IOException {
+        if (data == null || data.length == 0) {
+            return new byte[0];
+        }
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (GZIPOutputStream gzip = new GZIPOutputStream(out)) {
+                gzip.write(data);
+            }
+            return out.toByteArray();
+        }
     }
 
     public static byte[] uncompress(byte[] bytes) {

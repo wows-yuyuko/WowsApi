@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Xun
@@ -37,7 +38,7 @@ public class VortexClanUserInfo {
     private Boolean isBanned;
     private String profileLink;
 
-    public static List<VortexClanUserInfo> to(WowsServer server, JsonNode body) {
+    public static VortexClanStatisticsInfo to(WowsServer server, JsonNode body) {
         if (body.get("status").asText("error").contentEquals("ok")) {
             List<VortexClanUserInfo> list = new ArrayList<>();
             JsonNode items = body.get("items");
@@ -55,24 +56,31 @@ public class VortexClanUserInfo {
                 //隐藏战绩以下为null
                 if (!info.getIsHiddenStatistics()) {
                     info.setLastBattleTime(js.get("last_battle_time").asInt());
-                    info.setIsBonusActivated(js.get("is_bonus_activated").asBoolean());
+                    info.setIsBonusActivated(Optional.ofNullable(js.get("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE));
                     info.setBattlesPerDay(js.get("battles_per_day").asInt());
                     info.setDamagePerBattle(js.get("damage_per_battle").asInt());
-                    info.setRank(js.get("rank").asInt());
+                    info.setRank(Optional.ofNullable(js.get("rank")).map(JsonNode::asInt).orElse(0));
                     info.setExpPerBattle(js.get("exp_per_battle").asInt());
                     info.setOnlineStatus(js.get("online_status").asBoolean());
                     info.setBattlesCount(js.get("battles_count").asInt());
                     info.setIsPress(js.get("is_press").asBoolean());
-                    info.setSeasonId(js.get("season_id").asInt());
+                    info.setSeasonId(Optional.ofNullable(js.get("season_id")).map(JsonNode::asInt).orElse(0));
                     info.setWinsPercentage(js.get("wins_percentage").asInt());
                     info.setAbnormalResults(js.get("abnormal_results").asBoolean());
-                    info.setFragsPerBattle(js.get("frags_per_battle").asInt());
+                    info.setFragsPerBattle(Optional.ofNullable(js.get("frags_per_battle")).map(JsonNode::asInt).orElse(0));
                     info.setIsBanned(js.get("is_banned").asBoolean());
                 }
                 list.add(info);
             }
-            return list;
+            var statistics = body.get("clan_statistics");
+            if (!statistics.isEmpty()) {
+                return new VortexClanStatisticsInfo(statistics.get("battles_count").asDouble(),
+                        statistics.get("wins_percentage").asDouble(),
+                        statistics.get("exp_per_battle").asDouble(),
+                        statistics.get("damage_per_battle").asDouble(),
+                        list);
+            }
         }
-        return List.of();
+        return VortexClanStatisticsInfo.empty();
     }
 }

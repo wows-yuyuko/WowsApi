@@ -1,10 +1,14 @@
 package com.shinoaki.wows;
 
+import com.shinoaki.wows.api.codec.ClanRankUtils;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
 import com.shinoaki.wows.api.type.WowsServer;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.vortex.clan.rank.ClanRankInfo;
 import org.junit.Test;
 
 import java.net.http.HttpClient;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -14,6 +18,14 @@ import java.util.concurrent.ExecutionException;
 public class ClanTest {
     public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
     HttpClient client = HttpClient.newBuilder().build();
+    WowsServer WS = WowsServer.ASIA;
+    WowsHttpClanTools WT = new WowsHttpClanTools(client, WS);
+
+    @Test
+    public void season() throws ExecutionException, InterruptedException {
+        var data = WT.developers(token).season();
+        System.out.println(data.get());
+    }
 
     @Test
     public void searchDev() throws InterruptedException, ExecutionException {
@@ -54,6 +66,13 @@ public class ClanTest {
     @Test
     public void clanMembersVortex() throws InterruptedException, ExecutionException {
         clanInfoMembersVortex(WowsServer.ASIA, 2000025691L);
+    }
+
+    @Test
+    public void clanRankTest(){
+        ClanRankUtils utils = new ClanRankUtils(new JsonUtils());
+//        List<ClanRankInfo> ranks = utils.getRanks(WowsServer.RU, 22);
+        System.out.println();
     }
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {

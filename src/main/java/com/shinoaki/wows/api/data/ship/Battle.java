@@ -3,6 +3,8 @@ package com.shinoaki.wows.api.data.ship;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
+import java.io.Serializable;
+
 /**
  * @param battle         战斗场次
  * @param wins           胜利场次
@@ -18,7 +20,7 @@ public record Battle(
         int losses,
         int survived,
         int winAndSurvived
-) {
+)  implements Serializable {
     public static Battle to(VortexShipInfo info) {
         return new Battle((int) info.battles_count(),
                 (int) info.wins(),

@@ -3,6 +3,8 @@ package com.shinoaki.wows.api.data.ship;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
+import java.io.Serializable;
+
 /**
  * @param frags         总击杀
  * @param fragsByMain   主武器击杀
@@ -23,7 +25,7 @@ public record FragsInfo(
         int fragsByRam,
         int fragsByDbomb
 
-) {
+)  implements Serializable {
     public static FragsInfo to(VortexShipInfo info) {
         return new FragsInfo((int) info.frags(),
                 (int) info.frags_by_main(),

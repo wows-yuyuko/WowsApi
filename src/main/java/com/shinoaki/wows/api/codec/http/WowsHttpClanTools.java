@@ -4,6 +4,7 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
+import com.shinoaki.wows.api.developers.clan.seasion.DevelopersSeasonInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsServer;
@@ -11,6 +12,7 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.clan.VortexSearchClan;
 import com.shinoaki.wows.api.vortex.clan.account.VortexSearchClanUser;
 import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
+import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 
 import java.net.URI;
@@ -64,6 +66,20 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.error(e);
                 }
             });
+        }
+
+        public CompletableFuture<CompletableInfo<List<DevelopersSeasonInfo>>> season() {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(seasonUri())).thenApplyAsync(data -> {
+                try {
+                    return CompletableInfo.ok(DevelopersSeasonInfo.parse(utils, HttpCodec.response(data)));
+                } catch (BasicException e) {
+                    return CompletableInfo.error(e);
+                }
+            });
+        }
+
+        public URI seasonUri() {
+            return URI.create(server.api() + "/wows/clans/season/?language=zh-cn&application_id=" + token);
         }
 
         public URI userSearchClanDevelopersUri(long accountId) {
@@ -129,8 +145,24 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<VortexClanUserInfo>>> clanUserListInfoVortex(long clanId) {
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId))).thenApplyAsync(data -> {
+                try {
+                    return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
+                } catch (BasicException e) {
+                    return CompletableInfo.error(e);
+                }
+            });
+        }
+
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId, String type, Integer season) {
+            URI uri;
+            if (type.equalsIgnoreCase("cvc")) {
+                uri = clanUserListInfoVortexUriCvc(clanId, season);
+            } else {
+                uri = clanUserListInfoVortexUri(clanId, type);
+            }
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(uri)).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
@@ -148,7 +180,18 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
 
         public URI clanUserListInfoVortexUri(long clanId) {
-            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=pvp", clanId));
+            return clanUserListInfoVortexUri(clanId, "pvp");
+        }
+
+        public URI clanUserListInfoVortexUri(long clanId, String type) {
+            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=%s", clanId, type));
+        }
+
+        public URI clanUserListInfoVortexUriCvc(long clanId, Integer season) {
+            if (season != null) {
+                return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=cvc&season=%s", clanId, season));
+            }
+            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=cvc", clanId));
         }
 
         public URI searchClanVortexUri(String clanTag) {

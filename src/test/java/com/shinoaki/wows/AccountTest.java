@@ -38,4 +38,15 @@ public class AccountTest {
         System.out.println("=============================");
         System.out.println(vortex2);
     }
+
+    @Test
+    public void userInfo() throws InterruptedException, ExecutionException {
+        HttpClient client = HttpClient.newBuilder().build();
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
+        var data = asia.userVortex(7048262455L).get().data();
+        var data1 = asia.userVortex(7048387609L).get().data();
+        System.out.println(data);
+        System.out.println("===========");
+        System.out.println(data1);
+    }
 }

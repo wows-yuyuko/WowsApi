@@ -9,6 +9,7 @@ import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
+import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -48,6 +49,17 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
+    public CompletableFuture<CompletableInfo<VortexUserInfo>> userVortex(long accountId) {
+        final WowsJsonUtils json = new WowsJsonUtils();
+        return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriVortex(accountId))).thenApplyAsync(data -> {
+            try {
+                return CompletableInfo.ok(VortexUserInfo.parse(json.parse(HttpCodec.response(data)), accountId));
+            } catch (BasicException e) {
+                return CompletableInfo.error(e);
+            }
+        });
+    }
+
     public CompletableFuture<CompletableInfo<List<DevelopersSearchUser>>> searchUserDevelopers(String token, String userName) {
         final WowsJsonUtils json = new WowsJsonUtils();
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloper(token, userName))).thenApplyAsync(data -> {
@@ -72,6 +84,10 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     private URI uriVortex(String userName) {
         return URI.create(server.vortex() + String.format("/api/accounts/search/autocomplete/%s/", HttpCodec.encodeURIComponent(userName)));
+    }
+
+    private URI uriVortex(long accountId) {
+        return URI.create(server.vortex() + String.format("/api/accounts/%s/", accountId));
     }
 
     private URI uriDeveloper(String token, String userName) {

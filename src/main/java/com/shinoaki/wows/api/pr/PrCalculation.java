@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @ToString
 @EqualsAndHashCode
 public class PrCalculation {
-    private long shipId;
+    private final long shipId;
     private double damage;
     private double frags;
     private double wins;

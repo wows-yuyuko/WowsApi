@@ -3,6 +3,8 @@ package com.shinoaki.wows.api.data.ship;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 
+import java.io.Serializable;
+
 /**
  * 最高记录
  *
@@ -29,7 +31,7 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                       MaxShipInfo maxFragsByAtba,
                       MaxShipInfo maxDamageDealtToBuildings, MaxShipInfo maxFragsByPlanes, MaxShipInfo maxDamageDealt, MaxShipInfo maxScoutingDamage,
                       MaxShipInfo maxPlanesKilled,
-                      MaxShipInfo maxShipsSpotted, MaxShipInfo maxTotalAgro, MaxShipInfo maxSuppressionsCount, MaxShipInfo maxXp, MaxShipInfo maxBasicXp) {
+                      MaxShipInfo maxShipsSpotted, MaxShipInfo maxTotalAgro, MaxShipInfo maxSuppressionsCount, MaxShipInfo maxXp, MaxShipInfo maxBasicXp) implements Serializable {
 
     public static MaxInfo empty() {
         return new MaxInfo(
@@ -104,7 +106,7 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
         );
     }
 
-    public record MaxShipInfo(long shipId, int value) {
+    public record MaxShipInfo(long shipId, int value)  implements Serializable {
         public MaxShipInfo max(MaxShipInfo info) {
             if (info.value > value) {
                 return info;
