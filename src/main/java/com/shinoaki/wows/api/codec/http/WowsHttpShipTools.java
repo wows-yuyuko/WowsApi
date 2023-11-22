@@ -89,7 +89,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
     public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipList() {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(""))).thenApplyAsync(data -> {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri())).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersUserShip.parse(utils.parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
@@ -106,6 +106,10 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                     return CompletableInfo.error(e);
                 }
             });
+        }
+
+        public URI shipListUri() {
+            return shipListUri("");
         }
 
         public URI shipListUri(String accessToken) {
