@@ -89,7 +89,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
     public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipList() {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri())).thenApplyAsync(data -> {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(""))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersUserShip.parse(utils.parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
@@ -98,7 +98,17 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             });
         }
 
-        public URI shipListUri() {
+        public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipListOa(String accessToken) {
+            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(accessToken))).thenApplyAsync(data -> {
+                try {
+                    return CompletableInfo.ok(DevelopersUserShip.parse(utils.parse(HttpCodec.response(data))));
+                } catch (BasicException e) {
+                    return CompletableInfo.error(e);
+                }
+            });
+        }
+
+        public URI shipListUri(String accessToken) {
             StringBuilder builder = new StringBuilder();
             for (var type : WowsBattlesType.values()) {
                 if (WowsBattlesType.PVP != type) {
@@ -106,7 +116,11 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                 }
             }
             builder.deleteCharAt(builder.length() - 1);
-            return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+            if (accessToken.isEmpty()) {
+                return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+            }
+            return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
+                    accountId, accessToken, builder));
         }
     }
 }
