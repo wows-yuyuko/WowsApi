@@ -44,9 +44,10 @@ public class AccountTest {
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
         var data = asia.userVortex(7048262455L).get().data();
-        var data1 = asia.userVortex(7048387609L).get().data();
+        var data1 = asia.userVortex(7050218428L).get();
+        var data2 = data1.data();
         System.out.println(data);
         System.out.println("===========");
-        System.out.println(data1);
+        System.out.println(data2);
     }
 }
