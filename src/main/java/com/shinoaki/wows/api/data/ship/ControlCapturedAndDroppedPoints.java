@@ -15,8 +15,10 @@ import java.io.Serializable;
  * @author Xun
  * @date 2023/4/9 15:27 星期日
  */
-public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, long controlCapturedPoints, long teamControlDroppedPoints,
-                                              long controlDroppedPoints, long droppedCapturePoints, long capturePoints)  implements Serializable {
+public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, long controlCapturedPoints,
+                                              long teamControlDroppedPoints,
+                                              long controlDroppedPoints, long droppedCapturePoints,
+                                              long capturePoints) implements Serializable {
 
     public static ControlCapturedAndDroppedPoints empty() {
         return new ControlCapturedAndDroppedPoints(0, 0, 0, 0, 0, 0);
@@ -78,7 +80,7 @@ public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, lo
      * @return 进攻贡献率
      */
     public double gameContributionToCapture() {
-        return 100.0 * ((double) this.teamControlCapturedPoints() / this.controlCapturedPoints());
+        return ((double) this.controlCapturedPoints() / this.teamControlCapturedPoints()) * 100.0;
     }
 
     /**
@@ -87,6 +89,6 @@ public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, lo
      * @return 防御贡献率
      */
     public double gameContributionToDefense() {
-        return 100.0 * ((double) this.teamControlDroppedPoints() / this.teamControlDroppedPoints());
+        return ((double) this.controlDroppedPoints() / this.teamControlDroppedPoints()) * 100.0;
     }
 }
