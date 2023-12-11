@@ -29,5 +29,9 @@ public enum HttpThrowableStatus {
     /**
      * 检索异常
      */
-    EXECUTION
+    EXECUTIO,
+    /**
+     * 隐藏战绩
+     */
+    HIDDEN
 }

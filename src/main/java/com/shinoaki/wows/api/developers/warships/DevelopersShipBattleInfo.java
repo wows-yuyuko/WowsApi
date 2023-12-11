@@ -1,12 +1,9 @@
 package com.shinoaki.wows.api.developers.warships;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.shinoaki.wows.api.data.ShipInfo;
-import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.utils.DateUtils;
 
 import java.util.*;
 
@@ -28,24 +25,5 @@ public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattle
                     "distance").asInt(), data.get("updated_at").asLong(), data.get("battles").asInt(), data.get("ship_id").asLong()));
         }
         return list;
-    }
-
-    /**
-     * 返回一个map结构
-     * 请使用 {@link DevelopersUserShip}的toShipInfoMap方法
-     *
-     * @param infoList
-     * @return
-     */
-    @Deprecated(forRemoval = true, since = "0.1.2")
-    public static Map<WowsBattlesType, List<ShipInfo>> toShipInfo(List<DevelopersShipBattleInfo> infoList) {
-        Map<WowsBattlesType, List<ShipInfo>> map = new EnumMap<>(WowsBattlesType.class);
-        for (DevelopersShipBattleInfo info : infoList) {
-            for (var entry : info.shipBattleTypeMap().entrySet()) {
-                map.computeIfAbsent(entry.getKey(), list -> new ArrayList<>()).add(ShipInfo.to(info.ship_id, entry.getValue(),
-                        info.last_battle_time, DateUtils.toEpochMilli()));
-            }
-        }
-        return map;
     }
 }

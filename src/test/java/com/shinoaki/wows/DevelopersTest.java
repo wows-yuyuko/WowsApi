@@ -30,7 +30,22 @@ public class DevelopersTest {
         DevelopersUserShip developers = tools.developers(token).shipList().get().data();
         System.out.println(developers);
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
+        var list = shipInfoMap.get(WowsBattlesType.PVP);
+        var d1 = list.stream().filter(f->f.shipId()==4276041424L).findFirst().get();
+        var a1 = d1.controlCapturedAndDroppedPoints().gameContributionToDefense();
+        var a2 = d1.controlCapturedAndDroppedPoints().gameContributionToCapture();
         System.out.println(shipInfoMap);
+    }
+
+    @Test
+    public void shipTest2() throws InterruptedException, ExecutionException {
+        WowsHttpShipTools tools = new WowsHttpShipTools(client, WowsServer.CN, 7047921442L);
+        var ship = tools.vortex().shipList(WowsBattlesType.PVP).get().data();
+        var list = ship.toShipInfoList();
+        var d1 = list.stream().filter(f->f.shipId()==4276041424L).findFirst().get();
+        var a1 = d1.controlCapturedAndDroppedPoints().gameContributionToDefense();
+        var a2 = d1.controlCapturedAndDroppedPoints().gameContributionToCapture();
+        System.out.println(list);
     }
 
 }
