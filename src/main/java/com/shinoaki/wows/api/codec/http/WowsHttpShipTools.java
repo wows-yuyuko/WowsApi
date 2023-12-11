@@ -39,7 +39,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         public CompletableFuture<CompletableInfo<VortexUserShip>> shipList(WowsBattlesType type) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(type))).thenApplyAsync(data -> {
                         try {
-                            return VortexUserShip.parse(type, utils.parse(HttpCodec.response(data)));
+                            return CompletableInfo.ok(VortexUserShip.parse(type, utils.parse(HttpCodec.response(data))));
                         } catch (BasicException e) {
                             return CompletableInfo.error(e);
                         }
@@ -54,7 +54,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                 for (final WowsBattlesType type : types) {
                     list.add(HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(type))).thenApplyAsync(data -> {
                                 try {
-                                    return VortexUserShip.parse(type, utils.parse(HttpCodec.response(data)));
+                                    return CompletableInfo.ok(VortexUserShip.parse(type, utils.parse(HttpCodec.response(data))));
                                 } catch (BasicException e) {
                                     return CompletableInfo.error(e);
                                 }

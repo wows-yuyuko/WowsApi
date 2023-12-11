@@ -3,7 +3,6 @@ package com.shinoaki.wows.api.vortex;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
@@ -30,27 +29,23 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
                 ShipInfo.to(map.getKey(), map.getValue(), recordTime)).toList();
     }
 
-    public static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, JsonNode node) {
+    public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws BasicException {
         //判断status
-        try {
-            BasicException.status(node);
-            Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
-            if (iterator.hasNext()) {
-                Map.Entry<String, JsonNode> map = iterator.next();
-                return parse(type, Long.parseLong(map.getKey()), map.getValue());
-            }
-        } catch (BasicException e) {
-            return CompletableInfo.error(e);
+        BasicException.status(node);
+        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
+        if (iterator.hasNext()) {
+            Map.Entry<String, JsonNode> map = iterator.next();
+            return parse(type, Long.parseLong(map.getKey()), map.getValue());
         }
-        return CompletableInfo.ok(null);
+        return null;
     }
 
-    private static CompletableInfo<VortexUserShip> parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
+    private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
         String name = node.get("name").asText();
         JsonNode hiddenProfile = node.get("hidden_profile");
         if (hiddenProfile != null && hiddenProfile.asBoolean()) {
             //用户隐藏了战绩
-            return CompletableInfo.ok(new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L));
+            return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
         }
         Map<Long, VortexShipInfo> shipMap = new HashMap<>();
         Iterator<Map.Entry<String, JsonNode>> iterator = node.get("statistics").fields();
@@ -58,8 +53,8 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
             var map = iterator.next();
             shipMap.put(Long.parseLong(map.getKey()), VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT))));
         }
-        return CompletableInfo.ok(new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),
+        return new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),
                 node.get("activated_at").asDouble(),
-                DateUtils.toEpochMilli()));
+                DateUtils.toEpochMilli());
     }
 }
