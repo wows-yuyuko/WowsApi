@@ -1,5 +1,7 @@
 package com.shinoaki.wows.api.type;
 
+import lombok.Getter;
+
 /**
  * @author Xun
  * @date 2023/3/18 14:40 星期六
@@ -11,12 +13,15 @@ public enum WowsServer {
     NA("na", "worldofwarships.com", "美服", true),
     RU("ru", "korabli.su", "俄服", true);
 
+    @Getter
     private final String code;
     private final String url;
+    @Getter
     private final String name;
     /**
      * 是否支持官方API请求
      */
+    @Getter
     private final boolean api;
 
     WowsServer(String code, String url, String name, boolean api) {
@@ -44,9 +49,7 @@ public enum WowsServer {
         throw new NullPointerException(code + " 匹配不到对应服务器");
     }
 
-    public String getCode() {
-        return code;
-    }
+
 
     public String vortex() {
         return "https://vortex." + url;
@@ -60,11 +63,5 @@ public enum WowsServer {
         return "https://api." + url;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    public boolean isApi() {
-        return api;
-    }
 }
