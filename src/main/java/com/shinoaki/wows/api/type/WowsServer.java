@@ -9,7 +9,7 @@ public enum WowsServer {
     ASIA("asia", "worldofwarships.asia", "亚服", true),
     EU("eu", "worldofwarships.eu", "欧服", true),
     NA("na", "worldofwarships.com", "美服", true),
-    RU("ru", "korabli.su", "俄服", false);
+    RU("ru", "korabli.su", "俄服", true);
 
     private final String code;
     private final String url;
