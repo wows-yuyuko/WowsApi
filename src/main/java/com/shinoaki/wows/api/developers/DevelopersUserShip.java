@@ -37,8 +37,10 @@ public record DevelopersUserShip(DevelopersMeta developersMeta, long accountId, 
         Map<WowsBattlesType, List<ShipInfo>> map = new EnumMap<>(WowsBattlesType.class);
         for (DevelopersShipBattleInfo info : infoList) {
             for (var entry : info.shipBattleTypeMap().entrySet()) {
-                map.computeIfAbsent(entry.getKey(), list -> new ArrayList<>()).add(ShipInfo.to(info.ship_id(), entry.getValue(), info.last_battle_time(),
-                        DateUtils.toEpochMilli()));
+                if (entry.getValue() != null) {
+                    map.computeIfAbsent(entry.getKey(), list -> new ArrayList<>()).add(ShipInfo.to(info.ship_id(), entry.getValue(), info.last_battle_time(),
+                            DateUtils.toEpochMilli()));
+                }
             }
         }
         return map;
