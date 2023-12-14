@@ -55,10 +55,11 @@ public class PrCalculation {
 
     public static PrCalculationDetails shipList(List<ShipInfo> info, Map<Long, PrCalculation> server) {
         //计算用户全部
+        var infoShip = info.stream().filter(f -> !server.getOrDefault(f.shipId(), PrCalculation.empty(f.shipId())).checkZero()).toList();
         PrCalculation userSum = empty(0);
         PrCalculation serverSum = empty(0);
-        info.stream().map(PrCalculation::user).forEach(userSum::addition);
-        info.stream().map(m ->
+        infoShip.stream().map(PrCalculation::user).forEach(userSum::addition);
+        infoShip.stream().map(m ->
                         userServer(m, server.getOrDefault(m.shipId(), empty(m.shipId()))))
                 .forEach(serverSum::addition);
         return pr(serverSum, userSum, serverSum);
