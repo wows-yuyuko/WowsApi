@@ -40,6 +40,9 @@ public class RequestVortexResourcesInfo {
 
     public static final String RU = "ru";
 
+    public RequestVortexResourcesInfo() {
+    }
+
     public static RequestVortexResourcesInfo request(WowsServer server, String language) throws IOException, InterruptedException, BasicException {
         final String body = STR."""
                 {
