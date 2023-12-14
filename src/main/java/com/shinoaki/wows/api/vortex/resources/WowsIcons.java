@@ -13,6 +13,9 @@ import lombok.Data;
 public class WowsIcons {
     private String defaultUrl;
 
+    public WowsIcons() {
+    }
+
     public static WowsIcons parse(JsonNode node) {
         return new WowsIcons(node.get("default").asText());
     }
