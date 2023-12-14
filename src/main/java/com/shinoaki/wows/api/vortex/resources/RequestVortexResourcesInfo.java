@@ -19,10 +19,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Xun
@@ -41,32 +39,6 @@ public class RequestVortexResourcesInfo {
     public static final String CN = "zh-cn";
 
     public static final String RU = "ru";
-
-    public static Map<WowsServer, List<RequestVortexResourcesInfo>> request() throws BasicException, IOException,
-            InterruptedException {
-
-        final WowsServer asia = WowsServer.ASIA;
-        final WowsServer ru = WowsServer.RU;
-        List<RequestVortexResourcesInfo> wgList = new ArrayList<>();
-        {
-            {
-                wgList.add(request(asia, SG));
-                wgList.add(request(asia, EN));
-                wgList.add(request(asia, CN));
-            }
-        }
-        List<RequestVortexResourcesInfo> lestaList = new ArrayList<>();
-        {
-            {
-                lestaList.add(request(ru, SG));
-                lestaList.add(request(ru, EN));
-                lestaList.add(request(ru, CN));
-                lestaList.add(request(ru, RU));
-            }
-        }
-        return Map.of(asia, wgList,
-                ru, lestaList);
-    }
 
     public static RequestVortexResourcesInfo request(WowsServer server, String language) throws IOException, InterruptedException, BasicException {
         final String body = STR."""
