@@ -71,7 +71,7 @@ public class ClanTest {
     @Test
     public void clanRankTest(){
         ClanRankUtils utils = new ClanRankUtils(new JsonUtils());
-//        List<ClanRankInfo> ranks = utils.getRanks(WowsServer.RU, 22);
+        List<ClanRankInfo> ranks = utils.getRanks(WowsServer.CN, 0);
         System.out.println();
     }
 
