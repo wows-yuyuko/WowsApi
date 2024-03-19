@@ -1,6 +1,7 @@
 package com.shinoaki.wows.api.developers.account;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
@@ -14,6 +15,7 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
  */
 public record DevelopersUserInfo(
         long account_id,
+        DevelopersUserInfoStatistics statistics,
         String nickname,
         Boolean hidden_profile,
         long created_at
@@ -25,8 +27,10 @@ public record DevelopersUserInfo(
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
-            return new DevelopersUserInfo(-1, "", false, 0);
+            return new DevelopersUserInfo(-1, null, "", true, 0);
         }
-        return utils.parse(data.toString(), DevelopersUserInfo.class);
+        var statistics = DevelopersUserInfoStatistics.parse(data.get("statistics"));
+        return new DevelopersUserInfo(data.get("account_id").asLong(), statistics, data.get("nickname").asText(), data.get("hidden_profile").asBoolean(),
+                data.get("created_at").asLong());
     }
 }

@@ -52,4 +52,15 @@ public record DevelopersShipBattleType(
     public static DevelopersShipBattleType parse(JsonNode node) throws BasicException {
         return new WowsJsonUtils().parse(node, DevelopersShipBattleType.class);
     }
+
+    public static DevelopersShipBattleType empty() {
+        return new DevelopersShipBattleType(0, 0,
+                new DevelopersDataBattery(0, 0, 0, 0),
+                0, 0, 0, 0,
+                new DevelopersDataBattery(0, 0, 0, 0),
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, new DevelopersDataBatteryV2(0, 0), new DevelopersDataBattery(0, 0, 0, 0),
+                new DevelopersDataBatteryV2(0, 0), 0, 0, 0, 0, 0, 0, 0, 0,
+                0);
+    }
 }
