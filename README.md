@@ -2,7 +2,7 @@
 
 # Maven坐标 
 
-目前只发布在GitHub这边,支持JDK17+
+目前只发布在GitHub这边,支持JDK22+
 
 ```xml
 
