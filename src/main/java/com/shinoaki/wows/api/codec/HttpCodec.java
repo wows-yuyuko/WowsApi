@@ -37,6 +37,10 @@ public class HttpCodec {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
     }
 
+    public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws IOException, InterruptedException {
+        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
 
     public static String fromDataAsString(Map<String, String> fromData) {
         StringBuilder builder = new StringBuilder();

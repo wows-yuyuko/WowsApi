@@ -15,6 +15,7 @@ import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -38,7 +39,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
 
     public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, String token) {
 
-        public CompletableFuture<CompletableInfo<DevelopersSearchUserClan>> userSearchClanDevelopers(long accountId) {
+        public CompletableFuture<CompletableInfo<DevelopersSearchUserClan>> userSearchClanDevelopersAsync(long accountId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(userSearchClanDevelopersUri(accountId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersSearchUserClan.parse(utils, accountId, HttpCodec.response(data)));
@@ -48,7 +49,12 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<DevelopersClanInfo>> clanInfoDevelopers(long clanId) {
+        public DevelopersSearchUserClan userSearchClanDevelopers(long accountId) throws IOException, InterruptedException, BasicException {
+            return DevelopersSearchUserClan.parse(utils, accountId, HttpCodec.response(HttpCodec.send(httpClient,
+                    HttpCodec.request(userSearchClanDevelopersUri(accountId)))));
+        }
+
+        public CompletableFuture<CompletableInfo<DevelopersClanInfo>> clanInfoDevelopersAsync(long clanId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanInfoDevelopersUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersClanInfo.parse(utils, clanId, HttpCodec.response(data)));
@@ -58,7 +64,12 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<DevelopersSearchClan>>> searchClanDevelopers(String clanTag) {
+        public DevelopersClanInfo clanInfoDevelopers(long clanId) throws IOException, InterruptedException, BasicException {
+            return DevelopersClanInfo.parse(utils, clanId, HttpCodec.response(HttpCodec.send(httpClient,
+                    HttpCodec.request(clanInfoDevelopersUri(clanId)))));
+        }
+
+        public CompletableFuture<CompletableInfo<List<DevelopersSearchClan>>> searchClanDevelopersAsync(String clanTag) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(searchClanDevelopersUri(clanTag))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersSearchClan.parse(utils, HttpCodec.response(data)));
@@ -68,7 +79,11 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<List<DevelopersSeasonInfo>>> season() {
+        public List<DevelopersSearchClan> searchClanDevelopers(String clanTag) throws IOException, InterruptedException, BasicException {
+            return DevelopersSearchClan.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanDevelopersUri(clanTag)))));
+        }
+
+        public CompletableFuture<CompletableInfo<List<DevelopersSeasonInfo>>> seasonAsync() {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(seasonUri())).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(DevelopersSeasonInfo.parse(utils, HttpCodec.response(data)));
@@ -76,6 +91,10 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.error(e);
                 }
             });
+        }
+
+        public List<DevelopersSeasonInfo> season() throws IOException, InterruptedException, BasicException {
+            return DevelopersSeasonInfo.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(seasonUri()))));
         }
 
         public URI seasonUri() {
@@ -102,7 +121,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          *
          * @param accountId aid
          */
-        public CompletableFuture<CompletableInfo<VortexSearchClanUser>> userSearchClanVortex(long accountId) {
+        public CompletableFuture<CompletableInfo<VortexSearchClanUser>> userSearchClanVortexAsync(long accountId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId))).thenApplyAsync(data -> {
                 try {
                     if (server.isApi()) {
@@ -119,13 +138,21 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
+        public VortexSearchClanUser userSearchClanVortex(long accountId) throws BasicException, IOException, InterruptedException {
+            var data = HttpCodec.send(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId)));
+            if (!server.isApi() && (data.statusCode() == 404)) {
+                return new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0);
+            }
+            return VortexSearchClanUser.to(utils.parse(HttpCodec.response(data)));
+        }
+
         /**
          * 查找公会
          *
          * @param clanTag 公会tag
          * @return
          */
-        public CompletableFuture<CompletableInfo<List<VortexSearchClan>>> searchClanVortex(String clanTag) {
+        public CompletableFuture<CompletableInfo<List<VortexSearchClan>>> searchClanVortexAsync(String clanTag) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(searchClanVortexUri(clanTag))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexSearchClan.parse(utils, HttpCodec.response(data)));
@@ -135,7 +162,17 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<VortexClanInfo>> clanInfoVortex(long clanId) {
+        /**
+         * 查找公会
+         *
+         * @param clanTag 公会tag
+         * @return
+         */
+        public List<VortexSearchClan> searchClanVortex(String clanTag) throws IOException, InterruptedException, BasicException {
+            return VortexSearchClan.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanVortexUri(clanTag)))));
+        }
+
+        public CompletableFuture<CompletableInfo<VortexClanInfo>> clanInfoVortexAsync(long clanId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanInfoVortexUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanInfo.to(server, clanId, utils.parse(HttpCodec.response(data))));
@@ -145,7 +182,11 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId) {
+        public VortexClanInfo clanInfoVortex(long clanId) throws IOException, InterruptedException, BasicException {
+            return VortexClanInfo.to(server, clanId, utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(clanInfoVortexUri(clanId))))));
+        }
+
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortexAsync(long clanId) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(clanUserListInfoVortexUri(clanId))).thenApplyAsync(data -> {
                 try {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(data))));
@@ -155,7 +196,12 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortex(long clanId, String type, Integer season) {
+        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId) throws IOException, InterruptedException, BasicException {
+            return VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(HttpCodec.send(httpClient,
+                    HttpCodec.request(clanUserListInfoVortexUri(clanId))))));
+        }
+
+        public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortexAsync(long clanId, String type, Integer season) {
             URI uri;
             if (type.equalsIgnoreCase("cvc")) {
                 uri = clanUserListInfoVortexUriCvc(clanId, season);
@@ -169,6 +215,17 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.error(e);
                 }
             });
+        }
+
+        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId, String type, Integer season) throws IOException, InterruptedException,
+                BasicException {
+            URI uri;
+            if (type.equalsIgnoreCase("cvc")) {
+                uri = clanUserListInfoVortexUriCvc(clanId, season);
+            } else {
+                uri = clanUserListInfoVortexUri(clanId, type);
+            }
+            return VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uri)))));
         }
 
         public URI userSearchClanVortexUri(long accountId) {

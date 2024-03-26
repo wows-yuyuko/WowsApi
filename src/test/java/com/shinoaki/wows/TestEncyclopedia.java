@@ -22,7 +22,7 @@ public class TestEncyclopedia {
     @Test
     public void glossary() throws ExecutionException, InterruptedException {
         var r = TOOLS.developers(token);
-        var data = r.glossary();
+        var data = r.glossaryAsync();
         System.out.println(data.get());
     }
 }
