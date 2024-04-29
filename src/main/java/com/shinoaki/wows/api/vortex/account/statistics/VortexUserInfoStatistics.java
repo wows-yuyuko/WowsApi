@@ -25,6 +25,9 @@ public class VortexUserInfoStatistics {
     private VortexShipInfo pvp_div3;
 
     public static VortexUserInfoStatistics parse(JsonNode node) throws BasicException {
+        if (node == null || node.isEmpty()) {
+            return empty();
+        }
         VortexUserInfoStatistics statistics = new VortexUserInfoStatistics();
         statistics.setPvp(infoCheckEmpty(node.get("pvp")));
         statistics.setRank_info(node.get("rank_info"));
@@ -39,6 +42,24 @@ public class VortexUserInfoStatistics {
         statistics.setRank_div3(infoCheckEmpty(node.get("rank_div3")));
         statistics.setRank_div2(infoCheckEmpty(node.get("rank_div2")));
         statistics.setPvp_div3(infoCheckEmpty(node.get("pvp_div3")));
+        return statistics;
+    }
+
+    private static VortexUserInfoStatistics empty() {
+        VortexUserInfoStatistics statistics = new VortexUserInfoStatistics();
+        statistics.setPvp(VortexShipInfo.defaultValue());
+        statistics.setRank_info(null);
+        statistics.setBasic(Basic.empty());
+        statistics.setPvp_solo(VortexShipInfo.defaultValue());
+        statistics.setRank_old_div3(VortexShipInfo.defaultValue());
+        statistics.setRank_old_div2(VortexShipInfo.defaultValue());
+        statistics.setRank_solo(VortexShipInfo.defaultValue());
+        statistics.setSeasons(null);
+        statistics.setRank_old_solo(VortexShipInfo.defaultValue());
+        statistics.setPvp_div2(VortexShipInfo.defaultValue());
+        statistics.setRank_div3(VortexShipInfo.defaultValue());
+        statistics.setRank_div2(VortexShipInfo.defaultValue());
+        statistics.setPvp_div3(VortexShipInfo.defaultValue());
         return statistics;
     }
 

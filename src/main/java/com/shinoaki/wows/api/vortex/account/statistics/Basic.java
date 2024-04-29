@@ -17,4 +17,8 @@ public record Basic(
                 node.get("karma").asInt(),
                 node.get("last_battle_time").asLong());
     }
+
+    public static Basic empty() {
+        return new Basic(0,0,0,0,0);
+    }
 }
