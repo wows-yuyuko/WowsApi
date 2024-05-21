@@ -1,9 +1,7 @@
 package com.shinoaki.wows.api.pr;
 
 import com.shinoaki.wows.api.data.ShipInfo;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.List;
 import java.util.Map;
@@ -13,25 +11,10 @@ import java.util.stream.Collectors;
  * @author Xun
  */
 @Getter
-@ToString
-@EqualsAndHashCode
-public class PrCalculation {
-    private final long shipId;
-    private double damage;
-    private double frags;
-    private double wins;
+public record PrCalculation(long shipId, double damage, double frags, double wins) {
 
-    public PrCalculation(long shipId, double damage, double frags, double wins) {
-        this.shipId = shipId;
-        this.damage = damage;
-        this.frags = frags;
-        this.wins = wins;
-    }
-
-    private void addition(PrCalculation data) {
-        this.damage += data.damage;
-        this.frags += data.frags;
-        this.wins += data.wins;
+    private PrCalculation addition(PrCalculation data) {
+        return new PrCalculation(this.shipId(), this.damage() + data.damage(), this.frags() + data.frags(), this.wins() + data.wins());
     }
 
     /**
@@ -50,7 +33,7 @@ public class PrCalculation {
     }
 
     public static PrCalculationDetails shipList(List<ShipInfo> info, List<PrCalculation> server) {
-        return shipList(info, server.stream().collect(Collectors.toMap(PrCalculation::getShipId, v -> v, (v1, v2) -> v1)));
+        return shipList(info, server.stream().collect(Collectors.toMap(PrCalculation::shipId, v -> v, (v1, v2) -> v1)));
     }
 
     public static PrCalculationDetails shipList(List<ShipInfo> info, Map<Long, PrCalculation> server) {
@@ -58,10 +41,12 @@ public class PrCalculation {
         var infoShip = info.stream().filter(f -> !server.getOrDefault(f.shipId(), PrCalculation.empty(f.shipId())).checkZero()).toList();
         PrCalculation userSum = empty(0);
         PrCalculation serverSum = empty(0);
-        infoShip.stream().map(PrCalculation::user).forEach(userSum::addition);
-        infoShip.stream().map(m ->
-                        userServer(m, server.getOrDefault(m.shipId(), empty(m.shipId()))))
-                .forEach(serverSum::addition);
+        for (ShipInfo shipInfo : infoShip) {
+            userSum = userSum.addition(user(shipInfo));
+        }
+        for (ShipInfo m : infoShip) {
+            serverSum = serverSum.addition(userServer(m, server.getOrDefault(m.shipId(), empty(m.shipId()))));
+        }
         return pr(serverSum, userSum, serverSum);
     }
 
@@ -75,15 +60,15 @@ public class PrCalculation {
             return pr;
         }
         //2
-        double nd = user.getDamage() / userServer.getDamage();
-        double nf = user.getFrags() / userServer.getFrags();
-        double nw = user.getWins() / userServer.getWins();
-        pr.setTwo(new PrCalculation(user.getShipId(), nd, nf, nw));
+        double nd = user.damage() / userServer.damage();
+        double nf = user.frags() / userServer.frags();
+        double nw = user.wins() / userServer.wins();
+        pr.setTwo(new PrCalculation(user.shipId(), nd, nf, nw));
         //3
         double maxNd = Math.max(0, (nd - 0.4) / (1 - 0.4));
         double maxNf = Math.max(0, (nf - 0.1) / (1 - 0.1));
         double maxNw = Math.max(0, (nw - 0.7) / (1 - 0.7));
-        pr.setThree(new PrCalculation(user.getShipId(), maxNd, maxNf, maxNw));
+        pr.setThree(new PrCalculation(user.shipId(), maxNd, maxNf, maxNw));
         //最终计算pr
         pr.setPr((int) Math.round(700 * maxNd + 300 * maxNf + 150 * maxNw));
         return pr;
