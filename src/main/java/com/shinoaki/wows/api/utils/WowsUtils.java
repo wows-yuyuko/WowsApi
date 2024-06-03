@@ -14,6 +14,13 @@ public class WowsUtils {
         return node.asInt(defaultValue);
     }
 
+    public static boolean json(JsonNode node, boolean defaultValue) {
+        if (node == null) {
+            return defaultValue;
+        }
+        return node.asBoolean(defaultValue);
+    }
+
     public static String json(JsonNode node, String defaultValue) {
         if (node == null) {
             return defaultValue;
