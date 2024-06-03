@@ -28,16 +28,25 @@ public class ClanRankUtils {
         this.json = json;
     }
 
+    /**
+     * 获取排名
+     *
+     * @param server 服务器
+     * @param season 赛季 0表示最新赛季
+     * @return 结果
+     */
+
     public List<ClanRankInfo> getRanks(WowsServer server, int season) {
         Map<Long, ClanRankInfo> rankMaps = new HashMap<>();
+        String seasonRep = season <= 0 ? "" : String.valueOf(season);
         try (HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
             String base = baseUrl(server);
-            List<ClanRankInfo> index = getRanks(client, URI.create(base + "&season=" + season), server, season);
+            List<ClanRankInfo> index = getRanks(client, URI.create(base + "&season=" + seasonRep), server, season);
             index.forEach(x -> rankMaps.put(x.id(), x));
             //
             var last = index.getLast();
             while (true) {
-                List<ClanRankInfo> run = getRanks(client, URI.create(base + "&season=" + season + "&clan_id=" + last.id()), server, season);
+                List<ClanRankInfo> run = getRanks(client, URI.create(base + "&season=" + seasonRep + "&clan_id=" + last.id()), server, season);
                 last = run.getLast();
                 if (rankMaps.containsKey(last.id())) {
                     break;

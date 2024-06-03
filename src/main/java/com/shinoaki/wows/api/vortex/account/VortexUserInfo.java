@@ -1,21 +1,20 @@
 package com.shinoaki.wows.api.vortex.account;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.shinoaki.wows.api.data.DogTag;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.vortex.account.statistics.VortexUserInfoStatistics;
 
 /**
  * @author Xun
  */
 public record VortexUserInfo(
+        VortexUserInfoStatistics statistics,
         String name,
         double created_at,
         double activated_at,
-        long dog_tag_texture_id,
-        long dog_tag_symbol_id,
-        long dog_tag_border_color_id,
-        long dog_tag_background_color_id,
-        long dog_tag_background_id
+        DogTag dogTag
 ) {
 
     public static VortexUserInfo parse(JsonNode node, long accountId) throws BasicException {
@@ -31,18 +30,19 @@ public record VortexUserInfo(
                 double createAt = data.get("created_at").asDouble();
                 double activatedAt = data.get("activated_at").asDouble();
                 JsonNode dogTag = data.get("dog_tag");
+                var statistics = VortexUserInfoStatistics.parse(data.get("statistics"));
                 if (dogTag == null || dogTag.isEmpty()) {
-                    return new VortexUserInfo(name, createAt, activatedAt, -1, -1, -1, -1, -1);
+                    return new VortexUserInfo(statistics, name, createAt, activatedAt, DogTag.empty());
                 } else {
-                    return new VortexUserInfo(name, createAt, activatedAt,
-                            dogTag.get("texture_id").asLong(),
-                            dogTag.get("symbol_id").asLong(),
-                            dogTag.get("border_color_id").asLong(),
-                            dogTag.get("background_color_id").asLong(),
-                            dogTag.get("background_id").asLong());
+                    return new VortexUserInfo(statistics, name, createAt, activatedAt,
+                            new DogTag(dogTag.get("texture_id").asLong(),
+                                    dogTag.get("symbol_id").asLong(),
+                                    dogTag.get("border_color_id").asLong(),
+                                    dogTag.get("background_color_id").asLong(),
+                                    dogTag.get("background_id").asLong()));
                 }
             }
         }
-        return null;
+        throw new BasicException(HttpThrowableStatus.DATA_STATUS, accountId + "用户数据状态异常code=" + status);
     }
 }

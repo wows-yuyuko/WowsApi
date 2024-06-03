@@ -23,7 +23,7 @@ public class ClanTest {
 
     @Test
     public void season() throws ExecutionException, InterruptedException {
-        var data = WT.developers(token).season();
+        var data = WT.developers(token).seasonAsync();
         System.out.println(data.get());
     }
 
@@ -31,8 +31,8 @@ public class ClanTest {
     public void searchDev() throws InterruptedException, ExecutionException {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI").get().data());
-        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI2").get().data());
+        System.out.println(tools.developers(token).searchClanDevelopersAsync("YU_RI").get().data());
+        System.out.println(tools.developers(token).searchClanDevelopersAsync("YU_RI2").get().data());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ClanTest {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2000022706L;
-        System.out.println(tools.developers(token).clanInfoDevelopers(id).get().data());
+        System.out.println(tools.developers(token).clanInfoDevelopersAsync(id).get().data());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class ClanTest {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2007474948;
-        System.out.println(tools.developers(token).userSearchClanDevelopers(id).get().data());
+        System.out.println(tools.developers(token).userSearchClanDevelopersAsync(id).get().data());
     }
 
     @Test
@@ -71,22 +71,22 @@ public class ClanTest {
     @Test
     public void clanRankTest(){
         ClanRankUtils utils = new ClanRankUtils(new JsonUtils());
-//        List<ClanRankInfo> ranks = utils.getRanks(WowsServer.RU, 22);
+        List<ClanRankInfo> ranks = utils.getRanks(WowsServer.CN, 0);
         System.out.println();
     }
 
     public void clanInfoMembersVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().clanUserListInfoVortex(id).get().data());
+        System.out.println(tools.vortex().clanUserListInfoVortexAsync(id).get().data());
     }
 
     public void clanInfoVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().clanInfoVortex(id).get().data());
+        System.out.println(tools.vortex().clanInfoVortexAsync(id).get().data());
     }
 
     public void searchUserVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().userSearchClanVortex(id).get().data());
+        System.out.println(tools.vortex().userSearchClanVortexAsync(id).get().data());
     }
 }

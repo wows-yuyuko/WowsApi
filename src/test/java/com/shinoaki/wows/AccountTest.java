@@ -20,11 +20,11 @@ public class AccountTest {
         String u1 = "JustOn";
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
-        System.out.println(asia.searchUserVortex(u1).get().data());
+        System.out.println(asia.searchUserVortexAsync(u1).get().data());
         System.out.println("=================");
-        System.out.println(asia.searchUserDevelopers(DevelopersTest.token, u1));
-        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
-        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
+        System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
+        System.out.println(asia.userInfoDevelopersAsync(DevelopersTest.token, 2022515210));
+        System.out.println(asia.userInfoDevelopersAsync(DevelopersTest.token, 2022515211));
     }
 
     @Test
@@ -32,8 +32,8 @@ public class AccountTest {
         String u1 = "西行寺雨季";
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
-        List<VortexSearchUser> vortex = asia.searchUserVortex(u1).get().data();
-        List<VortexSearchUser> vortex2 = asia.searchUserVortexCn("西行寺").get().data();
+        List<VortexSearchUser> vortex = asia.searchUserVortexAsync(u1).get().data();
+        List<VortexSearchUser> vortex2 = asia.searchUserVortexCnAsync("西行寺").get().data();
         System.out.println(vortex);
         System.out.println("=============================");
         System.out.println(vortex2);
@@ -43,11 +43,14 @@ public class AccountTest {
     public void userInfo() throws InterruptedException, ExecutionException {
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
-        var data = asia.userVortex(7048262455L).get().data();
-        var data1 = asia.userVortex(7050218428L).get();
-        var data2 = data1.data();
+        var data = asia.userVortexAsync(7048262455L).get().data();
+        var data1 = asia.userVortexAsync(7050218428L).get().data();
+        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopersAsync("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L).get().data();
         System.out.println(data);
         System.out.println("===========");
+        System.out.println(data1);
+        System.out.println("===========");
         System.out.println(data2);
+        System.out.println();
     }
 }

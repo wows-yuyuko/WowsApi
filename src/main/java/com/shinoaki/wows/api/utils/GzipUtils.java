@@ -1,5 +1,7 @@
 package com.shinoaki.wows.api.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Xun
  * @date 2023/4/3 18:02 星期一
  */
+@Slf4j
 public class GzipUtils {
     private GzipUtils() {
 
@@ -21,7 +24,7 @@ public class GzipUtils {
     }
 
     public static byte[] compress(String str, String encoding) {
-        if (str == null || str.length() == 0) {
+        if (str == null || str.isEmpty()) {
             return new byte[0];
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -31,7 +34,7 @@ public class GzipUtils {
             gzip.write(str.getBytes(encoding));
             gzip.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return out.toByteArray();
     }
@@ -62,7 +65,7 @@ public class GzipUtils {
                 out.write(buffer, 0, n);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return out.toByteArray();
     }
