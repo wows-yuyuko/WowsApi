@@ -1,7 +1,6 @@
 package com.shinoaki.wows.api.pr;
 
 import com.shinoaki.wows.api.data.ShipInfo;
-import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.stream.Collectors;
 /**
  * @author Xun
  */
-@Getter
 public record PrCalculation(long shipId, double damage, double frags, double wins) {
 
     private PrCalculation addition(PrCalculation data) {
@@ -51,27 +49,22 @@ public record PrCalculation(long shipId, double damage, double frags, double win
     }
 
     public static PrCalculationDetails pr(final PrCalculation originalServer, final PrCalculation user, final PrCalculation userServer) {
-        //1
-        PrCalculationDetails pr = new PrCalculationDetails();
-        pr.setOriginalServer(originalServer);
-        pr.setUser(user);
-        pr.setUserServer(userServer);
         if (userServer.checkZero()) {
-            return pr;
+            return new PrCalculationDetails(0, originalServer, user, userServer, PrCalculation.empty(user.shipId()), PrCalculation.empty(user.shipId()));
         }
         //2
         double nd = user.damage() / userServer.damage();
         double nf = user.frags() / userServer.frags();
         double nw = user.wins() / userServer.wins();
-        pr.setTwo(new PrCalculation(user.shipId(), nd, nf, nw));
+        var two = new PrCalculation(user.shipId(), nd, nf, nw);
         //3
         double maxNd = Math.max(0, (nd - 0.4) / (1 - 0.4));
         double maxNf = Math.max(0, (nf - 0.1) / (1 - 0.1));
         double maxNw = Math.max(0, (nw - 0.7) / (1 - 0.7));
-        pr.setThree(new PrCalculation(user.shipId(), maxNd, maxNf, maxNw));
+        var three = new PrCalculation(user.shipId(), maxNd, maxNf, maxNw);
         //最终计算pr
-        pr.setPr((int) Math.round(700 * maxNd + 300 * maxNf + 150 * maxNw));
-        return pr;
+        var pr = (int) Math.round(700 * maxNd + 300 * maxNf + 150 * maxNw);
+        return new PrCalculationDetails(pr, originalServer, user, userServer, two, three);
     }
 
 
