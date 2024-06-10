@@ -1,3 +1,5 @@
+# 新版本基于JDK21
+
 # WowsApi 战舰世界public/vortex-api接口开发包
 
 # Maven坐标 

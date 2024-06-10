@@ -44,18 +44,18 @@ public class RequestVortexResourcesInfo {
     }
 
     public static RequestVortexResourcesInfo request(WowsServer server, String language) throws IOException, InterruptedException, BasicException {
-        final String body = STR."""
+        final String body = """
                 {
                     "operationName": "getGlossData",
                     "variables": {
-                        "lang": "\{language}"
+                        "lang": "${language}"
                     },
                     "query": "query getGlossData($lang: String) {\\n  version\\n  nations(lang: $lang) {\\n    name\\n    title\\n    color\\n    icons {\\n      small\\n      tiny\\n      __typename\\n    }\\n    __typename\\n  }\\n  dogTagComponents(lang: $lang) {\\n    id\\n    type\\n    color\\n    isColorizable\\n    showClanTag\\n    clanTag {\\n      x\\n      y\\n      fontColor\\n      __typename\\n    }\\n    icons {\\n      medium\\n      __typename\\n    }\\n    textureData {\\n      id\\n      background {\\n        medium\\n        __typename\\n      }\\n      border {\\n        medium\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n  achievements(lang: $lang) {\\n    id\\n    icons {\\n      default\\n      inactive\\n      normal\\n      __typename\\n    }\\n    title\\n    description\\n    enabled\\n    multiple\\n    hidden\\n    typeTitle\\n    battleRestriction\\n    receivingRestriction\\n    battleTypes {\\n      id\\n      __typename\\n    }\\n    isProgress\\n    maxProgress\\n    grouping {\\n      sortOrder\\n      sortOrderInGroup\\n      group\\n      subgroup\\n      __typename\\n    }\\n    type\\n    __typename\\n  }\\n  nations(lang: $lang) {\\n    name\\n    title\\n    color\\n    __typename\\n  }\\n  vehicleTypes(lang: $lang) {\\n    name\\n    title\\n    icons {\\n      default\\n      special\\n      normal\\n      elite\\n      premium\\n      __typename\\n    }\\n    __typename\\n  }\\n  battleTypes(lang: $lang) {\\n    id\\n    icons {\\n      default\\n      __typename\\n    }\\n    title\\n    name\\n    dossierName\\n    __typename\\n  }\\n  achievementsGroups(lang: $lang) {\\n    id\\n    title\\n    sortOrder\\n    subgroups {\\n      id\\n      title\\n      sortOrder\\n      __typename\\n    }\\n    __typename\\n  }\\n  vehicles(lang: $lang) {\\n    isPremium\\n    isSpecial\\n    id\\n    title\\n    titleShort\\n    icons {\\n   large\\n  medium\\n   small\\n      __typename\\n    }\\n    type {\\n      name\\n      title\\n      titleShort\\n      __typename\\n    }\\n    level\\n    nation {\\n      name\\n      title\\n      color\\n      icons {\\n        small\\n        tiny\\n        __typename\\n      }\\n      __typename\\n    }\\n    nationName\\n    __typename\\n  }\\n}\\n"
                 }
-                """;
+                """.replace("${language}", language);
         JsonUtils json = new JsonUtils();
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(STR."\{server.vortex()}/api/graphql/glossary/"))
+            var req = HttpRequest.newBuilder(URI.create(server.vortex() + "/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());

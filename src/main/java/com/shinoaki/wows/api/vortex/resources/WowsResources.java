@@ -47,7 +47,7 @@ public class WowsResources {
                 ]
                 """;
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(STR."\{server.vortex()}/api/graphql/glossary/"))
+            var req = HttpRequest.newBuilder(URI.create(server.vortex()+"/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());

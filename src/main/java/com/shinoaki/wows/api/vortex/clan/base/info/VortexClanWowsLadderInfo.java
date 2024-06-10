@@ -57,7 +57,7 @@ public record VortexClanWowsLadderInfo(
                 WowsUtils.json(node.get("division_rating_max"), 0),
                 VortexClanLeagueInfo.clan(clanId, node.get("ratings")),
                 WowsUtils.json(node.get("realm"), null),
-                WowsUtils.json(node.get("id"), 0),
+                WowsUtils.jsonLong(node.get("id"), 0),
                 WowsUtils.json(node.get("current_winning_streak"), 0),
                 WowsUtils.json(node.get("division"), 0),
                 WowsUtils.json(node.get("is_banned"), false),
