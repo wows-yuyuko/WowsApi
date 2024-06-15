@@ -31,10 +31,10 @@ public class HttpCodec {
 
     public static HttpRequest request(URI uri) {
         return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate, br")
-                .setHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
-                .setHeader("Sec-Ch-Ua","\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"")
-                .setHeader("Sec-Ch-Ua-Mobile","?0")
-                .setHeader("Sec-Ch-Ua-Platform","\"Windows\"")
+                .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+                .setHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"")
+                .setHeader("Sec-Ch-Ua-Mobile", "?0")
+                .setHeader("Sec-Ch-Ua-Platform", "\"Windows\"")
                 .setHeader("Sec-Fetch-Mode", "navigate")
                 .setHeader("Sec-Fetch-Dest", "document")
                 .setHeader("Sec-Fetch-User", "?1")
@@ -46,8 +46,13 @@ public class HttpCodec {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
     }
 
-    public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws IOException, InterruptedException {
-        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws IOException, BasicException {
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BasicException(e);
+        }
     }
 
 

@@ -48,7 +48,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             );
         }
 
-        public VortexUserShip shipList(WowsBattlesType type) throws IOException, InterruptedException, BasicException {
+        public VortexUserShip shipList(WowsBattlesType type) throws IOException, BasicException {
             return VortexUserShip.parse(type, utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type))))));
         }
 
@@ -86,7 +86,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             });
         }
 
-        public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws IOException, InterruptedException, BasicException {
+        public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws IOException, BasicException {
             Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
             for (WowsBattlesType type : types) {
                 shipMap.put(type, VortexUserShip.parse(type,
@@ -112,7 +112,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             });
         }
 
-        public DevelopersUserShip shipList() throws IOException, InterruptedException, BasicException {
+        public DevelopersUserShip shipList() throws IOException, BasicException {
             return DevelopersUserShip.parse(utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri())))));
         }
 
@@ -126,7 +126,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             });
         }
 
-        public DevelopersUserShip shipListOa(String accessToken) throws IOException, InterruptedException, BasicException {
+        public DevelopersUserShip shipListOa(String accessToken) throws IOException, BasicException {
             return DevelopersUserShip.parse(utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(accessToken))))));
         }
 
