@@ -26,10 +26,7 @@ public enum HttpThrowableStatus {
      * 线程中断异常
      */
     THREAD,
-    /**
-     * 检索异常
-     */
-    EXECUTIO,
+    EXECUTION,
     /**
      * 隐藏战绩
      */

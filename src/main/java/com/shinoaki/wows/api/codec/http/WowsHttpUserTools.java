@@ -39,7 +39,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<VortexSearchUser> searchUserVortexCn(String userName) throws IOException, InterruptedException, BasicException {
+    public List<VortexSearchUser> searchUserVortexCn(String userName) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         try {
             return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
@@ -62,7 +62,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<VortexSearchUser> searchUserVortex(String userName) throws IOException, InterruptedException, BasicException {
+    public List<VortexSearchUser> searchUserVortex(String userName) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
     }
@@ -78,7 +78,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public VortexUserInfo userVortex(long accountId) throws IOException, InterruptedException, BasicException {
+    public VortexUserInfo userVortex(long accountId) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return VortexUserInfo.parse(json.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(accountId))))), accountId);
     }
@@ -94,7 +94,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws IOException, InterruptedException, BasicException {
+    public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
     }
@@ -110,7 +110,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws IOException, InterruptedException, BasicException {
+    public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws IOException, BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersUserInfo.parse(json, accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
                 accountId)))));

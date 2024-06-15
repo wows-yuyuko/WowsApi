@@ -33,13 +33,11 @@ public class BasicException extends Exception {
     }
 
     public BasicException(InterruptedException e) {
-        super(e);
-        this.code = HttpThrowableStatus.DATA_PARSE;
+        this.code = HttpThrowableStatus.THREAD;
     }
 
     public BasicException(ExecutionException e) {
-        super(e);
-        this.code = HttpThrowableStatus.DATA_PARSE;
+        this.code = HttpThrowableStatus.EXECUTION;
     }
 
     private BasicException(JsonNode node) {
