@@ -33,10 +33,12 @@ public class BasicException extends Exception {
     }
 
     public BasicException(InterruptedException e) {
+        super("线程被中断");
         this.code = HttpThrowableStatus.THREAD;
     }
 
     public BasicException(ExecutionException e) {
+        super("多线程任务终止");
         this.code = HttpThrowableStatus.EXECUTION;
     }
 
