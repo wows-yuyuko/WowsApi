@@ -4,7 +4,7 @@
     <groupId>com.shinoaki.wows.api</groupId>
     <artifactId>wows-api</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.8</version>
+    <version>2.1.0</version>
     <name>战舰世界API解析</name>
     <url>https://github.com/JustOneSummer/WowsApi</url>
 
@@ -31,6 +31,12 @@
             <groupId>org.tukaani</groupId>
             <artifactId>xz</artifactId>
             <version>1.9</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.luben/zstd-jni -->
+        <dependency>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <version>1.5.6-6</version>
         </dependency>
 
         <dependency>

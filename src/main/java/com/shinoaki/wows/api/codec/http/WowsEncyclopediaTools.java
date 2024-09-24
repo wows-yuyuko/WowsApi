@@ -37,7 +37,7 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public DevelopersGlossary glossary() throws IOException, InterruptedException, BasicException {
+        public DevelopersGlossary glossary() throws IOException, BasicException {
             return DevelopersGlossary.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
         }
 

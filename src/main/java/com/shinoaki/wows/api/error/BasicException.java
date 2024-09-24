@@ -33,13 +33,13 @@ public class BasicException extends Exception {
     }
 
     public BasicException(InterruptedException e) {
-        super(e);
-        this.code = HttpThrowableStatus.DATA_PARSE;
+        super("线程被中断");
+        this.code = HttpThrowableStatus.THREAD;
     }
 
     public BasicException(ExecutionException e) {
-        super(e);
-        this.code = HttpThrowableStatus.DATA_PARSE;
+        super("多线程任务终止");
+        this.code = HttpThrowableStatus.EXECUTION;
     }
 
     private BasicException(JsonNode node) {
