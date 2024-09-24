@@ -23,19 +23,24 @@ public class DataCompressXZUtils {
     }
 
     public static ByteArrayOutputStream encode(Map<WowsBattlesType, List<ShipInfo>> map) throws IOException {
-        ByteArrayOutputStream r = new ByteArrayOutputStream();
         try (ByteArrayOutputStream byteArray = new ByteArrayOutputStream()) {
             try (ObjectOutputStream out = new ObjectOutputStream(byteArray)) {
                 out.writeObject(map);
                 out.flush();
             }
             //压缩
-            LZMA2Options options = new LZMA2Options();
-            options.setPreset(6);
-            try (XZOutputStream out = new XZOutputStream(r, options)) {
-                out.write(byteArray.toByteArray());
-                out.flush();
-            }
+            return encode(byteArray.toByteArray());
+        }
+    }
+
+    public static ByteArrayOutputStream encode(byte[] data) throws IOException {
+        ByteArrayOutputStream r = new ByteArrayOutputStream();
+        //压缩
+        LZMA2Options options = new LZMA2Options();
+        options.setPreset(6);
+        try (XZOutputStream out = new XZOutputStream(r, options)) {
+            out.write(data);
+            out.flush();
         }
         return r;
     }
