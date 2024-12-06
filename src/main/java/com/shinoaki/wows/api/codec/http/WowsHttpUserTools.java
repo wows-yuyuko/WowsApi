@@ -137,9 +137,16 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     private URI uriDeveloperUserInfo(String token, long accountId, String accessToken) {
-        final String extra = "private.grouped_contacts,private.port,statistics.clan,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
-                             ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
-                             "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
+        final String extra;
+        if (server == WowsServer.RU) {
+            extra = "private.grouped_contacts,private.port,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
+                    ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
+                    "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
+        } else {
+            extra = "private.grouped_contacts,private.port,statistics.clan,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
+                    ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
+                    "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
+        }
         if (accessToken.isBlank()) {
             return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
         }

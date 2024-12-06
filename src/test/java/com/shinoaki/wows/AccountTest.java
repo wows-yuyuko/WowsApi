@@ -33,6 +33,14 @@ public class AccountTest {
     }
 
     @Test
+    public void searchUserRu() throws InterruptedException, ExecutionException, IOException, BasicException {
+
+        HttpClient client = HttpClient.newBuilder().build();
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
+        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807,"b23c6ac59298c2dafdda2a405593f4f950eab316")));
+    }
+
+    @Test
     public void searchUserCn() throws InterruptedException, ExecutionException {
         String u1 = "西行寺雨季";
         HttpClient client = HttpClient.newBuilder().build();
