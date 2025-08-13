@@ -2,11 +2,13 @@ package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.ClanRankUtils;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.clan.rank.ClanRankInfo;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -61,6 +63,16 @@ public class ClanTest {
     @Test
     public void clanInfoVortex() throws InterruptedException, ExecutionException {
         clanInfoVortex(WowsServer.ASIA, 2000022706L);
+    }
+
+
+    @Test
+    public void clanInfoVortexRu() throws BasicException, IOException {
+        var tools = new WowsHttpClanTools(client, WowsServer.RU).vortex();
+        long clanId = 413663L;
+        var clanFuture = tools.clanInfoVortex(clanId);
+        var userFuture = tools.clanUserListInfoVortex(clanId);
+        System.out.println();
     }
 
     @Test

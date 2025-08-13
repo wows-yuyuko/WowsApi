@@ -47,7 +47,7 @@ public record VortexClanInfo(long clanId, WowsServer wowsServer, String tag, Str
                     clan.get("max_members_count").asInt(),
                     clan.get("color").asText(),
                     DateUtils.toTimeMillis(LocalDateTime.parse(clan.get("created_at").asText(), DateTimeFormatter.ISO_DATE_TIME)),
-                    VortexClanWowsLadderInfo.parse(clanId, clanview.get("wows_ladder")),
+                    VortexClanWowsLadderInfo.parse(clanId, server == WowsServer.RU ? clanview.get("mk_ladder") : clanview.get("wows_ladder")),
                     VortexClanBuildingsInfo.clan(clanId, clanview.get("buildings"))
             );
         }
