@@ -15,7 +15,6 @@ import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -49,7 +48,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public DevelopersSearchUserClan userSearchClanDevelopers(long accountId) throws IOException, BasicException {
+        public DevelopersSearchUserClan userSearchClanDevelopers(long accountId) throws BasicException {
             return DevelopersSearchUserClan.parse(utils, accountId, HttpCodec.response(HttpCodec.send(httpClient,
                     HttpCodec.request(userSearchClanDevelopersUri(accountId)))));
         }
@@ -64,7 +63,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public DevelopersClanInfo clanInfoDevelopers(long clanId) throws IOException, BasicException {
+        public DevelopersClanInfo clanInfoDevelopers(long clanId) throws BasicException {
             return DevelopersClanInfo.parse(utils, clanId, HttpCodec.response(HttpCodec.send(httpClient,
                     HttpCodec.request(clanInfoDevelopersUri(clanId)))));
         }
@@ -79,7 +78,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public List<DevelopersSearchClan> searchClanDevelopers(String clanTag) throws IOException, BasicException {
+        public List<DevelopersSearchClan> searchClanDevelopers(String clanTag) throws BasicException {
             return DevelopersSearchClan.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanDevelopersUri(clanTag)))));
         }
 
@@ -93,7 +92,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public List<DevelopersSeasonInfo> season() throws IOException, BasicException {
+        public List<DevelopersSeasonInfo> season() throws BasicException {
             return DevelopersSeasonInfo.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(seasonUri()))));
         }
 
@@ -138,7 +137,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public VortexSearchClanUser userSearchClanVortex(long accountId) throws BasicException, IOException {
+        public VortexSearchClanUser userSearchClanVortex(long accountId) throws BasicException {
             var data = HttpCodec.send(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId)));
             if (!server.isApi() && (data.statusCode() == 404)) {
                 return new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0);
@@ -168,7 +167,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          * @param clanTag 公会tag
          * @return
          */
-        public List<VortexSearchClan> searchClanVortex(String clanTag) throws IOException, BasicException {
+        public List<VortexSearchClan> searchClanVortex(String clanTag) throws BasicException {
             return VortexSearchClan.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanVortexUri(clanTag)))));
         }
 
@@ -182,7 +181,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public VortexClanInfo clanInfoVortex(long clanId) throws IOException, BasicException {
+        public VortexClanInfo clanInfoVortex(long clanId) throws BasicException {
             return VortexClanInfo.to(server, clanId, utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(clanInfoVortexUri(clanId))))));
         }
 
@@ -196,7 +195,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId) throws IOException, BasicException {
+        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId) throws BasicException {
             return VortexClanUserInfo.to(server, utils.parse(HttpCodec.response(HttpCodec.send(httpClient,
                     HttpCodec.request(clanUserListInfoVortexUri(clanId))))));
         }
@@ -217,7 +216,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId, String type, Integer season) throws IOException,
+        public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId, String type, Integer season) throws
                 BasicException {
             URI uri;
             if (type.equalsIgnoreCase("cvc")) {

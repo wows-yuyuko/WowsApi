@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.codec;
 
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +23,7 @@ import java.util.zip.GZIPInputStream;
  * @author Xun
  * @date 2023/3/18 14:31 星期六
  */
+@Slf4j
 public class HttpCodec {
     private HttpCodec() {
 
@@ -46,12 +48,15 @@ public class HttpCodec {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
     }
 
-    public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws IOException, BasicException {
+    public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws BasicException {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new BasicException(e);
+        } catch (IOException e) {
+            log.error("网络请求异常！", e);
+            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
         }
     }
 
@@ -98,6 +103,7 @@ public class HttpCodec {
                 return new String(response.body(), StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
+            log.error("网络请求响应异常！", e);
             throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
         }
         throw new BasicException(HttpThrowableStatus.HTTP_STATUS, "http状态码异常 code=" + response.statusCode());

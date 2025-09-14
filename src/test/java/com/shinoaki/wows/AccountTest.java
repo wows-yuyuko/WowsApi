@@ -5,6 +5,7 @@ import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import org.junit.Test;
 
@@ -65,5 +66,15 @@ public class AccountTest {
         System.out.println("===========");
         System.out.println(data2);
         System.out.println();
+    }
+
+
+    @Test
+    public void userInfoVortex() throws InterruptedException, ExecutionException, BasicException, IOException {
+        HttpClient client = HttpClient.newBuilder().build();
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.EU);
+        var data = asia.userVortex(562058793L);
+        System.out.println(new JsonUtils().toJson(data));
+        System.out.println("===========");
     }
 }
