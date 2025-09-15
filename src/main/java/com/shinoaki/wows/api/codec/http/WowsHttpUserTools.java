@@ -1,8 +1,11 @@
 package com.shinoaki.wows.api.codec.http;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.data.AccountClanInfo;
+import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
 import com.shinoaki.wows.api.developers.account.DevelopersUserInfo;
+import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
@@ -96,6 +99,21 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
+    }
+
+    public AccountInfo accountInfoDevelopers(String token, long accountId) throws BasicException {
+        final WowsJsonUtils json = new WowsJsonUtils();
+        var baseJson = HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, "")));
+        //检查公会是否存在
+        var accountInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
+        var accountClan = AccountClanInfo.accountClan(json, accountId, HttpCodec.response(accountInfo));
+        //检测是否有公会，有则继续执行
+        if (accountClan.clanId() > 0) {
+            var clanInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
+            var clan = DevelopersClanInfo.parse(json, accountClan.clanId(), HttpCodec.response(clanInfo));
+            accountClan = AccountClanInfo.of(accountClan, clan);
+        }
+        return AccountInfo.parse(json, accountId, HttpCodec.response(baseJson), accountClan);
     }
 
     public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId) {

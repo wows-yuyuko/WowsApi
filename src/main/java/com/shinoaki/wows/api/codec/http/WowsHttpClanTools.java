@@ -101,10 +101,20 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
 
         public URI userSearchClanDevelopersUri(long accountId) {
+//            return URI.create(server.api() + String.format("/wows/clans/accountinfo/?application_id=%s&account_id=%s&extra=clan", token, accountId));
+            return userSearchClanDevelopersUri(server, token, accountId);
+        }
+
+        public static URI userSearchClanDevelopersUri(WowsServer server, String token, long accountId) {
             return URI.create(server.api() + String.format("/wows/clans/accountinfo/?application_id=%s&account_id=%s&extra=clan", token, accountId));
         }
 
         public URI clanInfoDevelopersUri(long clanId) {
+//            return URI.create(server.api() + String.format("/wows/clans/info/?extra=members&application_id=%s&clan_id=%s", token, clanId));
+            return clanInfoDevelopersUri(server, token, clanId);
+        }
+
+        public static URI clanInfoDevelopersUri(WowsServer server, String token, long clanId) {
             return URI.create(server.api() + String.format("/wows/clans/info/?extra=members&application_id=%s&clan_id=%s", token, clanId));
         }
 

@@ -30,7 +30,7 @@ public class AccountTest {
         System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
         System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
         System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
-        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210,"e460fce93ab430baedf283e5f0a7d761c50b7a72")));
+        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class AccountTest {
 
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
-        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807,"b23c6ac59298c2dafdda2a405593f4f950eab316")));
+        System.out.println(new JsonUtils().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807, "b23c6ac59298c2dafdda2a405593f4f950eab316")));
     }
 
     @Test
@@ -66,6 +66,15 @@ public class AccountTest {
         System.out.println("===========");
         System.out.println(data2);
         System.out.println();
+    }
+
+    @Test
+    public void accountInfo() throws InterruptedException, ExecutionException, BasicException, IOException {
+        HttpClient client = HttpClient.newBuilder().build();
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
+        var data = asia.accountInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+        System.out.println(new JsonUtils().toJson(data));
+        System.out.println("===========");
     }
 
 
