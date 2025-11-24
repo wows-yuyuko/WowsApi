@@ -8,6 +8,8 @@ import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
+import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.ComponentIcons;
+import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.TextureData;
 import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.VortexClanTag;
 import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.VortexDogTagComponents;
 import com.shinoaki.wows.api.vortex.resources.vehicles.VortexVehicles;
@@ -20,6 +22,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,7 +79,16 @@ public class RequestVortexResourcesInfo {
             components.setShowClanTag(tag.get("showClanTag").asBoolean());
             components.setClanTag(VortexClanTag.parse(tag.get("clanTag")));
             components.setIcons(new WowsIcons(tag.get("icons").get("medium").asText("")));
-            components.setTextureData(tag.get("textureData"));
+            List<TextureData> textureData = new ArrayList<>();
+            for (var texture : tag.get("textureData")) {
+                var background = texture.get("background");
+                var border = texture.get("border");
+                textureData.add(new TextureData(texture.get("id").asText(),
+                        new ComponentIcons(background.get("medium").asText())
+                        , new ComponentIcons(border.get("medium").asText())
+                ));
+            }
+            components.setTextureData(textureData);
             list.add(components);
         }
         return list;
