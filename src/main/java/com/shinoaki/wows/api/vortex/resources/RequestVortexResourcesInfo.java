@@ -41,12 +41,16 @@ public class RequestVortexResourcesInfo {
 
 
     public static RequestVortexResourcesInfo request(WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
+        return request(false, server, language);
+    }
+
+    public static RequestVortexResourcesInfo request(boolean isPtServer, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
         try (HttpClient client = HttpClient.newHttpClient()) {
-            return request(client, server, language);
+            return request(isPtServer, client, server, language);
         }
     }
 
-    public static RequestVortexResourcesInfo request(HttpClient client, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
+    public static RequestVortexResourcesInfo request(boolean isPtServer, HttpClient client, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
         final String body = """
                 {
                     "operationName": "getGlossData",
@@ -57,7 +61,8 @@ public class RequestVortexResourcesInfo {
                 }
                 """.replace("${language}", language.getLanguage());
         JsonUtils json = new JsonUtils();
-        var req = HttpRequest.newBuilder(URI.create(server.vortex() + "/api/graphql/glossary/"))
+        var url = isPtServer ? server.ptVortexServer() : server.vortex();
+        var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());

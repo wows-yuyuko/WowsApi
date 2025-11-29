@@ -5,6 +5,7 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import com.shinoaki.wows.api.vortex.resources.WowsIcons;
 import lombok.Data;
 
@@ -30,10 +31,10 @@ public class WowsBox {
     private WowsIcons icons;
 
     public static List<WowsBox> request(WowsServer server) throws IOException, InterruptedException, BasicException {
-        return request(server, "zh-sg");
+        return request(false,server, VortexResourcesLanguage.SG);
     }
 
-    public static List<WowsBox> request(WowsServer server, String languageCode) throws IOException, InterruptedException, BasicException {
+    public static List<WowsBox> request(boolean isPtServer,WowsServer server, VortexResourcesLanguage languageCode) throws IOException, InterruptedException, BasicException {
         final String json = """
                 [
                 	{
@@ -43,9 +44,10 @@ public class WowsBox {
                 		}
                 	}
                 ]
-                """.replace("{languageCode}", languageCode);
+                """.replace("{languageCode}", languageCode.getLanguage());
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(server.vortex() + "/api/graphql/glossary/"))
+            var url = isPtServer ? server.ptVortexServer() : server.vortex();
+            var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());

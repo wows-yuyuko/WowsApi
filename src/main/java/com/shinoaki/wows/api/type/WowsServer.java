@@ -50,9 +50,16 @@ public enum WowsServer {
     }
 
 
-
     public String vortex() {
         return "https://vortex." + url;
+    }
+
+    public String ptVortexServer() {
+        if (this == RU) {
+            return "https://vortex-rpt.korabli.su";
+        } else {
+            return "https://vortex.worldofwarships.pt";
+        }
     }
 
     public String clans() {

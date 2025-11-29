@@ -35,8 +35,11 @@ public class WowsResources {
     private JsonNode ttc;
     private JsonNode restrictions;
 
-
     public static List<WowsResources> request(WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
+        return request(false, server, language);
+    }
+
+    public static List<WowsResources> request(boolean isPtServer, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
         final String json = """
                 [
                     {
@@ -48,7 +51,8 @@ public class WowsResources {
                 ]
                 """.replace("${language}", language.getLanguage());
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(server.vortex() + "/api/graphql/glossary/"))
+            var url = isPtServer ? server.ptVortexServer() : server.vortex();
+            var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
