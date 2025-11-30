@@ -40,6 +40,15 @@ public enum WowsServer {
         return null;
     }
 
+    public static WowsServer findCodeByAsia(String code) {
+        for (var v : WowsServer.values()) {
+            if (v.getCode().equalsIgnoreCase(code)) {
+                return v;
+            }
+        }
+        return WowsServer.ASIA;
+    }
+
     public static WowsServer findCode(String code) {
         for (var v : WowsServer.values()) {
             if (v.getCode().equalsIgnoreCase(code)) {
