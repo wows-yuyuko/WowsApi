@@ -33,7 +33,7 @@ public enum WowsBattlesType implements Serializable {
 
     @Override
     public String toString() {
-        return super.toString().toLowerCase(Locale.ROOT);
+        return super.toString().toUpperCase(Locale.ROOT);
     }
 
     public static WowsBattlesType findCode(String code) {
