@@ -40,6 +40,16 @@ public enum WowsServer {
         return null;
     }
 
+    
+    public static WowsServer findCodeByAsia(String code){
+        for (var v : WowsServer.values()) {
+            if (v.getCode().equalsIgnoreCase(code)) {
+                return v;
+            }
+        }
+        return WowsServer.ASIA;
+    }
+
     public static WowsServer findCode(String code) {
         for (var v : WowsServer.values()) {
             if (v.getCode().equalsIgnoreCase(code)) {
@@ -50,9 +60,16 @@ public enum WowsServer {
     }
 
 
-
     public String vortex() {
         return "https://vortex." + url;
+    }
+
+    public String ptVortexServer() {
+        if (this == RU) {
+            return "https://vortex-rpt.korabli.su";
+        } else {
+            return "https://vortex.worldofwarships.pt";
+        }
     }
 
     public String clans() {

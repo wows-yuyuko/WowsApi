@@ -26,7 +26,10 @@ public class WowsJsonUtils {
 
 
     private JsonMapper.Builder load(PropertyNamingStrategy strategy) {
-        return builder().serializationInclusion(JsonInclude.Include.ALWAYS)
+        return builder()
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.ALWAYS, JsonInclude.Include.ALWAYS)
+                )
                 .propertyNamingStrategy(strategy)
                 .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
                 .configure(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature(), true)

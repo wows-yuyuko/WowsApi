@@ -16,10 +16,10 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
 public record DevelopersUserInfo(
         long account_id,
         DevelopersUserInfoStatistics statistics,
+        DevelopersUserInfoPrivate userInfoPrivate,
         String nickname,
         Boolean hidden_profile,
         long created_at
-
 ) {
 
     public static DevelopersUserInfo parse(WowsJsonUtils utils, long accountId, String json) throws BasicException {
@@ -27,10 +27,12 @@ public record DevelopersUserInfo(
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
-            return new DevelopersUserInfo(-1, null, "", true, 0);
+            return new DevelopersUserInfo(-1, null, null, "", true, 0);
         }
         var statistics = DevelopersUserInfoStatistics.parse(data.get("statistics"));
-        return new DevelopersUserInfo(data.get("account_id").asLong(), statistics, data.get("nickname").asText(), data.get("hidden_profile").asBoolean(),
+        var infoPrivate = DevelopersUserInfoPrivate.parse(data.get("private"));
+        return new DevelopersUserInfo(data.get("account_id").asLong(), statistics, infoPrivate,
+                data.get("nickname").asText(), data.get("hidden_profile").asBoolean(),
                 data.get("created_at").asLong());
     }
 }

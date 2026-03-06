@@ -1,8 +1,11 @@
 package com.shinoaki.wows.api.codec.http;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.data.AccountClanInfo;
+import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
 import com.shinoaki.wows.api.developers.account.DevelopersUserInfo;
+import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
@@ -11,7 +14,6 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -39,7 +41,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<VortexSearchUser> searchUserVortexCn(String userName) throws IOException, BasicException {
+    public List<VortexSearchUser> searchUserVortexCn(String userName) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         try {
             return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
@@ -62,7 +64,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<VortexSearchUser> searchUserVortex(String userName) throws IOException, BasicException {
+    public List<VortexSearchUser> searchUserVortex(String userName) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
     }
@@ -78,7 +80,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public VortexUserInfo userVortex(long accountId) throws IOException, BasicException {
+    public VortexUserInfo userVortex(long accountId) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return VortexUserInfo.parse(json.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(accountId))))), accountId);
     }
@@ -94,14 +96,33 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws IOException, BasicException {
+    public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
     }
 
-    public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId) {
+    public AccountInfo accountInfoDevelopers(String token, long accountId) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
-        return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId))).thenApplyAsync(data -> {
+        var baseJson = HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, "")));
+        //检查公会是否存在
+        var accountInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
+        var accountClan = AccountClanInfo.accountClan(json, accountId, HttpCodec.response(accountInfo));
+        //检测是否有公会，有则继续执行
+        if (accountClan.clanId() > 0) {
+            var clanInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
+            var clan = DevelopersClanInfo.parse(json, accountClan.clanId(), HttpCodec.response(clanInfo));
+            accountClan = AccountClanInfo.of(accountClan, clan);
+        }
+        return AccountInfo.parse(json, accountId, HttpCodec.response(baseJson), accountClan);
+    }
+
+    public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId) {
+        return userInfoDevelopersAsync(token, accountId, "");
+    }
+
+    public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId, String accessToken) {
+        final WowsJsonUtils json = new WowsJsonUtils();
+        return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, accessToken))).thenApplyAsync(data -> {
             try {
                 return CompletableInfo.ok(DevelopersUserInfo.parse(json, accountId, HttpCodec.response(data)));
             } catch (BasicException e) {
@@ -110,10 +131,14 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         });
     }
 
-    public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws IOException, BasicException {
+    public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws BasicException {
+        return userInfoDevelopers(token, accountId, "");
+    }
+
+    public DevelopersUserInfo userInfoDevelopers(String token, long accountId, String accessToken) throws BasicException {
         final WowsJsonUtils json = new WowsJsonUtils();
         return DevelopersUserInfo.parse(json, accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
-                accountId)))));
+                accountId, accessToken)))));
     }
 
     private URI uriVortex(String userName) {
@@ -128,10 +153,20 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         return URI.create(server.api() + String.format("/wows/account/list/?application_id=%s&search=%s", token, HttpCodec.encodeURIComponent(userName)));
     }
 
-    private URI uriDeveloperUserInfo(String token, long accountId) {
-        final String extra = "private.grouped_contacts,private.port,statistics.clan,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
-                             ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
-                             "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
-        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
+    private URI uriDeveloperUserInfo(String token, long accountId, String accessToken) {
+        final String extra;
+        if (server == WowsServer.RU) {
+            extra = "private.grouped_contacts,private.port,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
+                    ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
+                    "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
+        } else {
+            extra = "private.grouped_contacts,private.port,statistics.clan,statistics.club,statistics.oper_div,statistics.oper_div_hard,statistics" +
+                    ".oper_solo,statistics.pve,statistics.pve_div2,statistics.pve_div3,statistics.pve_solo,statistics.pvp_div2,statistics.pvp_div3," +
+                    "statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
+        }
+        if (accessToken.isBlank()) {
+            return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
+        }
+        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&&access_token=%s&account_id=%s&extra=%s", token, accessToken, accountId, extra));
     }
 }

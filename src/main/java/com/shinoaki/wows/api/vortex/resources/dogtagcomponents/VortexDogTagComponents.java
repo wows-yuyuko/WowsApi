@@ -1,8 +1,9 @@
 package com.shinoaki.wows.api.vortex.resources.dogtagcomponents;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.vortex.resources.WowsIcons;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author Xun
@@ -17,7 +18,7 @@ public class VortexDogTagComponents {
     private Boolean showClanTag;
     private VortexClanTag clanTag;
     private WowsIcons icons;
-    private JsonNode textureData;
+    private List<TextureData> textureData;
 
 
 }

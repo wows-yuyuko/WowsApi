@@ -5,6 +5,7 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import lombok.Data;
 
 import java.io.IOException;
@@ -34,20 +35,24 @@ public class WowsResources {
     private JsonNode ttc;
     private JsonNode restrictions;
 
+    public static List<WowsResources> request(WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
+        return request(false, server, language);
+    }
 
-    public static List<WowsResources> request(WowsServer server) throws IOException, InterruptedException, BasicException {
+    public static List<WowsResources> request(boolean isPtServer, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
         final String json = """
                 [
                     {
                         "query": "query Items($languageCode: String, $id: String) {\\n  items(lang: $languageCode, itemId: $id) {\\n    title\\n    description\\n    id\\n    titleShort\\n    tags\\n    typeName\\n    slot\\n    prices {\\n      credit\\n      gold\\n      xp\\n    }\\n    icons {\\n      default\\n    }\\n    type {\\n      name\\n      title\\n    }\\n    ttc {\\n      name\\n      value\\n      title\\n    }\\n    restrictions {\\n      levels\\n    }\\n  }\\n}",
                         "variables": {
-                            "languageCode": "zh-sg"
+                            "languageCode": "${language}"
                         }
                     }
                 ]
-                """;
+                """.replace("${language}", language.getLanguage());
         try (HttpClient client = HttpClient.newHttpClient()) {
-            var req = HttpRequest.newBuilder(URI.create(server.vortex()+"/api/graphql/glossary/"))
+            var url = isPtServer ? server.ptVortexServer() : server.vortex();
+            var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());

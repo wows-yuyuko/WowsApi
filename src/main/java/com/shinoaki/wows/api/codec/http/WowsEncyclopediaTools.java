@@ -7,7 +7,6 @@ import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +36,7 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
             });
         }
 
-        public DevelopersGlossary glossary() throws IOException, BasicException {
+        public DevelopersGlossary glossary() throws BasicException {
             return DevelopersGlossary.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
         }
 
