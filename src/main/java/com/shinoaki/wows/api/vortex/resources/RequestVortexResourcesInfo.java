@@ -81,7 +81,7 @@ public class RequestVortexResourcesInfo {
             components.setIsColorizable(tag.get("isColorizable").asBoolean());
             components.setShowClanTag(tag.get("showClanTag").asBoolean());
             components.setClanTag(VortexClanTag.parse(tag.get("clanTag")));
-            components.setIcons(new WowsIcons(tag.get("icons").get("medium").asText("")));
+            components.setIcons(new WowsIcons(tag.get("icons").get("medium").asString("")));
             List<TextureData> textureData = new ArrayList<>();
             for (var texture : tag.get("textureData")) {
                 var background = texture.get("background");

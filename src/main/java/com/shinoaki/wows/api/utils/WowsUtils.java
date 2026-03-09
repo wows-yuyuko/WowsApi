@@ -32,6 +32,6 @@ public class WowsUtils {
         if (node == null) {
             return defaultValue;
         }
-        return node.asText(defaultValue);
+        return node.asString(defaultValue);
     }
 }

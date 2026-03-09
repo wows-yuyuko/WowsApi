@@ -17,7 +17,7 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                                  int battlesCount, Boolean isPress, int seasonId, Boolean isHiddenStatistics, double winsPercentage, Boolean abnormalResults,
                                  double fragsPerBattle, Boolean isBanned, String profileLink) {
     public static VortexClanStatisticsInfo to(WowsServer server, JsonNode body) {
-        if (body.get("status").asText("error").contentEquals("ok")) {
+        if (body.get("status").asString("error").contentEquals("ok")) {
             List<VortexClanUserInfo> list = new ArrayList<>();
             JsonNode items = body.get("items");
             for (JsonNode js : items) {
