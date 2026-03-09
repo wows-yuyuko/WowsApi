@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.resources.dogtagcomponents;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @author Xun
@@ -16,9 +16,9 @@ public class VortexClanTag {
     public static VortexClanTag parse(JsonNode node) {
         VortexClanTag tag = new VortexClanTag();
         if (!node.isNull()) {
-            tag.setX(node.get("x").asText());
-            tag.setY(node.get("y").asText());
-            tag.setFontColor(node.get("fontColor").asText());
+            tag.setX(node.get("x").asString());
+            tag.setY(node.get("y").asString());
+            tag.setFontColor(node.get("fontColor").asString());
         }
         return tag;
     }

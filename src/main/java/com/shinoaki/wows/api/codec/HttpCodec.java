@@ -30,7 +30,6 @@ public class HttpCodec {
     }
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
-
     public static HttpRequest request(URI uri) {
         return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate, br")
                 .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")

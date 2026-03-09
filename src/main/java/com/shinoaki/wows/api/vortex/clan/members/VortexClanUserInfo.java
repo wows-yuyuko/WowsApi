@@ -1,8 +1,8 @@
 package com.shinoaki.wows.api.vortex.clan.members;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.type.WowsServer;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +25,10 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                 if (js.get("is_hidden_statistics").asBoolean()) {
                     list.add(new VortexClanUserInfo(
                             js.get("id").asLong(),
-                            js.get("name").asText(),
+                            js.get("name").asString(),
                             server,
                             0,
-                            role.get("name").asText(),
+                            role.get("name").asString(),
                             role.get("order").asInt(),
                             js.get("days_in_clan").asInt(),
                             null,
@@ -45,15 +45,15 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                             null,
                             0.0,
                             null,
-                            js.get("profile_link").asText()
+                            js.get("profile_link").asString()
                     ));
                 } else {
                     list.add(new VortexClanUserInfo(
                             js.get("id").asLong(),
-                            js.get("name").asText(),
+                            js.get("name").asString(),
                             server,
                             js.get("last_battle_time").asInt(),
-                            role.get("name").asText(),
+                            role.get("name").asString(),
                             role.get("order").asInt(),
                             js.get("days_in_clan").asInt(),
                             Optional.ofNullable(js.get("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE),
@@ -70,7 +70,7 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                             js.get("abnormal_results").asBoolean(),
                             Optional.ofNullable(js.get("frags_per_battle")).map(JsonNode::asDouble).orElse(0.0),
                             js.get("is_banned").asBoolean(),
-                            js.get("profile_link").asText()
+                            js.get("profile_link").asString()
                     ));
                 }
             }

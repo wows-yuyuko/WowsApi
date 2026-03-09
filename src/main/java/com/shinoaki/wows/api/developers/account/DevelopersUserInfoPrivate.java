@@ -1,11 +1,11 @@
 package com.shinoaki.wows.api.developers.account;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.utils.JsonUtils;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
 import com.shinoaki.wows.api.utils.WowsUtils;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -42,7 +42,7 @@ public record DevelopersUserInfoPrivate(
                 WowsUtils.json(node.get("wows_premium_expires_at"), 0),
                 WowsUtils.json(node.get("gold"), 0),
                 WowsUtils.json(node.get("free_xp"), 0),
-                new WowsJsonUtils().parse(node.get("port").toString(), new TypeReference<List<Long>>() {
+                JsonUtils.json().parse(node.get("port").toString(), new TypeReference<List<Long>>() {
                     @Override
                     public Type getType() {
                         return super.getType();
@@ -53,6 +53,6 @@ public record DevelopersUserInfoPrivate(
                 WowsUtils.json(node.get("empty_slots"), 0),
                 WowsUtils.json(node.get("slots"), 0),
                 WowsUtils.json(node.get("battle_life_time"), 0)
-                );
+        );
     }
 }

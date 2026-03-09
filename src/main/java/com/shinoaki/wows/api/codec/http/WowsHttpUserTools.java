@@ -10,7 +10,7 @@ import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
 
@@ -28,10 +28,10 @@ import java.util.concurrent.CompletableFuture;
 public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public CompletableFuture<CompletableInfo<List<VortexSearchUser>>> searchUserVortexCnAsync(String userName) {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriVortex(userName))).thenApplyAsync(data -> {
             try {
-                return CompletableInfo.ok(VortexSearchUser.parse(json, HttpCodec.response(data)));
+                return CompletableInfo.ok(VortexSearchUser.parse( HttpCodec.response(data)));
             } catch (BasicException e) {
                 if (e.getCode() == HttpThrowableStatus.HTTP_STATUS && (e.getMessage().contains("503"))) {
                     return CompletableInfo.ok(List.of());
@@ -42,9 +42,9 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public List<VortexSearchUser> searchUserVortexCn(String userName) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         try {
-            return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
+            return VortexSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
         } catch (BasicException e) {
             if (e.getCode() == HttpThrowableStatus.HTTP_STATUS && (e.getMessage().contains("503"))) {
                 return List.of();
@@ -54,10 +54,10 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public CompletableFuture<CompletableInfo<List<VortexSearchUser>>> searchUserVortexAsync(String userName) {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriVortex(userName))).thenApplyAsync(data -> {
             try {
-                return CompletableInfo.ok(VortexSearchUser.parse(json, HttpCodec.response(data)));
+                return CompletableInfo.ok(VortexSearchUser.parse( HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
             }
@@ -65,15 +65,15 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public List<VortexSearchUser> searchUserVortex(String userName) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
-        return VortexSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
+
+        return VortexSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
     }
 
     public CompletableFuture<CompletableInfo<VortexUserInfo>> userVortexAsync(long accountId) {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriVortex(accountId))).thenApplyAsync(data -> {
             try {
-                return CompletableInfo.ok(VortexUserInfo.parse(json.parse(HttpCodec.response(data)), accountId));
+                return CompletableInfo.ok(VortexUserInfo.parse(JsonUtils.json().parse(HttpCodec.response(data)), accountId));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
             }
@@ -81,15 +81,15 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public VortexUserInfo userVortex(long accountId) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
-        return VortexUserInfo.parse(json.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(accountId))))), accountId);
+
+        return VortexUserInfo.parse(JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(accountId))))), accountId);
     }
 
     public CompletableFuture<CompletableInfo<List<DevelopersSearchUser>>> searchUserDevelopersAsync(String token, String userName) {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloper(token, userName))).thenApplyAsync(data -> {
             try {
-                return CompletableInfo.ok(DevelopersSearchUser.parse(json, HttpCodec.response(data)));
+                return CompletableInfo.ok(DevelopersSearchUser.parse( HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
             }
@@ -97,23 +97,23 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
-        return DevelopersSearchUser.parse(json, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
+
+        return DevelopersSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
     }
 
     public AccountInfo accountInfoDevelopers(String token, long accountId) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         var baseJson = HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, "")));
         //检查公会是否存在
         var accountInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
-        var accountClan = AccountClanInfo.accountClan(json, accountId, HttpCodec.response(accountInfo));
+        var accountClan = AccountClanInfo.accountClan( accountId, HttpCodec.response(accountInfo));
         //检测是否有公会，有则继续执行
         if (accountClan.clanId() > 0) {
             var clanInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
-            var clan = DevelopersClanInfo.parse(json, accountClan.clanId(), HttpCodec.response(clanInfo));
+            var clan = DevelopersClanInfo.parse( accountClan.clanId(), HttpCodec.response(clanInfo));
             accountClan = AccountClanInfo.of(accountClan, clan);
         }
-        return AccountInfo.parse(json, accountId, HttpCodec.response(baseJson), accountClan);
+        return AccountInfo.parse( accountId, HttpCodec.response(baseJson), accountClan);
     }
 
     public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId) {
@@ -121,10 +121,10 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public CompletableFuture<CompletableInfo<DevelopersUserInfo>> userInfoDevelopersAsync(String token, long accountId, String accessToken) {
-        final WowsJsonUtils json = new WowsJsonUtils();
+
         return HttpCodec.sendAsync(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, accessToken))).thenApplyAsync(data -> {
             try {
-                return CompletableInfo.ok(DevelopersUserInfo.parse(json, accountId, HttpCodec.response(data)));
+                return CompletableInfo.ok(DevelopersUserInfo.parse( accountId, HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
             }
@@ -136,8 +136,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId, String accessToken) throws BasicException {
-        final WowsJsonUtils json = new WowsJsonUtils();
-        return DevelopersUserInfo.parse(json, accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
+
+        return DevelopersUserInfo.parse( accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
                 accountId, accessToken)))));
     }
 

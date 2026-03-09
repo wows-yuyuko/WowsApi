@@ -1,12 +1,9 @@
 package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.http.WowsEncyclopediaTools;
-import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
 import com.shinoaki.wows.api.type.WowsServer;
 import org.junit.Test;
 
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.util.concurrent.ExecutionException;
 

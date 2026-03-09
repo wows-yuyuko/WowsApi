@@ -1,10 +1,11 @@
 package com.shinoaki.wows.api.developers.warships.type;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.developers.warships.DevelopersDataBattery;
 import com.shinoaki.wows.api.developers.warships.DevelopersDataBatteryV2;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
+
 
 /**
  * @author Xun
@@ -50,7 +51,7 @@ public record DevelopersShipBattleType(
 ) {
 
     public static DevelopersShipBattleType parse(JsonNode node) throws BasicException {
-        return new WowsJsonUtils().parse(node, DevelopersShipBattleType.class);
+        return JsonUtils.json().parse(node, DevelopersShipBattleType.class);
     }
 
     public static DevelopersShipBattleType empty() {

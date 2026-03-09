@@ -1,9 +1,9 @@
 package com.shinoaki.wows.api.vortex.account.statistics;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 /**
  * https://vortex.worldofwarships.asia/api/accounts/2022515210/

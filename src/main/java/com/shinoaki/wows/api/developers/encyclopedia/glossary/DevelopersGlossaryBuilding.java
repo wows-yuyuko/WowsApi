@@ -1,14 +1,14 @@
 package com.shinoaki.wows.api.developers.encyclopedia.glossary;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Xun
@@ -25,12 +25,10 @@ public record DevelopersGlossaryBuilding(
         String ship_nation
 ) {
 
-    public static List<DevelopersGlossaryBuilding> parse(WowsJsonUtils json, JsonNode node) throws BasicException {
+    public static List<DevelopersGlossaryBuilding> parse(JsonNode node) throws BasicException {
         List<DevelopersGlossaryBuilding> list = new ArrayList<>();
-        var iterator = node.get("buildings").fields();
-        while (iterator.hasNext()) {
-            Map.Entry<String, JsonNode> map = iterator.next();
-            list.add(json.parse(map.getValue().toString(), new TypeReference<DevelopersGlossaryBuilding>() {
+        for (var map : node.get("buildings").properties()) {
+            list.add(JsonUtils.json().parse(map.getValue().toString(), new TypeReference<DevelopersGlossaryBuilding>() {
                 @Override
                 public Type getType() {
                     return super.getType();

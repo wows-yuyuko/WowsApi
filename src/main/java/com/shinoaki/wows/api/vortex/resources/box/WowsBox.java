@@ -1,6 +1,5 @@
 package com.shinoaki.wows.api.vortex.resources.box;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
@@ -8,6 +7,7 @@ import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import com.shinoaki.wows.api.vortex.resources.WowsIcons;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,10 +31,10 @@ public class WowsBox {
     private WowsIcons icons;
 
     public static List<WowsBox> request(WowsServer server) throws IOException, InterruptedException, BasicException {
-        return request(false,server, VortexResourcesLanguage.SG);
+        return request(false, server, VortexResourcesLanguage.SG);
     }
 
-    public static List<WowsBox> request(boolean isPtServer,WowsServer server, VortexResourcesLanguage languageCode) throws IOException, InterruptedException, BasicException {
+    public static List<WowsBox> request(boolean isPtServer, WowsServer server, VortexResourcesLanguage languageCode) throws IOException, InterruptedException, BasicException {
         final String json = """
                 [
                 	{
@@ -52,7 +52,7 @@ public class WowsBox {
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
             var data = HttpCodec.response(resp);
-            return WowsBox.parse(new JsonUtils().parse(data));
+            return WowsBox.parse(JsonUtils.json().parse(data));
         }
     }
 
@@ -66,8 +66,8 @@ public class WowsBox {
                     for (var box : lootbox) {
                         WowsBox w = new WowsBox();
                         w.setId(box.get("id").asLong());
-                        w.setTitle(box.get("title").asText());
-                        w.setShortTitle(box.get("shortTitle").asText());
+                        w.setTitle(box.get("title").asString());
+                        w.setShortTitle(box.get("shortTitle").asString());
                         w.setPremium(box.get("isPremium").asBoolean());
                         w.setIcons(WowsIcons.parse(box.get("icons")));
                         list.add(w);

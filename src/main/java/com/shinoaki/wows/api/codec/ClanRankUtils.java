@@ -1,11 +1,12 @@
 package com.shinoaki.wows.api.codec;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.clan.rank.ClanRankInfo;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -22,12 +23,6 @@ import java.util.Map;
 @Slf4j
 public class ClanRankUtils {
 
-    private final JsonUtils json;
-
-    public ClanRankUtils(JsonUtils json) {
-        this.json = json;
-    }
-
     /**
      * 获取排名
      *
@@ -35,7 +30,6 @@ public class ClanRankUtils {
      * @param season 赛季 0表示最新赛季
      * @return 结果
      */
-
     public List<ClanRankInfo> getRanks(WowsServer server, int season) {
         Map<Long, ClanRankInfo> rankMaps = new HashMap<>();
         String seasonRep = season <= 0 ? "" : String.valueOf(season);
@@ -62,7 +56,7 @@ public class ClanRankUtils {
         //https://clans.wowsgame.cn/api/ladder/structure/?clan_id=7000005269&season=22&realm=global
         try {
             HttpResponse<byte[]> response = client.send(HttpCodec.request(url), HttpResponse.BodyHandlers.ofByteArray());
-            return json.parse(HttpCodec.response(response), new TypeReference<List<ClanRankInfo>>() {
+            return JsonUtils.json().parse(HttpCodec.response(response), new TypeReference<List<ClanRankInfo>>() {
                 @Override
                 public Type getType() {
                     return super.getType();

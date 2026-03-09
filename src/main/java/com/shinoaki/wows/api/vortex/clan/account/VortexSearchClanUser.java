@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.clan.account;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.error.BasicException;
+import tools.jackson.databind.JsonNode;
 
 /**
  * https://vortex.worldofwarships.asia/api/accounts/2022515210/clans/
@@ -15,9 +15,9 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
         BasicException.status(node);
         JsonNode data = node.get("data");
         JsonNode clanId = data.get("clan_id");
-        return new VortexSearchClanUser(data.get("role").asText(),
+        return new VortexSearchClanUser(data.get("role").asString(),
                 VortexSearchClanInfo.to(data.get("clan")),
-                data.get("joined_at").asText(),
+                data.get("joined_at").asString(),
                 clanId.isNull() ? 0 : clanId.asLong());
     }
 
@@ -26,8 +26,8 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
 
         public static VortexSearchClanInfo to(JsonNode node) {
             if (!node.isEmpty()) {
-                return new VortexSearchClanInfo(node.get("tag").asText(), "#" + Long.toHexString(node.get("color").asLong()), node.get("members_count").asInt(),
-                        node.get("name").asText());
+                return new VortexSearchClanInfo(node.get("tag").asString(), "#" + Long.toHexString(node.get("color").asLong()), node.get("members_count").asInt(),
+                        node.get("name").asString());
             }
             return empty();
         }

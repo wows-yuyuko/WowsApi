@@ -1,8 +1,9 @@
 package com.shinoaki.wows.api.developers.clan;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
+ 
 
 /**
  * @author Xun
@@ -10,8 +11,8 @@ import com.shinoaki.wows.api.utils.WowsJsonUtils;
  */
 public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_at, long clan_id, String role, String account_name) {
 
-    public static DevelopersSearchUserClan parse(WowsJsonUtils utils, long accountId, String response) throws BasicException {
-        JsonNode node = utils.parse(response);
+    public static DevelopersSearchUserClan parse(  long accountId, String response) throws BasicException {
+        JsonNode node =  JsonUtils.json().parse(response);
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data.isNull()) {
@@ -22,8 +23,8 @@ public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_a
                 data.get("account_id").asLong(),
                 data.get("joined_at").asLong(),
                 data.get("clan_id").asLong(),
-                data.get("role").asText(),
-                data.get("account_name").asText());
+                data.get("role").asString(),
+                data.get("account_name").asString());
     }
 
     public record Clan(int members_count, long created_at, long clan_id, String tag, String name) {
@@ -31,8 +32,8 @@ public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_a
             if (node == null || node.isNull() || node.isEmpty()) {
                 return Clan.empty();
             }
-            return new Clan(node.get("members_count").asInt(), node.get("created_at").asLong(), node.get("clan_id").asLong(), node.get("tag").asText(),
-                    node.get("name").asText());
+            return new Clan(node.get("members_count").asInt(), node.get("created_at").asLong(), node.get("clan_id").asLong(), node.get("tag").asString(),
+                    node.get("name").asString());
         }
 
         public static Clan empty() {

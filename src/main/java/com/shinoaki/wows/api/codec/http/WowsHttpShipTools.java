@@ -6,7 +6,7 @@ import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
 
 import java.net.URI;
@@ -23,14 +23,14 @@ import java.util.concurrent.ExecutionException;
  */
 public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long accountId) {
     public Vortex vortex() {
-        return new Vortex(new WowsJsonUtils(), httpClient, server, accountId);
+        return new Vortex(  httpClient, server, accountId);
     }
 
     public Developers developers(String token) {
-        return new Developers(new WowsJsonUtils(), httpClient, server, accountId, token);
+        return new Developers(  httpClient, server, accountId, token);
     }
 
-    public record Vortex(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, long accountId) {
+    public record Vortex(  HttpClient httpClient, WowsServer server, long accountId) {
 
         public URI shipListUri(WowsBattlesType type) {
             return vortexShipList(server, type, accountId);
@@ -39,7 +39,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         public CompletableFuture<CompletableInfo<VortexUserShip>> shipListAsync(WowsBattlesType type) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(type))).thenApplyAsync(data -> {
                         try {
-                            return CompletableInfo.ok(VortexUserShip.parse(type, utils.parse(HttpCodec.response(data))));
+                            return CompletableInfo.ok(VortexUserShip.parse(type,  JsonUtils.json().parse(HttpCodec.response(data))));
                         } catch (BasicException e) {
                             return CompletableInfo.error(e);
                         }
@@ -48,7 +48,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public VortexUserShip shipList(WowsBattlesType type) throws BasicException {
-            return VortexUserShip.parse(type, utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type))))));
+            return VortexUserShip.parse(type,  JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type))))));
         }
 
         public CompletableFuture<CompletableInfo<Map<WowsBattlesType, VortexUserShip>>> shipListMapAsync(WowsBattlesType[] types) {
@@ -58,7 +58,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                 for (final WowsBattlesType type : types) {
                     list.add(HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(type))).thenApplyAsync(data -> {
                                 try {
-                                    return CompletableInfo.ok(VortexUserShip.parse(type, utils.parse(HttpCodec.response(data))));
+                                    return CompletableInfo.ok(VortexUserShip.parse(type,  JsonUtils.json().parse(HttpCodec.response(data))));
                                 } catch (BasicException e) {
                                     return CompletableInfo.error(e);
                                 }
@@ -89,7 +89,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
             for (WowsBattlesType type : types) {
                 shipMap.put(type, VortexUserShip.parse(type,
-                        utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type)))))));
+                         JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type)))))));
             }
             return shipMap;
         }
@@ -99,12 +99,12 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
     }
 
-    public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, long accountId, String token) {
+    public record Developers(  HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipListAsync() {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri())).thenApplyAsync(data -> {
                 try {
-                    return CompletableInfo.ok(DevelopersUserShip.parse(utils.parse(HttpCodec.response(data))));
+                    return CompletableInfo.ok(DevelopersUserShip.parse( JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
@@ -112,13 +112,13 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public DevelopersUserShip shipList() throws BasicException {
-            return DevelopersUserShip.parse(utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri())))));
+            return DevelopersUserShip.parse( JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri())))));
         }
 
         public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipListOaAsync(String accessToken) {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(accessToken))).thenApplyAsync(data -> {
                 try {
-                    return CompletableInfo.ok(DevelopersUserShip.parse(utils.parse(HttpCodec.response(data))));
+                    return CompletableInfo.ok(DevelopersUserShip.parse( JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
@@ -126,7 +126,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public DevelopersUserShip shipListOa(String accessToken) throws BasicException {
-            return DevelopersUserShip.parse(utils.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(accessToken))))));
+            return DevelopersUserShip.parse( JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(accessToken))))));
         }
 
         public URI shipListUri() {

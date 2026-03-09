@@ -1,8 +1,8 @@
 package com.shinoaki.wows.api.vortex.account;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +15,13 @@ import java.util.List;
  */
 public record VortexSearchUser(long spa_id, String name, boolean hidden) {
 
-    public static List<VortexSearchUser> parse(WowsJsonUtils utils, String json) throws BasicException {
-        JsonNode node = utils.parse(json);
-        String status = node.get("status").asText();
+    public static List<VortexSearchUser> parse(  String json) throws BasicException {
+        JsonNode node =  JsonUtils.json().parse(json);
+        String status = node.get("status").asString();
         if ("ok".equalsIgnoreCase(status)) {
             List<VortexSearchUser> list = new ArrayList<>();
             for (var data : node.get("data")) {
-                list.add(utils.parse(data, VortexSearchUser.class));
+                list.add( JsonUtils.json().parse(data, VortexSearchUser.class));
             }
             return list;
         } else {

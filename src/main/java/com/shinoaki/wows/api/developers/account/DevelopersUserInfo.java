@@ -1,9 +1,10 @@
 package com.shinoaki.wows.api.developers.account;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
+
 
 /**
  * @param account_id     账号id -1表示没有这个用户
@@ -22,8 +23,8 @@ public record DevelopersUserInfo(
         long created_at
 ) {
 
-    public static DevelopersUserInfo parse(WowsJsonUtils utils, long accountId, String json) throws BasicException {
-        JsonNode node = utils.parse(json);
+    public static DevelopersUserInfo parse(long accountId, String json) throws BasicException {
+        JsonNode node = JsonUtils.json().parse(json);
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
@@ -32,7 +33,7 @@ public record DevelopersUserInfo(
         var statistics = DevelopersUserInfoStatistics.parse(data.get("statistics"));
         var infoPrivate = DevelopersUserInfoPrivate.parse(data.get("private"));
         return new DevelopersUserInfo(data.get("account_id").asLong(), statistics, infoPrivate,
-                data.get("nickname").asText(), data.get("hidden_profile").asBoolean(),
+                data.get("nickname").asString(), data.get("hidden_profile").asBoolean(),
                 data.get("created_at").asLong());
     }
 }

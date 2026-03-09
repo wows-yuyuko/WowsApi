@@ -1,9 +1,10 @@
 package com.shinoaki.wows.api.developers.account.statistics;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.utils.WowsUtils;
+import tools.jackson.databind.JsonNode;
+
 
 public record DevelopersUserInfoStatistics(DevelopersShipBattleType clan, int distance, DevelopersShipBattleType pve_div3, DevelopersShipBattleType pve_div2,
                                            JsonNode oper_div, DevelopersShipBattleType pvp, JsonNode club, DevelopersShipBattleType pve_solo,

@@ -1,6 +1,6 @@
 package com.shinoaki.wows.api.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public class WowsUtils {
     private WowsUtils(){

@@ -1,8 +1,8 @@
 package com.shinoaki.wows.api.vortex.resources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @author Xun
@@ -17,6 +17,6 @@ public class WowsIcons {
     }
 
     public static WowsIcons parse(JsonNode node) {
-        return new WowsIcons(node.get("default").asText());
+        return new WowsIcons(node.get("default").asString());
     }
 }

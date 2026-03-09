@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.developers.encyclopedia.glossary;
 
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
 
 import java.util.List;
 
@@ -13,11 +13,11 @@ public record DevelopersGlossary(
         List<DevelopersGlossaryBuilding> buildings
 ) {
 
-    public static DevelopersGlossary parse(WowsJsonUtils json, String jsonData) throws BasicException {
-        var node = json.parse(jsonData);
+    public static DevelopersGlossary parse(String jsonData) throws BasicException {
+        var node = JsonUtils.json().parse(jsonData);
         BasicException.status(node);
         var data = node.get("data");
-        return new DevelopersGlossary(DevelopersGlossaryBuildingType.parse(json, data),
-                DevelopersGlossaryBuilding.parse(json, data));
+        return new DevelopersGlossary(DevelopersGlossaryBuildingType.parse(data),
+                DevelopersGlossaryBuilding.parse(data));
     }
 }

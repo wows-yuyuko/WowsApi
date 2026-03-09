@@ -1,6 +1,6 @@
 package com.shinoaki.wows.api.pr;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @param originalServer 原始服务器pr数据 在多船计算时该数据和userServer一致

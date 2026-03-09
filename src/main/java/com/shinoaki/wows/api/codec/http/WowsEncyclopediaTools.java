@@ -5,7 +5,6 @@ import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossary
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,19 +16,19 @@ import java.util.concurrent.CompletableFuture;
 public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
 
     public Developers developers(String token) {
-        return new Developers(new WowsJsonUtils(), httpClient, server, token);
+        return new Developers(  httpClient, server, token);
     }
 
     public Vortex vortex() {
-        return new Vortex(new WowsJsonUtils(), httpClient, server);
+        return new Vortex(  httpClient, server);
     }
 
 
-    public record Developers(WowsJsonUtils utils, HttpClient httpClient, WowsServer server, String token) {
+    public record Developers(  HttpClient httpClient, WowsServer server, String token) {
         public CompletableFuture<CompletableInfo<DevelopersGlossary>> glossaryAsync() {
             return HttpCodec.sendAsync(httpClient, HttpCodec.request(glossaryUri())).thenApplyAsync(data -> {
                 try {
-                    return CompletableInfo.ok(DevelopersGlossary.parse(utils, HttpCodec.response(data)));
+                    return CompletableInfo.ok(DevelopersGlossary.parse(HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
                 }
@@ -37,7 +36,7 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
         }
 
         public DevelopersGlossary glossary() throws BasicException {
-            return DevelopersGlossary.parse(utils, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
+            return DevelopersGlossary.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
         }
 
         public URI glossaryUri() {
@@ -45,7 +44,7 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
         }
     }
 
-    public record Vortex(WowsJsonUtils utils, HttpClient httpClient, WowsServer server) {
+    public record Vortex(  HttpClient httpClient, WowsServer server) {
 
     }
 }

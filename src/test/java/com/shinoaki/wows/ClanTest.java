@@ -4,7 +4,6 @@ import com.shinoaki.wows.api.codec.ClanRankUtils;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
-import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.clan.rank.ClanRankInfo;
 import org.junit.Test;
 
@@ -81,8 +80,8 @@ public class ClanTest {
     }
 
     @Test
-    public void clanRankTest(){
-        ClanRankUtils utils = new ClanRankUtils(new JsonUtils());
+    public void clanRankTest() {
+        ClanRankUtils utils = new ClanRankUtils();
         List<ClanRankInfo> ranks = utils.getRanks(WowsServer.CN, 0);
         System.out.println();
     }

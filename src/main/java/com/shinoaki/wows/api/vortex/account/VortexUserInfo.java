@@ -1,10 +1,10 @@
 package com.shinoaki.wows.api.vortex.account;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.DogTag;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.vortex.account.statistics.VortexUserInfoStatistics;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @author Xun
@@ -18,7 +18,7 @@ public record VortexUserInfo(
 ) {
 
     public static VortexUserInfo parse(JsonNode node, long accountId) throws BasicException {
-        String status = node.get("status").asText();
+        String status = node.get("status").asString();
         if ("ok".equalsIgnoreCase(status)) {
             JsonNode data = node.get("data").get(String.valueOf(accountId));
             if (data != null) {
@@ -26,7 +26,7 @@ public record VortexUserInfo(
                 if (hidden != null && hidden.asBoolean()) {
                     throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
                 }
-                String name = data.get("name").asText();
+                String name = data.get("name").asString();
                 double createAt = data.get("created_at").asDouble();
                 double activatedAt = data.get("activated_at").asDouble();
                 JsonNode dogTag = data.get("dog_tag");

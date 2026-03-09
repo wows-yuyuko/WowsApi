@@ -8,6 +8,8 @@
 
 # 2.0.3版本起，增加同步方法执行
 
+# 2.3.0版本起 Jackson升级到Jackson3 代码不在向下兼容
+
 ```xml
 
 <dependency>

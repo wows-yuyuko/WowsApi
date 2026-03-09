@@ -1,9 +1,10 @@
 package com.shinoaki.wows.api.developers.clan.seasion;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ public record DevelopersSeasonInfo(
         int division_points,
         int season_id
 ) {
-    public static List<DevelopersSeasonInfo> parse(WowsJsonUtils json, String jsonData) throws BasicException {
-        JsonNode node = json.parse(jsonData);
+    public static List<DevelopersSeasonInfo> parse(  String jsonData) throws BasicException {
+        JsonNode node = JsonUtils.json().parse(jsonData);
         BasicException.status(node);
         List<DevelopersSeasonInfo> infos = new ArrayList<>();
         for (var data : node.get("data")) {
-            infos.add(json.parse(data.toString(), new TypeReference<DevelopersSeasonInfo>() {
+            infos.add(JsonUtils.json().parse(data.toString(), new TypeReference<DevelopersSeasonInfo>() {
                 @Override
                 public Type getType() {
                     return super.getType();

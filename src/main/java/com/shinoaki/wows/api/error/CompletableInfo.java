@@ -1,6 +1,6 @@
 package com.shinoaki.wows.api.error;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 
 /**
  * @author Xun
@@ -25,9 +25,7 @@ public record CompletableInfo<T>(BasicException throwable, T data) {
         return new CompletableInfo<>(throwable, null);
     }
 
-    public static <T> CompletableInfo<T> error(JsonProcessingException throwable) {
-        return new CompletableInfo<>(new BasicException(throwable), null);
-    }
+
 
 
     public static <T, E> CompletableInfo<T> copy(CompletableInfo<E> source, T data) {

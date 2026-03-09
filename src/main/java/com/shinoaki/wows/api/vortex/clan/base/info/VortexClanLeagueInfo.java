@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.clan.base.info;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,11 +169,11 @@ public class VortexClanLeagueInfo {
             info.setClanId(clanId);
             info.setLongestWinningStreak(data.get("longest_winning_streak").asInt());
             info.setDivision(data.get("division").asInt());
-            info.setRealm(data.get("realm").asText());
+            info.setRealm(data.get("realm").asString());
             info.setWinsCount(data.get("wins_count").asInt());
             info.setTeamNumber(data.get("team_number").asInt());
             info.setCurrentWinningStreak(data.get("current_winning_streak").asInt());
-            info.setLastWinAt(data.get("last_win_at").asText());
+            info.setLastWinAt(data.get("last_win_at").asString());
             info.setSeasonNumber(data.get("season_number").asInt());
             info.setInitialPublicRating(data.get("initial_public_rating").asInt());
             info.setBattlesCount(data.get("battles_count").asInt());
@@ -189,7 +189,7 @@ public class VortexClanLeagueInfo {
             info.setMaxPositionDivisionRating(maxPosition.get("division_rating").asInt());
             info.setMaxPositionPublicRating(maxPosition.get("public_rating").asInt());
             info.setMaxPositionLeague(maxPosition.get("league").asInt());
-            info.setStatus(data.get("status").asText());
+            info.setStatus(data.get("status").asString());
             JsonNode stage = data.get("stage");
             if (stage == null || stage.isNull()) {
                 info.setStageStatus(0);
@@ -204,7 +204,7 @@ public class VortexClanLeagueInfo {
                 info.setStageType(stage.get("type").asInt());
                 info.setStageBattles(stage.get("battles").asInt());
                 info.setStageProgressList(stage.get("progress").toString());
-                info.setStageTarget(stage.get("target").asText());
+                info.setStageTarget(stage.get("target").asString());
                 info.setStageTargetPublicRating(stage.get("target_public_rating").asInt());
             }
             infoList.add(info);

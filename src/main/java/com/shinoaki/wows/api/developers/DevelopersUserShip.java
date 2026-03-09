@@ -1,15 +1,18 @@
 package com.shinoaki.wows.api.developers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.warships.DevelopersMeta;
 import com.shinoaki.wows.api.developers.warships.DevelopersShipBattleInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Xun
@@ -20,10 +23,8 @@ public record DevelopersUserShip(DevelopersMeta developersMeta, long accountId, 
     public static DevelopersUserShip parse(JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
-        DevelopersMeta developersMeta = new WowsJsonUtils().parse(node.get("meta"), DevelopersMeta.class);
-        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
-        if (iterator.hasNext()) {
-            Map.Entry<String, JsonNode> map = iterator.next();
+        DevelopersMeta developersMeta =   JsonUtils.json().parse(node.get("meta"), DevelopersMeta.class);
+        for (var map:node.get("data").properties()){
             List<DevelopersShipBattleInfo> developersShipBattleInfoList = DevelopersShipBattleInfo.parse(map.getValue());
             return new DevelopersUserShip(developersMeta, Long.parseLong(map.getKey()), developersShipBattleInfoList);
         }

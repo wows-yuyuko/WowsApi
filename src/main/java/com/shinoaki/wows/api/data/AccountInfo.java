@@ -1,8 +1,9 @@
 package com.shinoaki.wows.api.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
+ 
 
 /**
  * 游戏账号基础信息
@@ -27,15 +28,15 @@ public record AccountInfo(
         AccountClanInfo clan
 ) {
 
-    public static AccountInfo parse(WowsJsonUtils utils, long accountId, String json, AccountClanInfo clan) throws BasicException {
-        JsonNode node = utils.parse(json);
+    public static AccountInfo parse(  long accountId, String json, AccountClanInfo clan) throws BasicException {
+        JsonNode node =  JsonUtils.json().parse(json);
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
             return new AccountInfo(-1, null, 0, false, 0, 0, 0, clan);
         }
         return new AccountInfo(data.get("account_id").asLong(),
-                data.get("nickname").asText(),
+                data.get("nickname").asString(),
                 data.get("created_at").asLong(),
                 data.get("hidden_profile").asBoolean(),
                 data.get("last_battle_time").asLong(),

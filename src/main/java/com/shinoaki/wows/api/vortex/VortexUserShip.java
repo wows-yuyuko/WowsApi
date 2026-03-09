@@ -1,13 +1,16 @@
 package com.shinoaki.wows.api.vortex;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
+import tools.jackson.databind.JsonNode;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * @param type          战斗类型
@@ -32,25 +35,21 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
     public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
-        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("data").fields();
-        if (iterator.hasNext()) {
-            Map.Entry<String, JsonNode> map = iterator.next();
+        for (var map:node.get("data").properties()){
             return parse(type, Long.parseLong(map.getKey()), map.getValue());
         }
         return null;
     }
 
     private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
-        String name = node.get("name").asText();
+        String name = node.get("name").asString();
         JsonNode hiddenProfile = node.get("hidden_profile");
         if (hiddenProfile != null && hiddenProfile.asBoolean()) {
             //用户隐藏了战绩
             return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
         }
         Map<Long, VortexShipInfo> shipMap = new HashMap<>();
-        Iterator<Map.Entry<String, JsonNode>> iterator = node.get("statistics").fields();
-        while (iterator.hasNext()) {
-            var map = iterator.next();
+        for (var map :node.get("statistics").properties()){
             shipMap.put(Long.parseLong(map.getKey()), VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT))));
         }
         return new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),

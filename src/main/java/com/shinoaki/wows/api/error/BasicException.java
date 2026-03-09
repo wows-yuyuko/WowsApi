@@ -1,10 +1,10 @@
 package com.shinoaki.wows.api.error;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import tools.jackson.databind.JsonNode;
 
 import java.util.concurrent.ExecutionException;
 
@@ -27,10 +27,7 @@ public class BasicException extends Exception {
         this.code = code;
     }
 
-    public BasicException(JsonProcessingException e) {
-        super(e);
-        this.code = HttpThrowableStatus.DATA_PARSE;
-    }
+
 
     public BasicException(InterruptedException e) {
         super("线程被中断");
@@ -49,7 +46,7 @@ public class BasicException extends Exception {
 
     public static void status(JsonNode node) throws BasicException {
         JsonNode status = node.get("status");
-        if (!status.isNull() && status.asText().equalsIgnoreCase("ok")) {
+        if (!status.isNull() && status.asString().equalsIgnoreCase("ok")) {
             return;
         }
         //抛出解析status 异常的问题

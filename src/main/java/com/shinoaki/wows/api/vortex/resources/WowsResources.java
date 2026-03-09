@@ -1,12 +1,12 @@
 package com.shinoaki.wows.api.vortex.resources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import lombok.Data;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -57,7 +57,7 @@ public class WowsResources {
                     .POST(HttpRequest.BodyPublishers.ofString(json)).build();
             var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
             var data = HttpCodec.response(resp);
-            return WowsResources.parse(new JsonUtils().parse(data));
+            return WowsResources.parse(JsonUtils.json().parse(data));
         }
     }
 
@@ -70,12 +70,12 @@ public class WowsResources {
                 if (items != null) {
                     for (var info : items) {
                         WowsResources w = new WowsResources();
-                        w.setTitle(info.get("title").asText());
-                        w.setDescription(info.get("description").asText());
-                        w.setId(info.get("id").asText());
-                        w.setTitleShort(info.get("titleShort").asText());
+                        w.setTitle(info.get("title").asString());
+                        w.setDescription(info.get("description").asString());
+                        w.setId(info.get("id").asString());
+                        w.setTitleShort(info.get("titleShort").asString());
                         w.setTags(info.get("tags"));
-                        w.setTypeName(info.get("typeName").asText());
+                        w.setTypeName(info.get("typeName").asString());
                         w.setSlot(info.get("slot"));
                         w.setPrices(info.get("prices"));
                         w.setIcons(WowsIcons.parse(info.get("icons")));

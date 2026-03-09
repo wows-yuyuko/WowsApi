@@ -1,9 +1,10 @@
 package com.shinoaki.wows.api.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.utils.WowsJsonUtils;
+import com.shinoaki.wows.api.utils.JsonUtils;
+import tools.jackson.databind.JsonNode;
+ 
 
 /**
  * 用户公会信息
@@ -29,8 +30,8 @@ public record AccountClanInfo(
         long updatedAt
 ) {
 
-    public static AccountClanInfo accountClan(WowsJsonUtils utils, long accountId, String json) throws BasicException {
-        JsonNode node = utils.parse(json);
+    public static AccountClanInfo accountClan(  long accountId, String json) throws BasicException {
+        JsonNode node =  JsonUtils.json().parse(json);
         BasicException.status(node);
         JsonNode data = node.get("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
@@ -39,7 +40,7 @@ public record AccountClanInfo(
         return new AccountClanInfo(
                 data.get("clan_id").asLong(),
                 "", "", "", 0,
-                data.get("role").asText(),
+                data.get("role").asString(),
                 data.get("joined_at").asLong(),
                 0, 0);
     }

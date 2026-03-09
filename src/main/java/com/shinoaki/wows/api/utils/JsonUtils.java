@@ -1,35 +1,44 @@
 package com.shinoaki.wows.api.utils;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import static com.fasterxml.jackson.databind.json.JsonMapper.builder;
+import lombok.Getter;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Xun
- * @date 2023/3/18 13:51 星期六
  */
+@Getter
 public class JsonUtils {
-    /**
-     * JSON工具
-     */
-    private final ObjectMapper OBJECT_MAPPER;
+    private static final JsonUtils instance = new JsonUtils();
 
-    public JsonUtils() {
-        OBJECT_MAPPER = load(null).build();
+    private final JsonMapper mapper;
+
+    private JsonUtils() {
+        mapper = load().build();
+    }
+
+    public static JsonUtils json() {
+        return instance;
     }
 
 
-    private JsonMapper.Builder load(PropertyNamingStrategy strategy) {
-        return builder().serializationInclusion(JsonInclude.Include.ALWAYS)
-                .propertyNamingStrategy(strategy)
-                .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
-                .configure(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature(), true)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static JsonMapper.Builder load() {
+        StreamReadConstraints streamReadConstraints = StreamReadConstraints.builder()
+                .maxNumberLength(StreamReadConstraints.DEFAULT_MAX_NUM_LEN)
+                .maxNestingDepth(StreamReadConstraints.DEFAULT_MAX_DEPTH)
+                .maxStringLength(200_000_000).build();
+        StreamReadConstraints.overrideDefaultStreamReadConstraints(streamReadConstraints);
+        return JsonMapper.builder()
+                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
     }
 
 
@@ -40,8 +49,20 @@ public class JsonUtils {
      * @param <T>  类型
      * @return JSON数据
      */
-    public <T> String toJson(T data) throws JsonProcessingException {
-        return OBJECT_MAPPER.writeValueAsString(data);
+    public <T> String toJson(T data) {
+        return mapper.writeValueAsString(data);
+    }
+
+    public <T> void toJson(File file, T data) throws IOException {
+        mapper.writeValue(file, data);
+    }
+
+    public <T> void toJsonPrettyPrinter(File file, T data) throws IOException {
+        mapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
+    }
+
+    public <T> byte[] toJsonBytes(T data) {
+        return mapper.writeValueAsBytes(data);
     }
 
     /**
@@ -52,8 +73,24 @@ public class JsonUtils {
      * @param <T>    类型T
      * @return Java Bean
      */
-    public <T> T parse(String json, Class<T> tClass) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(json, tClass);
+    public <T> T parse(String json, Class<T> tClass) {
+        return mapper.readValue(json, tClass);
+    }
+
+    public <T> T parse(File file, Class<T> tClass) {
+        return mapper.readValue(file, tClass);
+    }
+
+    public <T> T parse(File file, TypeReference<T> type) {
+        return mapper.readValue(file, type);
+    }
+
+    public <T> T parse(byte[] file, TypeReference<T> type) {
+        return mapper.readValue(file, type);
+    }
+
+    public <T> T parse(byte[] file, Class<T> tClass) {
+        return mapper.readValue(file, tClass);
     }
 
     /**
@@ -64,8 +101,60 @@ public class JsonUtils {
      * @param <T>    类型T
      * @return Java Bean
      */
-    public <T> T parse(JsonNode json, Class<T> tClass) throws JsonProcessingException {
-        return OBJECT_MAPPER.treeToValue(json, tClass);
+    public <T> T parse(JsonNode json, Class<T> tClass) {
+        return mapper.treeToValue(json, tClass);
+    }
+
+//    /**
+//     * 适用于需要校验的
+//     * @param json  提交体
+//     * @param tClass    类
+//     * @return 结果
+//     * @param <T>   序列化类
+//     */
+//    public <T> T parseValid(JsonNode json, Class<T> tClass) {
+//        var object = mapper.treeToValue(json, tClass);
+//        try (var factory = Validation.buildDefaultValidatorFactory()) {
+//            var validator = factory.getValidator();
+//            Set<ConstraintViolation<Object>> violations = validator.validate(object);
+//            if (!violations.isEmpty()) {
+////                throw new ConstraintViolationException(violations);
+//                throw new ResultMessageException(RStatus.CONTENT_DENY);
+//            }
+//        }
+//        return object;
+//    }
+//
+//    /**
+//     * 适用于需要校验的
+//     * @param json  提交体
+//     * @param type 类型
+//     * @return 结果
+//     * @param <T>   序列化类
+//     */
+//    public <T> T parseValid(JsonNode json, TypeReference<T> type) {
+//        var object = mapper.treeToValue(json, type);
+//        try (var factory = Validation.buildDefaultValidatorFactory()) {
+//            var validator = factory.getValidator();
+//            Set<ConstraintViolation<Object>> violations = validator.validate(object);
+//            if (!violations.isEmpty()) {
+////                throw new ConstraintViolationException(violations);
+//                throw new ResultMessageException(RStatus.CONTENT_DENY);
+//            }
+//        }
+//        return object;
+//    }
+
+    /**
+     * 解析JSON文件返回Java Bean
+     *
+     * @param json json数据
+     * @param type 类型
+     * @param <T>  类型T
+     * @return Java Bean
+     */
+    public <T> T parse(JsonNode json, TypeReference<T> type) {
+        return mapper.treeToValue(json, type);
     }
 
     /**
@@ -74,8 +163,21 @@ public class JsonUtils {
      * @param json json数据
      * @return JsonNode
      */
-    public JsonNode parse(String json) throws JsonProcessingException {
+    public JsonNode parse(String json) {
         return parse(json, JsonNode.class);
+    }
+
+    public JsonNode parse(File json) throws IOException {
+        return parse(json, JsonNode.class);
+    }
+
+    public JsonNode parse(byte[] json) throws IOException {
+        return parse(json, JsonNode.class);
+    }
+
+    public JsonNode parseToNull(String json) {
+        return parse(json, JsonNode.class);
+
     }
 
     /**
@@ -86,7 +188,7 @@ public class JsonUtils {
      * @param <T>  类型T
      * @return Java Bean
      */
-    public <T> T parse(String json, TypeReference<T> type) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(json, type);
+    public <T> T parse(String json, TypeReference<T> type) {
+        return mapper.readValue(json, type);
     }
 }

@@ -38,7 +38,7 @@ public class ZstdWows {
             var data = tools.developers(TOKEN).shipList().toShipInfoMap();
             File file = new File(System.getProperty("user.dir") + File.separator + "dict" + File.separator + accountId + "ship.json");
             try (FileOutputStream out = new FileOutputStream(file)) {
-                out.write(new JsonUtils().toJson(data).getBytes());
+                out.write(JsonUtils.json().toJson(data).getBytes());
                 out.flush();
             }
         } catch (BasicException e) {

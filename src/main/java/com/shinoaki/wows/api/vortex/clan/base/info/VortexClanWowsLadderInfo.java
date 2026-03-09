@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.clan.base.info;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.utils.WowsUtils;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package com.shinoaki.wows.api.developers.warships;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
+import tools.jackson.databind.JsonNode;
 
 import java.util.*;
 
