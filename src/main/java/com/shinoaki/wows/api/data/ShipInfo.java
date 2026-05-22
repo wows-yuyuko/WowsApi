@@ -3,6 +3,7 @@ package com.shinoaki.wows.api.data;
 import com.shinoaki.wows.api.data.ship.*;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
+import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
 
 import java.io.Serializable;
 
@@ -27,6 +28,7 @@ import java.io.Serializable;
  * @param ratioBomb                       未知-武器命中数据
  * @param ratioRocket                     未知-武器命中数据
  * @param ratioSkip                       未知-武器命中数据
+ * @param expansion 扩展字段
  * @param lastBattleTime                  最后的战斗时间
  * @param recordTime                      记录时间
  * @author Xun
@@ -36,7 +38,9 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        int planesKilled, long artAgro, long tpdAgro,
 
                        MaxInfo maxInfo, ControlCapturedAndDroppedPoints controlCapturedAndDroppedPoints, HitRatio ratioMain, HitRatio ratioAtba,
-                       HitRatio ratioTpd, HitRatio ratioTbomb, HitRatio ratioBomb, HitRatio ratioRocket, HitRatio ratioSkip, long lastBattleTime,
+                       HitRatio ratioTpd, HitRatio ratioTbomb, HitRatio ratioBomb, HitRatio ratioRocket, HitRatio ratioSkip,
+                       ShipExpansion expansion,
+                       long lastBattleTime,
                        long recordTime) implements Serializable {
 
     public static ShipInfo empty(long shipId) {
@@ -48,16 +52,18 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 new FragsInfo(frags, 0, 0, 0, 0, 0, 0),
                 0, 0, 0, 0, MaxInfo.empty(),
                 ControlCapturedAndDroppedPoints.empty()
-                , HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), 0, 0);
+                , HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(),
+                ShipExpansion.empty(), 0, 0);
     }
 
-    public static ShipInfo to(long shipId, VortexShipInfo info, long recordTime) {
+    public static ShipInfo to(long shipId, VortexShipStatistics shipStatistics, long recordTime) {
+        var info = shipStatistics.shipInfo();
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info)
                 , (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.shots_by_main(), info.hits_by_main()), new HitRatio(info.shots_by_atba(),
                 info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.shots_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
                 new HitRatio(info.shots_by_bomb(), info.hits_by_bomb()), new HitRatio(info.shots_by_rocket(), info.hits_by_rocket()),
-                new HitRatio(info.shots_by_skip(), info.hits_by_skip()), 0L, recordTime);
+                new HitRatio(info.shots_by_skip(), info.hits_by_skip()), ShipExpansion.of(shipStatistics), 0L, recordTime);
     }
 
     public static ShipInfo to(long shipId, DevelopersShipBattleType info, long lastBattleTime, long recordTime) {
@@ -65,7 +71,9 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.torpedo_agro(), MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.main_battery().shots(), info.main_battery().hits()),
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()), new HitRatio(info.torpedoes().shots(), info.torpedoes().hits()),
-                new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0), lastBattleTime, recordTime);
+                new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0),
+                ShipExpansion.empty(),
+                lastBattleTime, recordTime);
     }
 
     /**
@@ -95,6 +103,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioBomb().addition(history.ratioBomb),
                 this.ratioRocket().addition(history.ratioRocket),
                 this.ratioSkip().addition(history.ratioSkip),
+                history.expansion,
                 this.lastBattleTime(), history.recordTime());
     }
 
@@ -125,6 +134,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioBomb().subtraction(history.ratioBomb),
                 this.ratioRocket().subtraction(history.ratioRocket),
                 this.ratioSkip().subtraction(history.ratioSkip),
+                history.expansion,
                 this.lastBattleTime(), history.recordTime());
     }
 

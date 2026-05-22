@@ -5,6 +5,7 @@ import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
+import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ import java.util.Map;
  * @author Xun
  * @date 2023/4/9 18:43 星期日
  */
-public record VortexUserShip(WowsBattlesType type, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipInfo> shipMap, double created_at,
+public record VortexUserShip(WowsBattlesType type, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipStatistics> shipMap, double created_at,
                              double activated_at, long recordTime) {
 
     public List<ShipInfo> toShipInfoList() {
@@ -35,7 +36,7 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
     public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
-        for (var map:node.get("data").properties()){
+        for (var map : node.get("data").properties()) {
             return parse(type, Long.parseLong(map.getKey()), map.getValue());
         }
         return null;
@@ -48,9 +49,11 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
             //用户隐藏了战绩
             return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
         }
-        Map<Long, VortexShipInfo> shipMap = new HashMap<>();
-        for (var map :node.get("statistics").properties()){
-            shipMap.put(Long.parseLong(map.getKey()), VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT))));
+        Map<Long, VortexShipStatistics> shipMap = new HashMap<>();
+        for (var map : node.get("statistics").properties()) {
+            var info = VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT)));
+            var masterySign = map.getValue().get("mastery_sign").asString("");
+            shipMap.put(Long.parseLong(map.getKey()), new VortexShipStatistics(info, masterySign));
         }
         return new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),
                 node.get("activated_at").asDouble(),

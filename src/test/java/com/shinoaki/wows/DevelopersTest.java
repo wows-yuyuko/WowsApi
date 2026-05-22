@@ -3,6 +3,7 @@ package com.shinoaki.wows;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import org.junit.Test;
@@ -46,6 +47,13 @@ public class DevelopersTest {
         var a1 = d1.controlCapturedAndDroppedPoints().gameContributionToDefense();
         var a2 = d1.controlCapturedAndDroppedPoints().gameContributionToCapture();
         System.out.println(list);
+    }
+
+    @Test
+    public void shipTest3() throws InterruptedException, ExecutionException, BasicException {
+        WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
+        var developers = tools.developers(token).shipBadges();
+        System.out.println(developers);
     }
 
 }

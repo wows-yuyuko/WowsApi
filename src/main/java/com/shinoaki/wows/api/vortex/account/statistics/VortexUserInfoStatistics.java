@@ -23,6 +23,7 @@ public class VortexUserInfoStatistics {
     private VortexShipInfo rank_div3;
     private VortexShipInfo rank_div2;
     private VortexShipInfo pvp_div3;
+    private String mastery_sign;
 
     public static VortexUserInfoStatistics parse(JsonNode node) throws BasicException {
         if (node == null || node.isEmpty()) {
@@ -42,6 +43,7 @@ public class VortexUserInfoStatistics {
         statistics.setRank_div3(infoCheckEmpty(node.get("rank_div3")));
         statistics.setRank_div2(infoCheckEmpty(node.get("rank_div2")));
         statistics.setPvp_div3(infoCheckEmpty(node.get("pvp_div3")));
+        statistics.setMastery_sign(node.get("mastery_sign").asString(""));
         return statistics;
     }
 
