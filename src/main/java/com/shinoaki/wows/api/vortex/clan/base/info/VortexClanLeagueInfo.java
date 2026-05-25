@@ -140,7 +140,7 @@ public class VortexClanLeagueInfo {
     /**
      * 类型
      */
-    private int stageType;
+    private String stageType;
     /**
      * 目标段位
      */
@@ -201,7 +201,7 @@ public class VortexClanLeagueInfo {
                 info.setStageTargetLeague(stage.get("target_league").asInt());
                 info.setStageBattles(stage.get("battle_result_id").asInt());
                 info.setStageId(stage.get("id").asInt());
-                info.setStageType(stage.get("type").asInt());
+                info.setStageType(stage.get("type").asString());
                 info.setStageBattles(stage.get("battles").asInt());
                 info.setStageProgressList(stage.get("progress").toString());
                 info.setStageTarget(stage.get("target").asString());
