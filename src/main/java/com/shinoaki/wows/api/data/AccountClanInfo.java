@@ -33,15 +33,15 @@ public record AccountClanInfo(
     public static AccountClanInfo accountClan(  long accountId, String json) throws BasicException {
         JsonNode node =  JsonUtils.json().parse(json);
         BasicException.status(node);
-        JsonNode data = node.get("data").get(String.valueOf(accountId));
+        JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
             return empty();
         }
         return new AccountClanInfo(
-                data.get("clan_id").asLong(),
+                data.path("clan_id").asLong(),
                 "", "", "", 0,
-                data.get("role").asString(),
-                data.get("joined_at").asLong(),
+                data.path("role").asString(),
+                data.path("joined_at").asLong(),
                 0, 0);
     }
 

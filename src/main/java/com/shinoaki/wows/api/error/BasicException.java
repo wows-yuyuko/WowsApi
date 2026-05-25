@@ -45,8 +45,8 @@ public class BasicException extends Exception {
     }
 
     public static void status(JsonNode node) throws BasicException {
-        JsonNode status = node.get("status");
-        if (!status.isNull() && status.asString().equalsIgnoreCase("ok")) {
+        JsonNode status = node.path("status");
+        if (!status.isNull() && status.asString("").equalsIgnoreCase("ok")) {
             return;
         }
         //抛出解析status 异常的问题

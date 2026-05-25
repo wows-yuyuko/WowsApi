@@ -72,23 +72,23 @@ public class RequestVortexResourcesInfo {
 
     private static List<VortexDogTagComponents> vortexDogTagComponents(JsonNode data) {
         List<VortexDogTagComponents> list = new LinkedList<>();
-        var dogTagComponents = data.get("data").get("dogTagComponents");
+        var dogTagComponents = data.path("data").path("dogTagComponents");
         for (var tag : dogTagComponents) {
             VortexDogTagComponents components = new VortexDogTagComponents();
-            components.setId(tag.get("id").asString());
-            components.setType(tag.get("type").asString());
-            components.setColor(tag.get("color").asString());
-            components.setIsColorizable(tag.get("isColorizable").asBoolean());
-            components.setShowClanTag(tag.get("showClanTag").asBoolean());
-            components.setClanTag(VortexClanTag.parse(tag.get("clanTag")));
-            components.setIcons(new WowsIcons(tag.get("icons").get("medium").asString("")));
+            components.setId(tag.path("id").asString());
+            components.setType(tag.path("type").asString());
+            components.setColor(tag.path("color").asString());
+            components.setIsColorizable(tag.path("isColorizable").asBoolean());
+            components.setShowClanTag(tag.path("showClanTag").asBoolean());
+            components.setClanTag(VortexClanTag.parse(tag.path("clanTag")));
+            components.setIcons(new WowsIcons(tag.path("icons").path("medium").asString("")));
             List<TextureData> textureData = new ArrayList<>();
-            for (var texture : tag.get("textureData")) {
-                var background = texture.get("background");
-                var border = texture.get("border");
-                textureData.add(new TextureData(texture.get("id").asString(),
-                        new ComponentIcons(background.get("medium").asString())
-                        , new ComponentIcons(border.get("medium").asString())
+            for (var texture : tag.path("textureData")) {
+                var background = texture.path("background");
+                var border = texture.path("border");
+                textureData.add(new TextureData(texture.path("id").asString(),
+                        new ComponentIcons(background.path("medium").asString())
+                        , new ComponentIcons(border.path("medium").asString())
                 ));
             }
             components.setTextureData(textureData);
@@ -98,7 +98,7 @@ public class RequestVortexResourcesInfo {
     }
 
     private static List<VortexVehicles> vortexVehicles(JsonUtils json, JsonNode data, String language)  {
-        var vehicles = data.get("data").get("vehicles");
+        var vehicles = data.path("data").path("vehicles");
         return json.parse(vehicles.toString(), new TypeReference<List<VortexVehicles>>() {
                     @Override
                     public Type getType() {

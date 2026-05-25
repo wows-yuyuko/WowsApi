@@ -35,31 +35,31 @@ public record DevelopersClanInfo(int members_count,
     public static DevelopersClanInfo parse(long clanId, String response) throws BasicException {
         JsonNode node = JsonUtils.json().parse(response);
         BasicException.status(node);
-        JsonNode data = node.get("data").get(String.valueOf(clanId));
-        var membersIds =JsonUtils.json().parse(data.get("members_ids").toString(), new TypeReference<List<Long>>() {
+        JsonNode data = node.path("data").get(String.valueOf(clanId));
+        var membersIds =JsonUtils.json().parse(data.path("members_ids").toString(), new TypeReference<List<Long>>() {
             @Override
             public Type getType() {
                 return super.getType();
             }
         });
         return new DevelopersClanInfo(
-                data.get("members_count").asInt(),
-                data.get("name").asString(),
-                data.get("creator_name").asString(),
-                data.get("created_at").asLong(),
-                data.get("tag").asString(),
-                data.get("updated_at").asLong(),
-                data.get("leader_name").asString(),
+                data.path("members_count").asInt(),
+                data.path("name").asString(),
+                data.path("creator_name").asString(),
+                data.path("created_at").asLong(),
+                data.path("tag").asString(),
+                data.path("updated_at").asLong(),
+                data.path("leader_name").asString(),
                 membersIds,
-                data.get("creator_id").asInt(),
-                data.get("clan_id").asLong(),
-                DevelopersClanUserInfo.parse(data.get("members")),
-                data.get("old_name").asString(),
-                data.get("is_clan_disbanded").asBoolean(false),
-                data.get("renamed_at").asString(),
-                data.get("old_tag").asString(),
-                data.get("leader_id").asString(),
-                data.get("description").asString()
+                data.path("creator_id").asInt(),
+                data.path("clan_id").asLong(),
+                DevelopersClanUserInfo.parse(data.path("members")),
+                data.path("old_name").asString(),
+                data.path("is_clan_disbanded").asBoolean(false),
+                data.path("renamed_at").asString(),
+                data.path("old_tag").asString(),
+                data.path("leader_id").asString(),
+                data.path("description").asString()
         );
     }
 
@@ -70,10 +70,10 @@ public record DevelopersClanInfo(int members_count,
             }
             List<DevelopersClanUserInfo> info = new ArrayList<>();
             for (var next : node.properties()) {
-                info.add(new DevelopersClanUserInfo(next.getValue().get("role").asString(),
-                        next.getValue().get("joined_at").asLong(),
-                        next.getValue().get("account_id").asLong(),
-                        next.getValue().get("account_name").asString()));
+                info.add(new DevelopersClanUserInfo(next.getValue().path("role").asString(),
+                        next.getValue().path("joined_at").asLong(),
+                        next.getValue().path("account_id").asLong(),
+                        next.getValue().path("account_name").asString()));
             }
             return info;
         }

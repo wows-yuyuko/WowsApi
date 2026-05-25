@@ -1,6 +1,7 @@
 package com.shinoaki.wows.api.vortex.account.statistics;
 
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import lombok.Data;
 import tools.jackson.databind.JsonNode;
@@ -30,20 +31,20 @@ public class VortexUserInfoStatistics {
             return empty();
         }
         VortexUserInfoStatistics statistics = new VortexUserInfoStatistics();
-        statistics.setPvp(infoCheckEmpty(node.get("pvp")));
-        statistics.setRank_info(node.get("rank_info"));
-        statistics.setBasic(Basic.parse(node.get("basic")));
-        statistics.setPvp_solo(infoCheckEmpty(node.get("pvp_solo")));
-        statistics.setRank_old_div3(infoCheckEmpty(node.get("rank_old_div3")));
-        statistics.setRank_old_div2(infoCheckEmpty(node.get("rank_old_div2")));
-        statistics.setRank_solo(infoCheckEmpty(node.get("rank_solo")));
-        statistics.setSeasons(node.get("seasons"));
-        statistics.setRank_old_solo(infoCheckEmpty(node.get("rank_old_solo")));
-        statistics.setPvp_div2(infoCheckEmpty(node.get("pvp_div2")));
-        statistics.setRank_div3(infoCheckEmpty(node.get("rank_div3")));
-        statistics.setRank_div2(infoCheckEmpty(node.get("rank_div2")));
-        statistics.setPvp_div3(infoCheckEmpty(node.get("pvp_div3")));
-        statistics.setMastery_sign(node.get("mastery_sign").asString(""));
+        statistics.setPvp(infoCheckEmpty(node.path("pvp")));
+        statistics.setRank_info(node.path("rank_info"));
+        statistics.setBasic(Basic.parse(node.path("basic")));
+        statistics.setPvp_solo(infoCheckEmpty(node.path("pvp_solo")));
+        statistics.setRank_old_div3(infoCheckEmpty(node.path("rank_old_div3")));
+        statistics.setRank_old_div2(infoCheckEmpty(node.path("rank_old_div2")));
+        statistics.setRank_solo(infoCheckEmpty(node.path("rank_solo")));
+        statistics.setSeasons(node.path("seasons"));
+        statistics.setRank_old_solo(infoCheckEmpty(node.path("rank_old_solo")));
+        statistics.setPvp_div2(infoCheckEmpty(node.path("pvp_div2")));
+        statistics.setRank_div3(infoCheckEmpty(node.path("rank_div3")));
+        statistics.setRank_div2(infoCheckEmpty(node.path("rank_div2")));
+        statistics.setPvp_div3(infoCheckEmpty(node.path("pvp_div3")));
+        statistics.setMastery_sign(node.path("mastery_sign").asString(""));
         return statistics;
     }
 

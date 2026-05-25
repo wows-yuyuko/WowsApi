@@ -23,8 +23,8 @@ public record DevelopersUserShip(DevelopersMeta developersMeta, long accountId, 
     public static DevelopersUserShip parse(JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
-        DevelopersMeta developersMeta =   JsonUtils.json().parse(node.get("meta"), DevelopersMeta.class);
-        for (var map:node.get("data").properties()){
+        DevelopersMeta developersMeta =   JsonUtils.json().parse(node.path("meta"), DevelopersMeta.class);
+        for (var map:node.path("data").properties()){
             List<DevelopersShipBattleInfo> developersShipBattleInfoList = DevelopersShipBattleInfo.parse(map.getValue());
             return new DevelopersUserShip(developersMeta, Long.parseLong(map.getKey()), developersShipBattleInfoList);
         }

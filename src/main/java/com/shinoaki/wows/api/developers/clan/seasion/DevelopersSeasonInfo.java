@@ -27,7 +27,7 @@ public record DevelopersSeasonInfo(
         JsonNode node = JsonUtils.json().parse(jsonData);
         BasicException.status(node);
         List<DevelopersSeasonInfo> infos = new ArrayList<>();
-        for (var data : node.get("data")) {
+        for (var data : node.path("data")) {
             infos.add(JsonUtils.json().parse(data.toString(), new TypeReference<DevelopersSeasonInfo>() {
                 @Override
                 public Type getType() {

@@ -17,7 +17,7 @@ public record DevelopersSearchClan(int members_count, long created_at, long clan
     public static List<DevelopersSearchClan> parse(String response) throws BasicException {
         JsonNode node = JsonUtils.json().parse(response);
         BasicException.status(node);
-        return JsonUtils.json().parse(node.get("data").toString(), new TypeReference<List<DevelopersSearchClan>>() {
+        return JsonUtils.json().parse(node.path("data").toString(), new TypeReference<List<DevelopersSearchClan>>() {
             @Override
             public Type getType() {
                 return super.getType();

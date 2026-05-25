@@ -59,17 +59,17 @@ public class WowsBox {
     private static List<WowsBox> parse(JsonNode jsonNode) {
         List<WowsBox> list = new ArrayList<>();
         for (var nodeList : jsonNode) {
-            var data = nodeList.get("data");
+            var data = nodeList.path("data");
             if (data != null) {
-                var lootbox = data.get("lootbox");
+                var lootbox = data.path("lootbox");
                 if (lootbox != null) {
                     for (var box : lootbox) {
                         WowsBox w = new WowsBox();
-                        w.setId(box.get("id").asLong());
-                        w.setTitle(box.get("title").asString());
-                        w.setShortTitle(box.get("shortTitle").asString());
-                        w.setPremium(box.get("isPremium").asBoolean());
-                        w.setIcons(WowsIcons.parse(box.get("icons")));
+                        w.setId(box.path("id").asLong());
+                        w.setTitle(box.path("title").asString());
+                        w.setShortTitle(box.path("shortTitle").asString());
+                        w.setPremium(box.path("isPremium").asBoolean());
+                        w.setIcons(WowsIcons.parse(box.path("icons")));
                         list.add(w);
                     }
                 }

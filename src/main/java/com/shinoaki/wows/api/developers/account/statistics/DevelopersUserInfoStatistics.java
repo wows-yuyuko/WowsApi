@@ -13,24 +13,24 @@ public record DevelopersUserInfoStatistics(DevelopersShipBattleType clan, int di
                                            DevelopersShipBattleType rank_div3, DevelopersShipBattleType rank_div2, DevelopersShipBattleType rank_solo) {
     public static DevelopersUserInfoStatistics parse(JsonNode node) throws BasicException {
         return new DevelopersUserInfoStatistics(
-                checkShipInfo(node.get("clan")),
-                WowsUtils.json(node.get("distance"), 0),
-                checkShipInfo(node.get("pve_div3")),
-                checkShipInfo(node.get("pve_div2")),
-                checkInfo(node.get("oper_div")),
-                checkShipInfo(node.get("pvp")),
-                checkInfo(node.get("club")),
-                checkShipInfo(node.get("pve_solo")),
-                checkShipInfo(node.get("pvp_solo")),
-                checkInfo(node.get("oper_div_hard")),
-                WowsUtils.json(node.get("battles"), 0),
-                checkShipInfo(node.get("pve")),
-                checkShipInfo(node.get("pvp_div3")),
-                checkShipInfo(node.get("pvp_div2")),
-                checkInfo(node.get("oper_solo")),
-                checkShipInfo(node.get("rank_div3")),
-                checkShipInfo(node.get("rank_div2")),
-                checkShipInfo(node.get("rank_solo")));
+                checkShipInfo(node.path("clan")),
+                WowsUtils.json(node.path("distance"), 0),
+                checkShipInfo(node.path("pve_div3")),
+                checkShipInfo(node.path("pve_div2")),
+                checkInfo(node.path("oper_div")),
+                checkShipInfo(node.path("pvp")),
+                checkInfo(node.path("club")),
+                checkShipInfo(node.path("pve_solo")),
+                checkShipInfo(node.path("pvp_solo")),
+                checkInfo(node.path("oper_div_hard")),
+                WowsUtils.json(node.path("battles"), 0),
+                checkShipInfo(node.path("pve")),
+                checkShipInfo(node.path("pvp_div3")),
+                checkShipInfo(node.path("pvp_div2")),
+                checkInfo(node.path("oper_solo")),
+                checkShipInfo(node.path("rank_div3")),
+                checkShipInfo(node.path("rank_div2")),
+                checkShipInfo(node.path("rank_solo")));
 
     }
 

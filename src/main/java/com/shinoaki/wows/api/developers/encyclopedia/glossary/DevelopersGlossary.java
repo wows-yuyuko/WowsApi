@@ -16,7 +16,7 @@ public record DevelopersGlossary(
     public static DevelopersGlossary parse(String jsonData) throws BasicException {
         var node = JsonUtils.json().parse(jsonData);
         BasicException.status(node);
-        var data = node.get("data");
+        var data = node.path("data");
         return new DevelopersGlossary(DevelopersGlossaryBuildingType.parse(data),
                 DevelopersGlossaryBuilding.parse(data));
     }

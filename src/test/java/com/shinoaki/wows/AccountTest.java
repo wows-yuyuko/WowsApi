@@ -2,10 +2,12 @@ package com.shinoaki.wows;
 
 
 import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
+import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
+import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,24 +22,32 @@ import java.util.concurrent.ExecutionException;
 public class AccountTest {
 
     @Test
-    public void searchUserAsia() throws InterruptedException, ExecutionException, IOException, BasicException {
-        String u1 = "JustOn";
-        HttpClient client = HttpClient.newBuilder().build();
-        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
-        System.out.println(asia.searchUserVortexAsync(u1).get().data());
-        System.out.println("=================");
-        System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
-        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
-        System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
-        System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
+    public void searchUserAsia() throws InterruptedException, ExecutionException {
+        try {
+            String u1 = "JustOn";
+            HttpClient client = HttpClient.newBuilder().build();
+            WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
+            System.out.println(asia.searchUserVortexAsync(u1).get().data());
+            System.out.println("=================");
+            System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
+            System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
+            System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
+            System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
+        } catch (BasicException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void searchUserRu() throws InterruptedException, ExecutionException, IOException, BasicException {
+    public void searchUserRu()  {
 
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
-        System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807, "b23c6ac59298c2dafdda2a405593f4f950eab316")));
+        try {
+            System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807, "b23c6ac59298c2dafdda2a405593f4f950eab316")));
+        } catch (BasicException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -68,20 +78,30 @@ public class AccountTest {
     }
 
     @Test
-    public void accountInfo() throws InterruptedException, ExecutionException, BasicException, IOException {
+    public void accountInfo()  {
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
-        var data = asia.accountInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+        AccountInfo data = null;
+        try {
+            data = asia.accountInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+        } catch (BasicException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println(JsonUtils.json().toJson(data));
         System.out.println("===========");
     }
 
 
     @Test
-    public void userInfoVortex() throws InterruptedException, ExecutionException, BasicException, IOException {
+    public void userInfoVortex()  {
         HttpClient client = HttpClient.newBuilder().build();
-        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.EU);
-        var data = asia.userVortex(562058793L);
+        WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
+        VortexUserInfo data = null;
+        try {
+            data = asia.userVortex(267485138L);
+        } catch (BasicException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println(JsonUtils.json().toJson(data));
         System.out.println("===========");
     }

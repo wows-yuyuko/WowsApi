@@ -34,21 +34,21 @@ public record VortexClanInfo(long clanId, WowsServer wowsServer, String tag, Str
                              String colorRgb, long createdAt, VortexClanWowsLadderInfo wowsLadder,
                              List<VortexClanBuildingsInfo> clanBuildingsInfoList) {
     public static VortexClanInfo to(WowsServer server, long clanId, JsonNode body) {
-        JsonNode clanview = body.get("clanview");
+        JsonNode clanview = body.path("clanview");
         if (clanview != null) {
-            JsonNode clan = clanview.get("clan");
+            JsonNode clan = clanview.path("clan");
             return new VortexClanInfo(
                     clanId,
                     server,
-                    clan.get("tag").asString(),
-                    clan.get("name").asString(),
-                    clan.get("description").asString(),
-                    clan.get("members_count").asInt(),
-                    clan.get("max_members_count").asInt(),
-                    clan.get("color").asString(),
-                    DateUtils.toTimeMillis(LocalDateTime.parse(clan.get("created_at").asString(), DateTimeFormatter.ISO_DATE_TIME)),
-                    VortexClanWowsLadderInfo.parse(clanId, server == WowsServer.RU ? clanview.get("mk_ladder") : clanview.get("wows_ladder")),
-                    VortexClanBuildingsInfo.clan(clanId, clanview.get("buildings"))
+                    clan.path("tag").asString(),
+                    clan.path("name").asString(),
+                    clan.path("description").asString(),
+                    clan.path("members_count").asInt(),
+                    clan.path("max_members_count").asInt(),
+                    clan.path("color").asString(),
+                    DateUtils.toTimeMillis(LocalDateTime.parse(clan.path("created_at").asString(), DateTimeFormatter.ISO_DATE_TIME)),
+                    VortexClanWowsLadderInfo.parse(clanId, server == WowsServer.RU ? clanview.path("mk_ladder") : clanview.path("wows_ladder")),
+                    VortexClanBuildingsInfo.clan(clanId, clanview.path("buildings"))
             );
         }
         return null;

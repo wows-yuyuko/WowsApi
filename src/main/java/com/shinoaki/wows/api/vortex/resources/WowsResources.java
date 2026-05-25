@@ -64,24 +64,24 @@ public class WowsResources {
     private static List<WowsResources> parse(JsonNode jsonNode) {
         List<WowsResources> list = new ArrayList<>();
         for (var nodeList : jsonNode) {
-            var data = nodeList.get("data");
+            var data = nodeList.path("data");
             if (data != null) {
-                var items = data.get("items");
+                var items = data.path("items");
                 if (items != null) {
                     for (var info : items) {
                         WowsResources w = new WowsResources();
-                        w.setTitle(info.get("title").asString());
-                        w.setDescription(info.get("description").asString());
-                        w.setId(info.get("id").asString());
-                        w.setTitleShort(info.get("titleShort").asString());
-                        w.setTags(info.get("tags"));
-                        w.setTypeName(info.get("typeName").asString());
-                        w.setSlot(info.get("slot"));
-                        w.setPrices(info.get("prices"));
-                        w.setIcons(WowsIcons.parse(info.get("icons")));
-                        w.setType(info.get("type"));
-                        w.setTtc(info.get("ttc"));
-                        w.setRestrictions(info.get("restrictions"));
+                        w.setTitle(info.path("title").asString());
+                        w.setDescription(info.path("description").asString());
+                        w.setId(info.path("id").asString());
+                        w.setTitleShort(info.path("titleShort").asString());
+                        w.setTags(info.path("tags"));
+                        w.setTypeName(info.path("typeName").asString());
+                        w.setSlot(info.path("slot"));
+                        w.setPrices(info.path("prices"));
+                        w.setIcons(WowsIcons.parse(info.path("icons")));
+                        w.setType(info.path("type"));
+                        w.setTtc(info.path("ttc"));
+                        w.setRestrictions(info.path("restrictions"));
                         list.add(w);
                     }
                 }

@@ -41,10 +41,10 @@ public class VortexClanBuildingsInfo {
         for (var x:node.properties()){
             VortexClanBuildingsInfo info = new VortexClanBuildingsInfo();
             info.setClanId(clanId);
-            info.setBuildingsName(x.getValue().get("name").asString());
-            info.setBuildingsLevel(x.getValue().get("level").asInt());
-            info.setBuildingsId(x.getValue().get("id").asInt());
-            info.setBuildingsModifiers(x.getValue().get("modifiers").toString());
+            info.setBuildingsName(x.getValue().path("name").asString());
+            info.setBuildingsLevel(x.getValue().path("level").asInt());
+            info.setBuildingsId(x.getValue().path("id").asInt());
+            info.setBuildingsModifiers(x.getValue().path("modifiers").toString());
             infoList.add(info);
         }
         return infoList;

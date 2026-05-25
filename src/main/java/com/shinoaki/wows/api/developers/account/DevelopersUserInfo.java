@@ -26,14 +26,14 @@ public record DevelopersUserInfo(
     public static DevelopersUserInfo parse(long accountId, String json) throws BasicException {
         JsonNode node = JsonUtils.json().parse(json);
         BasicException.status(node);
-        JsonNode data = node.get("data").get(String.valueOf(accountId));
+        JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
             return new DevelopersUserInfo(-1, null, null, "", true, 0);
         }
-        var statistics = DevelopersUserInfoStatistics.parse(data.get("statistics"));
-        var infoPrivate = DevelopersUserInfoPrivate.parse(data.get("private"));
-        return new DevelopersUserInfo(data.get("account_id").asLong(), statistics, infoPrivate,
-                data.get("nickname").asString(), data.get("hidden_profile").asBoolean(),
-                data.get("created_at").asLong());
+        var statistics = DevelopersUserInfoStatistics.parse(data.path("statistics"));
+        var infoPrivate = DevelopersUserInfoPrivate.parse(data.path("private"));
+        return new DevelopersUserInfo(data.path("account_id").asLong(), statistics, infoPrivate,
+                data.path("nickname").asString(), data.path("hidden_profile").asBoolean(),
+                data.path("created_at").asLong());
     }
 }

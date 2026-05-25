@@ -21,8 +21,8 @@ public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattle
                 JsonNode jsonNode = data.get(type.name().toLowerCase(Locale.ROOT));
                 shipBattleTypeMap.put(type, DevelopersShipBattleType.parse(jsonNode));
             }
-            list.add(new DevelopersShipBattleInfo(shipBattleTypeMap, data.get("last_battle_time").asLong(), data.get("account_id").asLong(), data.get(
-                    "distance").asInt(), data.get("updated_at").asLong(), data.get("battles").asInt(), data.get("ship_id").asLong()));
+            list.add(new DevelopersShipBattleInfo(shipBattleTypeMap, data.path("last_battle_time").asLong(), data.path("account_id").asLong(), data.get(
+                    "distance").asInt(), data.path("updated_at").asLong(), data.path("battles").asInt(), data.path("ship_id").asLong()));
         }
         return list;
     }

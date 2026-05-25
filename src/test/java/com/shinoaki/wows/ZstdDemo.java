@@ -4,6 +4,7 @@ import com.github.luben.zstd.ZstdDictCompress;
 import com.github.luben.zstd.ZstdDictDecompress;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.DataCompressXZUtils;
@@ -21,14 +22,18 @@ public class ZstdDemo {
     private static final HttpClient client = HttpClient.newBuilder()
             .build();
 
-    public static void main(String[] args) throws Exception {
-        var tools = new WowsHttpShipTools(client, WowsServer.ASIA, 2022515210L);
-        var shipInfoMap = tools.developers(TOKEN).shipList().toShipInfoMap();
-        xz(shipInfoMap);
-        System.out.println("====================================================");
-        zstdDict(shipInfoMap);
-        System.out.println("====================================================");
-        zstd(shipInfoMap);
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        try {
+            var tools = new WowsHttpShipTools(client, WowsServer.ASIA, 2022515210L);
+            var shipInfoMap = tools.developers(TOKEN).shipList().toShipInfoMap();
+            xz(shipInfoMap);
+            System.out.println("====================================================");
+            zstdDict(shipInfoMap);
+            System.out.println("====================================================");
+            zstd(shipInfoMap);
+        } catch (BasicException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void zstd(Map<WowsBattlesType, List<ShipInfo>> data) throws IOException, ClassNotFoundException {

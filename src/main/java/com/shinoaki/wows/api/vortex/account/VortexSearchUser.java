@@ -17,10 +17,10 @@ public record VortexSearchUser(long spa_id, String name, boolean hidden) {
 
     public static List<VortexSearchUser> parse(  String json) throws BasicException {
         JsonNode node =  JsonUtils.json().parse(json);
-        String status = node.get("status").asString();
+        String status = node.path("status").asString();
         if ("ok".equalsIgnoreCase(status)) {
             List<VortexSearchUser> list = new ArrayList<>();
-            for (var data : node.get("data")) {
+            for (var data : node.path("data")) {
                 list.add( JsonUtils.json().parse(data, VortexSearchUser.class));
             }
             return list;

@@ -39,20 +39,20 @@ public record DevelopersUserInfoPrivate(
             return null;
         }
         return new DevelopersUserInfoPrivate(
-                WowsUtils.json(node.get("wows_premium_expires_at"), 0),
-                WowsUtils.json(node.get("gold"), 0),
-                WowsUtils.json(node.get("free_xp"), 0),
-                JsonUtils.json().parse(node.get("port").toString(), new TypeReference<List<Long>>() {
+                WowsUtils.json(node.path("wows_premium_expires_at"), 0),
+                WowsUtils.json(node.path("gold"), 0),
+                WowsUtils.json(node.path("free_xp"), 0),
+                JsonUtils.json().parse(node.path("port").toString(), new TypeReference<List<Long>>() {
                     @Override
                     public Type getType() {
                         return super.getType();
                     }
                 }),
-                WowsUtils.json(node.get("credits"), 0),
-                WowsUtils.json(node.get("premium_expires_at"), 0),
-                WowsUtils.json(node.get("empty_slots"), 0),
-                WowsUtils.json(node.get("slots"), 0),
-                WowsUtils.json(node.get("battle_life_time"), 0)
+                WowsUtils.json(node.path("credits"), 0),
+                WowsUtils.json(node.path("premium_expires_at"), 0),
+                WowsUtils.json(node.path("empty_slots"), 0),
+                WowsUtils.json(node.path("slots"), 0),
+                WowsUtils.json(node.path("battle_life_time"), 0)
         );
     }
 }

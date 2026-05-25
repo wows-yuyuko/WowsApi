@@ -13,11 +13,11 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
 
     public static VortexSearchClanUser to(JsonNode node) throws BasicException {
         BasicException.status(node);
-        JsonNode data = node.get("data");
-        JsonNode clanId = data.get("clan_id");
-        return new VortexSearchClanUser(data.get("role").asString(),
-                VortexSearchClanInfo.to(data.get("clan")),
-                data.get("joined_at").asString(),
+        JsonNode data = node.path("data");
+        JsonNode clanId = data.path("clan_id");
+        return new VortexSearchClanUser(data.path("role").asString(),
+                VortexSearchClanInfo.to(data.path("clan")),
+                data.path("joined_at").asString(),
                 clanId.isNull() ? 0 : clanId.asLong());
     }
 
@@ -26,8 +26,8 @@ public record VortexSearchClanUser(String role, VortexSearchClanInfo clan, Strin
 
         public static VortexSearchClanInfo to(JsonNode node) {
             if (!node.isEmpty()) {
-                return new VortexSearchClanInfo(node.get("tag").asString(), "#" + Long.toHexString(node.get("color").asLong()), node.get("members_count").asInt(),
-                        node.get("name").asString());
+                return new VortexSearchClanInfo(node.path("tag").asString(), "#" + Long.toHexString(node.path("color").asLong()), node.path("members_count").asInt(),
+                        node.path("name").asString());
             }
             return empty();
         }

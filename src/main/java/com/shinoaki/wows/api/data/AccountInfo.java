@@ -31,17 +31,17 @@ public record AccountInfo(
     public static AccountInfo parse(  long accountId, String json, AccountClanInfo clan) throws BasicException {
         JsonNode node =  JsonUtils.json().parse(json);
         BasicException.status(node);
-        JsonNode data = node.get("data").get(String.valueOf(accountId));
+        JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
             return new AccountInfo(-1, null, 0, false, 0, 0, 0, clan);
         }
-        return new AccountInfo(data.get("account_id").asLong(),
-                data.get("nickname").asString(),
-                data.get("created_at").asLong(),
-                data.get("hidden_profile").asBoolean(),
-                data.get("last_battle_time").asLong(),
-                data.get("stats_updated_at").asLong(),
-                data.get("logout_at").asLong(),
+        return new AccountInfo(data.path("account_id").asLong(),
+                data.path("nickname").asString(),
+                data.path("created_at").asLong(),
+                data.path("hidden_profile").asBoolean(),
+                data.path("last_battle_time").asLong(),
+                data.path("stats_updated_at").asLong(),
+                data.path("logout_at").asLong(),
                 clan);
     }
 }

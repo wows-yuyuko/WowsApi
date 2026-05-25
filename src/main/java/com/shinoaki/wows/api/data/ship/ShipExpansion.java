@@ -16,8 +16,8 @@ public record ShipExpansion(int topGrade) {
     public static Map<Long, ShipExpansion> parseDevelopers(long accountId, JsonNode node) throws BasicException {
         BasicException.status(node);
         Map<Long, ShipExpansion> map = new HashMap<>();
-        for (var data : node.get("data").get(String.valueOf(accountId))) {
-            map.put(data.get("ship_id").asLong(0L), new ShipExpansion(data.get("top_grade_class").asInt(5)));
+        for (var data : node.path("data").get(String.valueOf(accountId))) {
+            map.put(data.path("ship_id").asLong(0L), new ShipExpansion(data.path("top_grade_class").asInt(5)));
         }
         return map;
     }

@@ -14,11 +14,11 @@ import tools.jackson.databind.JsonNode;
 public record PrCalculationDetails(int pr, PrCalculation originalServer, PrCalculation user, PrCalculation userServer, PrCalculation two, PrCalculation three) {
 
     public static PrCalculationDetails json(JsonNode node) {
-        return new PrCalculationDetails(node.get("pr").asInt(), prCalculation(node.get("originalServer")),
-                prCalculation(node.get("user")), prCalculation(node.get("userServer")), prCalculation(node.get("two")), prCalculation(node.get("three")));
+        return new PrCalculationDetails(node.path("pr").asInt(), prCalculation(node.path("originalServer")),
+                prCalculation(node.path("user")), prCalculation(node.path("userServer")), prCalculation(node.path("two")), prCalculation(node.path("three")));
     }
 
     public static PrCalculation prCalculation(JsonNode node) {
-        return new PrCalculation(node.get("shipId").asLong(), node.get("damage").asDouble(), node.get("frags").asDouble(), node.get("wins").asDouble());
+        return new PrCalculation(node.path("shipId").asLong(), node.path("damage").asDouble(), node.path("frags").asDouble(), node.path("wins").asDouble());
     }
 }

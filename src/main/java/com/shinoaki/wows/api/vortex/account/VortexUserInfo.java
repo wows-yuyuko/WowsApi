@@ -18,28 +18,28 @@ public record VortexUserInfo(
 ) {
 
     public static VortexUserInfo parse(JsonNode node, long accountId) throws BasicException {
-        String status = node.get("status").asString();
+        String status = node.path("status").asString();
         if ("ok".equalsIgnoreCase(status)) {
-            JsonNode data = node.get("data").get(String.valueOf(accountId));
+            JsonNode data = node.path("data").get(String.valueOf(accountId));
             if (data != null) {
-                var hidden = data.get("hidden_profile");
-                if (hidden != null && hidden.asBoolean()) {
+                var hidden = data.path("hidden_profile");
+                if (!hidden.isMissingNode() && hidden.asBoolean()) {
                     throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
                 }
-                String name = data.get("name").asString();
-                double createAt = data.get("created_at").asDouble();
-                double activatedAt = data.get("activated_at").asDouble();
-                JsonNode dogTag = data.get("dog_tag");
-                var statistics = VortexUserInfoStatistics.parse(data.get("statistics"));
+                String name = data.path("name").asString();
+                double createAt = data.path("created_at").asDouble();
+                double activatedAt = data.path("activated_at").asDouble();
+                JsonNode dogTag = data.path("dog_tag");
+                var statistics = VortexUserInfoStatistics.parse(data.path("statistics"));
                 if (dogTag == null || dogTag.isEmpty()) {
                     return new VortexUserInfo(statistics, name, createAt, activatedAt, DogTag.empty());
                 } else {
                     return new VortexUserInfo(statistics, name, createAt, activatedAt,
-                            new DogTag(dogTag.get("texture_id").asLong(),
-                                    dogTag.get("symbol_id").asLong(),
-                                    dogTag.get("border_color_id").asLong(),
-                                    dogTag.get("background_color_id").asLong(),
-                                    dogTag.get("background_id").asLong()));
+                            new DogTag(dogTag.path("texture_id").asLong(),
+                                    dogTag.path("symbol_id").asLong(),
+                                    dogTag.path("border_color_id").asLong(),
+                                    dogTag.path("background_color_id").asLong(),
+                                    dogTag.path("background_id").asLong()));
                 }
             }
         }

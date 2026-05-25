@@ -8,8 +8,13 @@ import com.shinoaki.wows.api.vortex.resources.RequestVortexResourcesInfo;
 import java.io.IOException;
 
 public class RequestVortexResourcesInfoTest {
-    public static void main(String[] args) throws BasicException, IOException, InterruptedException {
-        var data = RequestVortexResourcesInfo.request(WowsServer.CN, VortexResourcesLanguage.CN);
+    public static void main(String[] args) throws  IOException, InterruptedException {
+        RequestVortexResourcesInfo data = null;
+        try {
+            data = RequestVortexResourcesInfo.request(WowsServer.CN, VortexResourcesLanguage.CN);
+        } catch (BasicException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println(data);
     }
 }

@@ -36,27 +36,27 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
     public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
-        for (var map : node.get("data").properties()) {
+        for (var map : node.path("data").properties()) {
             return parse(type, Long.parseLong(map.getKey()), map.getValue());
         }
         return null;
     }
 
     private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
-        String name = node.get("name").asString();
-        JsonNode hiddenProfile = node.get("hidden_profile");
-        if (hiddenProfile != null && hiddenProfile.asBoolean()) {
+        String name = node.path("name").asString();
+        JsonNode hiddenProfile = node.path("hidden_profile");
+        if (!hiddenProfile.isMissingNode() && hiddenProfile.asBoolean()) {
             //用户隐藏了战绩
             return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
         }
         Map<Long, VortexShipStatistics> shipMap = new HashMap<>();
-        for (var map : node.get("statistics").properties()) {
+        for (var map : node.path("statistics").properties()) {
             var info = VortexShipInfo.parse(map.getValue().get(type.name().toLowerCase(Locale.ROOT)));
-            var masterySign = map.getValue().get("mastery_sign").asString("");
+            var masterySign = map.getValue().path("mastery_sign").asString("");
             shipMap.put(Long.parseLong(map.getKey()), new VortexShipStatistics(info, masterySign));
         }
-        return new VortexUserShip(type, accountId, false, name, shipMap, node.get("created_at").asDouble(),
-                node.get("activated_at").asDouble(),
+        return new VortexUserShip(type, accountId, false, name, shipMap, node.path("created_at").asDouble(0),
+                node.path("activated_at").asDouble(),
                 DateUtils.toEpochMilli());
     }
 }

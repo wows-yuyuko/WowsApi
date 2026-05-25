@@ -17,6 +17,6 @@ public class WowsIcons {
     }
 
     public static WowsIcons parse(JsonNode node) {
-        return new WowsIcons(node.get("default").asString());
+        return new WowsIcons(node.path("default").asString());
     }
 }

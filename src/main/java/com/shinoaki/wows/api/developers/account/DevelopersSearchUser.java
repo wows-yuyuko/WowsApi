@@ -16,7 +16,7 @@ public record DevelopersSearchUser(String nickname, long account_id) {
         JsonNode node = JsonUtils.json().parse(json);
         BasicException.status(node);
         List<DevelopersSearchUser> list = new ArrayList<>();
-        for (var data : node.get("data")) {
+        for (var data : node.path("data")) {
             list.add(JsonUtils.json().parse(data, DevelopersSearchUser.class));
         }
         return list;

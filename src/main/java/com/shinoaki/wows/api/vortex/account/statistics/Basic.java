@@ -11,11 +11,11 @@ public record Basic(
 ) {
 
     public static Basic parse(JsonNode node) {
-        return new Basic(node.get("leveling_tier").asInt(),
-                node.get("created_at").asLong(),
-                node.get("leveling_points").asInt(),
-                node.get("karma").asInt(),
-                node.get("last_battle_time").asLong());
+        return new Basic(node.path("leveling_tier").asInt(),
+                node.path("created_at").asLong(),
+                node.path("leveling_points").asInt(),
+                node.path("karma").asInt(),
+                node.path("last_battle_time").asLong());
     }
 
     public static Basic empty() {

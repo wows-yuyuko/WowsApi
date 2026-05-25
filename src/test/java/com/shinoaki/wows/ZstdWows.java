@@ -2,6 +2,7 @@ package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
+import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
@@ -19,21 +20,24 @@ public class ZstdWows {
             .proxy(ProxySelector.of(new InetSocketAddress("127.0.0.1", 7890)))
             .build();
 
-    public static void main(String[] args) throws BasicException, IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
 
-        WowsHttpClanTools clanTools = new WowsHttpClanTools(client, WowsServer.ASIA);
-        clanTools.developers(TOKEN).clanInfoDevelopers(2000022706L).members().forEach(x -> {
-            w(x.account_id());
-        });
-        clanTools.developers(TOKEN).clanInfoDevelopers(2000015816L).members().forEach(x -> {
-            w(x.account_id());
-        });
+        try {
+            WowsHttpClanTools clanTools = new WowsHttpClanTools(client, WowsServer.ASIA);
+            for (DevelopersClanInfo.DevelopersClanUserInfo developersClanUserInfo : clanTools.developers(TOKEN).clanInfoDevelopers(2000022706L).members()) {
+                w(developersClanUserInfo.account_id());
+            }
+            for (DevelopersClanInfo.DevelopersClanUserInfo x : clanTools.developers(TOKEN).clanInfoDevelopers(2000015816L).members()) {
+                w(x.account_id());
+            }
+        } catch (BasicException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    private static void w(long accountId) {
+    private static void w(long accountId) throws IOException {
         try {
-
             var tools = new WowsHttpShipTools(client, WowsServer.ASIA, accountId);
             var data = tools.developers(TOKEN).shipList().toShipInfoMap();
             File file = new File(System.getProperty("user.dir") + File.separator + "dict" + File.separator + accountId + "ship.json");
@@ -42,9 +46,7 @@ public class ZstdWows {
                 out.flush();
             }
         } catch (BasicException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 }

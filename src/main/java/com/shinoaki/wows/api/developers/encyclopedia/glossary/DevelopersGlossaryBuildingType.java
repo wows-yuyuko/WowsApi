@@ -20,7 +20,7 @@ public record DevelopersGlossaryBuildingType(
 
     public static List<DevelopersGlossaryBuildingType> parse(JsonNode node) throws BasicException {
         List<DevelopersGlossaryBuildingType> list = new ArrayList<>();
-        for (var map : node.get("building_types").properties()) {
+        for (var map : node.path("building_types").properties()) {
             list.add(JsonUtils.json().parse(map.getValue().toString(), new TypeReference<DevelopersGlossaryBuildingType>() {
                 @Override
                 public Type getType() {

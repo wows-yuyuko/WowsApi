@@ -17,20 +17,20 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                                  int battlesCount, Boolean isPress, int seasonId, Boolean isHiddenStatistics, double winsPercentage, Boolean abnormalResults,
                                  double fragsPerBattle, Boolean isBanned, String profileLink) {
     public static VortexClanStatisticsInfo to(WowsServer server, JsonNode body) {
-        if (body.get("status").asString("error").contentEquals("ok")) {
+        if (body.path("status").asString("error").contentEquals("ok")) {
             List<VortexClanUserInfo> list = new ArrayList<>();
-            JsonNode items = body.get("items");
+            JsonNode items = body.path("items");
             for (JsonNode js : items) {
-                JsonNode role = js.get("role");
-                if (js.get("is_hidden_statistics").asBoolean()) {
+                JsonNode role = js.path("role");
+                if (js.path("is_hidden_statistics").asBoolean()) {
                     list.add(new VortexClanUserInfo(
-                            js.get("id").asLong(),
-                            js.get("name").asString(),
+                            js.path("id").asLong(),
+                            js.path("name").asString(),
                             server,
                             0,
-                            role.get("name").asString(),
-                            role.get("order").asInt(),
-                            js.get("days_in_clan").asInt(),
+                            role.path("name").asString(),
+                            role.path("order").asInt(),
+                            js.path("days_in_clan").asInt(),
                             null,
                             0.0,
                             0.0,
@@ -40,46 +40,46 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                             0,
                             null,
                             0,
-                            js.get("is_hidden_statistics").asBoolean(),
+                            js.path("is_hidden_statistics").asBoolean(),
                             0.0,
                             null,
                             0.0,
                             null,
-                            js.get("profile_link").asString()
+                            js.path("profile_link").asString()
                     ));
                 } else {
                     list.add(new VortexClanUserInfo(
-                            js.get("id").asLong(),
-                            js.get("name").asString(),
+                            js.path("id").asLong(),
+                            js.path("name").asString(),
                             server,
-                            js.get("last_battle_time").asInt(),
-                            role.get("name").asString(),
-                            role.get("order").asInt(),
-                            js.get("days_in_clan").asInt(),
-                            Optional.ofNullable(js.get("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE),
-                            js.get("battles_per_day").asDouble(),
-                            js.get("damage_per_battle").asDouble(),
-                            Optional.ofNullable(js.get("rank")).map(JsonNode::asInt).orElse(0),
-                            js.get("exp_per_battle").asDouble(),
-                            js.get("online_status").asBoolean(),
-                            js.get("battles_count").asInt(),
-                            js.get("is_press").asBoolean(),
-                            Optional.ofNullable(js.get("season_id")).map(JsonNode::asInt).orElse(0),
-                            js.get("is_hidden_statistics").asBoolean(),
-                            js.get("wins_percentage").asDouble(),
-                            js.get("abnormal_results").asBoolean(),
-                            Optional.ofNullable(js.get("frags_per_battle")).map(JsonNode::asDouble).orElse(0.0),
-                            js.get("is_banned").asBoolean(),
-                            js.get("profile_link").asString()
+                            js.path("last_battle_time").asInt(),
+                            role.path("name").asString(),
+                            role.path("order").asInt(),
+                            js.path("days_in_clan").asInt(),
+                            Optional.ofNullable(js.path("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE),
+                            js.path("battles_per_day").asDouble(),
+                            js.path("damage_per_battle").asDouble(),
+                            Optional.ofNullable(js.path("rank")).map(JsonNode::asInt).orElse(0),
+                            js.path("exp_per_battle").asDouble(),
+                            js.path("online_status").asBoolean(),
+                            js.path("battles_count").asInt(),
+                            js.path("is_press").asBoolean(),
+                            Optional.ofNullable(js.path("season_id")).map(JsonNode::asInt).orElse(0),
+                            js.path("is_hidden_statistics").asBoolean(),
+                            js.path("wins_percentage").asDouble(),
+                            js.path("abnormal_results").asBoolean(),
+                            Optional.ofNullable(js.path("frags_per_battle")).map(JsonNode::asDouble).orElse(0.0),
+                            js.path("is_banned").asBoolean(),
+                            js.path("profile_link").asString()
                     ));
                 }
             }
-            var statistics = body.get("clan_statistics");
+            var statistics = body.path("clan_statistics");
             if (!statistics.isEmpty()) {
-                return new VortexClanStatisticsInfo(statistics.get("battles_count").asDouble(),
-                        statistics.get("wins_percentage").asDouble(),
-                        statistics.get("exp_per_battle").asDouble(),
-                        statistics.get("damage_per_battle").asDouble(),
+                return new VortexClanStatisticsInfo(statistics.path("battles_count").asDouble(),
+                        statistics.path("wins_percentage").asDouble(),
+                        statistics.path("exp_per_battle").asDouble(),
+                        statistics.path("damage_per_battle").asDouble(),
                         list);
             }
         }

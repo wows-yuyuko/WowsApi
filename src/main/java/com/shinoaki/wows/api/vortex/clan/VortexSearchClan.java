@@ -15,7 +15,7 @@ import java.util.List;
 public record VortexSearchClan(long id, String tag, String hex_color, String name) {
 
     public static List<VortexSearchClan> parse(  String response) throws BasicException {
-        return  JsonUtils.json().parse( JsonUtils.json().parse(response).get("search_autocomplete_result").toString(), new TypeReference<List<VortexSearchClan>>() {
+        return  JsonUtils.json().parse( JsonUtils.json().parse(response).path("search_autocomplete_result").toString(), new TypeReference<List<VortexSearchClan>>() {
             @Override
             public Type getType() {
                 return super.getType();
