@@ -68,7 +68,7 @@ public record VortexClanInfo(long clanId, WowsServer wowsServer, String tag, Str
             return DateUtils.toTimeMillis(LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME));
         } catch (DateTimeParseException ignore) {
             try {
-                return DateUtils.toTimeMillis(OffsetDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME));
+                return DateUtils.toTimeMillis(OffsetDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime());
             } catch (DateTimeParseException e) {
                 return 0;
             }
