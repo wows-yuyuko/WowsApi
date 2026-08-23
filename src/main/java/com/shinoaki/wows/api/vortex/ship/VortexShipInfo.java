@@ -193,19 +193,33 @@ public record VortexShipInfo(long max_frags_by_main, long battles_count_512, lon
 
     /**
      * 占领贡献
+     * <p>
+     * 注意：贡献率 = 个人占领点 / 团队占领点，与
+     * {@link com.shinoaki.wows.api.data.ship.ControlCapturedAndDroppedPoints#gameContributionToCapture()} 保持一致；
+     * 分母为0时返回0.0（原实现分子分母颠倒且除零会产生Infinity，请勿改回）。
      *
      * @return 进攻贡献率
      */
     public double avgContributionToCapture() {
-        return 100.0 * ((double) this.team_control_captured_points() / this.control_captured_points());
+        if (this.control_captured_points() <= 0 || this.team_control_captured_points() <= 0) {
+            return 0.0;
+        }
+        return 100.0 * ((double) this.control_captured_points() / this.team_control_captured_points());
     }
 
     /**
      * 防御贡献
+     * <p>
+     * 注意：贡献率 = 个人防御点 / 团队防御点，与
+     * {@link com.shinoaki.wows.api.data.ship.ControlCapturedAndDroppedPoints#gameContributionToDefense()} 保持一致；
+     * 分母为0时返回0.0。
      *
      * @return 防御贡献率
      */
     public double avgContributionToDefense() {
-        return 100.0 * ((double) this.team_control_dropped_points() / this.control_dropped_points());
+        if (this.control_dropped_points() <= 0 || this.team_control_dropped_points() <= 0) {
+            return 0.0;
+        }
+        return 100.0 * ((double) this.control_dropped_points() / this.team_control_dropped_points());
     }
 }

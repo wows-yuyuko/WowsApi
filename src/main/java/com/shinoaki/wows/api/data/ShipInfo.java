@@ -103,7 +103,8 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioBomb().addition(history.ratioBomb),
                 this.ratioRocket().addition(history.ratioRocket),
                 this.ratioSkip().addition(history.ratioSkip),
-                history.expansion,
+                //expansion为最新状态字段（如精通徽章等级），聚合时保留新值(this)，不取历史值
+                this.expansion,
                 this.lastBattleTime(), history.recordTime());
     }
 
@@ -134,7 +135,8 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioBomb().subtraction(history.ratioBomb),
                 this.ratioRocket().subtraction(history.ratioRocket),
                 this.ratioSkip().subtraction(history.ratioSkip),
-                history.expansion,
+                //expansion为最新状态字段（如精通徽章等级），相减时保留新值(this)，不取历史值
+                this.expansion,
                 this.lastBattleTime(), history.recordTime());
     }
 

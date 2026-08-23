@@ -76,19 +76,31 @@ public record ControlCapturedAndDroppedPoints(long teamControlCapturedPoints, lo
 
     /**
      * 占领贡献
+     * <p>
+     * 注意：贡献率 = 个人占领点 / 团队占领点，与 {@link com.shinoaki.wows.api.vortex.ship.VortexShipInfo#avgContributionToCapture()} 保持一致；
+     * 分母为0时返回0.0（原实现分子分母颠倒且除零会产生Infinity，请勿改回）。
      *
      * @return 进攻贡献率
      */
     public double gameContributionToCapture() {
+        if (this.controlCapturedPoints() <= 0 || this.teamControlCapturedPoints() <= 0) {
+            return 0.0;
+        }
         return ((double) this.controlCapturedPoints() / this.teamControlCapturedPoints()) * 100.0;
     }
 
     /**
      * 防御贡献
+     * <p>
+     * 注意：贡献率 = 个人防御点 / 团队防御点，与 {@link com.shinoaki.wows.api.vortex.ship.VortexShipInfo#avgContributionToDefense()} 保持一致；
+     * 分母为0时返回0.0。
      *
      * @return 防御贡献率
      */
     public double gameContributionToDefense() {
+        if (this.controlDroppedPoints() <= 0 || this.teamControlDroppedPoints() <= 0) {
+            return 0.0;
+        }
         return ((double) this.controlDroppedPoints() / this.teamControlDroppedPoints()) * 100.0;
     }
 }

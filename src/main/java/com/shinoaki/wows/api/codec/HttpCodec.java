@@ -15,9 +15,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * @author Xun
@@ -31,7 +33,8 @@ public class HttpCodec {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
     public static HttpRequest request(URI uri) {
-        return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate, br")
+        //注意：只声明 gzip/deflate，不声明 br（brotli），因为本库未实现br解压；若声明br服务端可能返回br导致解析失败
+        return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate")
                 .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
                 .setHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"")
                 .setHeader("Sec-Ch-Ua-Mobile", "?0")
@@ -96,8 +99,12 @@ public class HttpCodec {
     public static String response(HttpResponse<byte[]> response) throws BasicException {
         try {
             if (response.statusCode() == 200) {
-                if (response.headers().firstValue(HttpCodec.CONTENT_ENCODING).isPresent()) {
+                var encoding = response.headers().firstValue(HttpCodec.CONTENT_ENCODING).orElse("").toLowerCase(Locale.ROOT);
+                if (encoding.contains("gzip")) {
                     return new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
+                }
+                if (encoding.contains("deflate")) {
+                    return new String(HttpCodec.unDeflate(response.body()), StandardCharsets.UTF_8);
                 }
                 return new String(response.body(), StandardCharsets.UTF_8);
             }
@@ -109,13 +116,26 @@ public class HttpCodec {
     }
 
     public static byte[] unGzip(byte[] bytes) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
-        byte[] buffer = new byte[gzipInputStream.available()];
-        int n;
-        while ((n = gzipInputStream.read(buffer)) >= 0) {
-            out.write(buffer, 0, n);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = gzipInputStream.read(buffer)) >= 0) {
+                out.write(buffer, 0, n);
+            }
+            return out.toByteArray();
         }
-        return out.toByteArray();
+    }
+
+    public static byte[] unDeflate(byte[] bytes) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             InflaterInputStream in = new InflaterInputStream(new ByteArrayInputStream(bytes))) {
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) >= 0) {
+                out.write(buffer, 0, n);
+            }
+            return out.toByteArray();
+        }
     }
 }

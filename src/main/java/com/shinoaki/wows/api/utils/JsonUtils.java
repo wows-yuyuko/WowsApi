@@ -30,6 +30,11 @@ public class JsonUtils {
 
 
     private static JsonMapper.Builder load() {
+        /*
+         * 注意：overrideDefaultStreamReadConstraints 是JVM全局生效的配置，属于有意为之。
+         * 本库解析的战舰/玩家JSON包含超长字符串字段（例如完整的私有数据），
+         * 需要在库加载时统一放宽全局限制，因此这里不使用仅针对单个实例的配置。
+         */
         StreamReadConstraints streamReadConstraints = StreamReadConstraints.builder()
                 .maxNumberLength(StreamReadConstraints.DEFAULT_MAX_NUM_LEN)
                 .maxNestingDepth(StreamReadConstraints.DEFAULT_MAX_DEPTH)
@@ -104,46 +109,6 @@ public class JsonUtils {
     public <T> T parse(JsonNode json, Class<T> tClass) {
         return mapper.treeToValue(json, tClass);
     }
-
-//    /**
-//     * 适用于需要校验的
-//     * @param json  提交体
-//     * @param tClass    类
-//     * @return 结果
-//     * @param <T>   序列化类
-//     */
-//    public <T> T parseValid(JsonNode json, Class<T> tClass) {
-//        var object = mapper.treeToValue(json, tClass);
-//        try (var factory = Validation.buildDefaultValidatorFactory()) {
-//            var validator = factory.getValidator();
-//            Set<ConstraintViolation<Object>> violations = validator.validate(object);
-//            if (!violations.isEmpty()) {
-////                throw new ConstraintViolationException(violations);
-//                throw new ResultMessageException(RStatus.CONTENT_DENY);
-//            }
-//        }
-//        return object;
-//    }
-//
-//    /**
-//     * 适用于需要校验的
-//     * @param json  提交体
-//     * @param type 类型
-//     * @return 结果
-//     * @param <T>   序列化类
-//     */
-//    public <T> T parseValid(JsonNode json, TypeReference<T> type) {
-//        var object = mapper.treeToValue(json, type);
-//        try (var factory = Validation.buildDefaultValidatorFactory()) {
-//            var validator = factory.getValidator();
-//            Set<ConstraintViolation<Object>> violations = validator.validate(object);
-//            if (!violations.isEmpty()) {
-////                throw new ConstraintViolationException(violations);
-//                throw new ResultMessageException(RStatus.CONTENT_DENY);
-//            }
-//        }
-//        return object;
-//    }
 
     /**
      * 解析JSON文件返回Java Bean

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -24,6 +23,11 @@ import java.util.Map;
 public class ClanRankUtils {
 
     /**
+     * 分页拉取的最大页数上限，防止服务端数据异常导致死循环
+     */
+    private static final int MAX_RANK_PAGE = 10_000;
+
+    /**
      * 获取排名
      *
      * @param server 服务器
@@ -36,11 +40,16 @@ public class ClanRankUtils {
         try (HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
             String base = baseUrl(server);
             List<ClanRankInfo> index = getRanks(client, URI.create(base + "&season=" + seasonRep), server, season);
+            if (index.isEmpty()) {
+                return List.of();
+            }
             index.forEach(x -> rankMaps.put(x.id(), x));
-            //
             var last = index.getLast();
-            while (true) {
+            for (int page = 0; page < MAX_RANK_PAGE; page++) {
                 List<ClanRankInfo> run = getRanks(client, URI.create(base + "&season=" + seasonRep + "&clan_id=" + last.id()), server, season);
+                if (run.isEmpty()) {
+                    break;
+                }
                 last = run.getLast();
                 if (rankMaps.containsKey(last.id())) {
                     break;
@@ -57,10 +66,6 @@ public class ClanRankUtils {
         try {
             HttpResponse<byte[]> response = client.send(HttpCodec.request(url), HttpResponse.BodyHandlers.ofByteArray());
             return JsonUtils.json().parse(HttpCodec.response(response), new TypeReference<List<ClanRankInfo>>() {
-                @Override
-                public Type getType() {
-                    return super.getType();
-                }
             });
         } catch (IOException e) {
             log.error("{}-{} 请求公会排名数据异常！", server.getCode(), season, e);

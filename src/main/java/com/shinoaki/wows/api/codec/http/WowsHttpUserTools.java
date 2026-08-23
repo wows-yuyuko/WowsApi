@@ -13,6 +13,7 @@ import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -37,6 +38,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(List.of());
                 }
                 return CompletableInfo.error(e);
+            } catch (JacksonException e) {
+                return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
             }
         });
     }
@@ -60,6 +63,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
                 return CompletableInfo.ok(VortexSearchUser.parse( HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
+            } catch (JacksonException e) {
+                return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
             }
         });
     }
@@ -76,6 +81,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
                 return CompletableInfo.ok(VortexUserInfo.parse(JsonUtils.json().parse(HttpCodec.response(data)), accountId));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
+            } catch (JacksonException e) {
+                return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
             }
         });
     }
@@ -92,6 +99,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
                 return CompletableInfo.ok(DevelopersSearchUser.parse( HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
+            } catch (JacksonException e) {
+                return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
             }
         });
     }
@@ -127,6 +136,8 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
                 return CompletableInfo.ok(DevelopersUserInfo.parse( accountId, HttpCodec.response(data)));
             } catch (BasicException e) {
                 return CompletableInfo.error(e);
+            } catch (JacksonException e) {
+                return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
             }
         });
     }
@@ -167,6 +178,6 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         if (accessToken.isBlank()) {
             return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&account_id=%s&extra=%s", token, accountId, extra));
         }
-        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&&access_token=%s&account_id=%s&extra=%s", token, accessToken, accountId, extra));
+        return URI.create(server.api() + String.format("/wows/account/info/?application_id=%s&access_token=%s&account_id=%s&extra=%s", token, accessToken, accountId, extra));
     }
 }

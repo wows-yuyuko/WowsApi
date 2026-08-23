@@ -7,7 +7,9 @@ import com.shinoaki.wows.api.vortex.clan.base.info.VortexClanWowsLadderInfo;
 import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -35,22 +37,41 @@ public record VortexClanInfo(long clanId, WowsServer wowsServer, String tag, Str
                              List<VortexClanBuildingsInfo> clanBuildingsInfoList) {
     public static VortexClanInfo to(WowsServer server, long clanId, JsonNode body) {
         JsonNode clanview = body.path("clanview");
-        if (clanview != null) {
-            JsonNode clan = clanview.path("clan");
-            return new VortexClanInfo(
-                    clanId,
-                    server,
-                    clan.path("tag").asString(),
-                    clan.path("name").asString(),
-                    clan.path("description").asString(),
-                    clan.path("members_count").asInt(),
-                    clan.path("max_members_count").asInt(),
-                    clan.path("color").asString(),
-                    DateUtils.toTimeMillis(LocalDateTime.parse(clan.path("created_at").asString(), DateTimeFormatter.ISO_DATE_TIME)),
-                    VortexClanWowsLadderInfo.parse(clanId, server == WowsServer.RU ? clanview.path("mk_ladder") : clanview.path("wows_ladder")),
-                    VortexClanBuildingsInfo.clan(clanId, clanview.path("buildings"))
-            );
+        JsonNode clan = clanview.path("clan");
+        if (clan.isMissingNode() || clan.isNull()) {
+            return null;
         }
-        return null;
+        return new VortexClanInfo(
+                clanId,
+                server,
+                clan.path("tag").asString(),
+                clan.path("name").asString(),
+                clan.path("description").asString(),
+                clan.path("members_count").asInt(),
+                clan.path("max_members_count").asInt(),
+                clan.path("color").asString(),
+                parseCreatedAt(clan.path("created_at")),
+                VortexClanWowsLadderInfo.parse(clanId, server == WowsServer.RU ? clanview.path("mk_ladder") : clanview.path("wows_ladder")),
+                VortexClanBuildingsInfo.clan(clanId, clanview.path("buildings"))
+        );
+    }
+
+    private static long parseCreatedAt(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return 0;
+        }
+        String value = node.asString("");
+        if (value.isEmpty()) {
+            return 0;
+        }
+        try {
+            return DateUtils.toTimeMillis(LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME));
+        } catch (DateTimeParseException ignore) {
+            try {
+                return DateUtils.toTimeMillis(OffsetDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME));
+            } catch (DateTimeParseException e) {
+                return 0;
+            }
+        }
     }
 }

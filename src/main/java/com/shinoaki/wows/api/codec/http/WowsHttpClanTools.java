@@ -7,6 +7,7 @@ import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
 import com.shinoaki.wows.api.developers.clan.seasion.DevelopersSeasonInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.clan.VortexSearchClan;
@@ -14,6 +15,7 @@ import com.shinoaki.wows.api.vortex.clan.account.VortexSearchClanUser;
 import com.shinoaki.wows.api.vortex.clan.base.VortexClanInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -44,6 +46,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(DevelopersSearchUserClan.parse(accountId, HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -59,6 +63,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(DevelopersClanInfo.parse(clanId, HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -74,6 +80,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(DevelopersSearchClan.parse(HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -88,6 +96,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(DevelopersSeasonInfo.parse(HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -136,6 +146,11 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     if (server.isApi()) {
                         return CompletableInfo.ok(VortexSearchClanUser.to(JsonUtils.json().parse(HttpCodec.response(data))));
                     }
+                    /*
+                     * 说明：同步/异步对404的处理有意保持不同——
+                     * 官方API(vortex)与非官方代理在不同服务器上的404语义不一致（非API服务器查无公会时返回404），
+                     * 因此仅在非isApi服务器上做404兜底，请勿统一两边的逻辑。
+                     */
                     //处理404的情况
                     if (data.statusCode() == 404) {
                         return CompletableInfo.ok(new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0));
@@ -143,6 +158,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(VortexSearchClanUser.to(JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -167,6 +184,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(VortexSearchClan.parse(HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -187,6 +206,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(VortexClanInfo.to(server, clanId, JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -201,6 +222,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -212,7 +235,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
 
         public CompletableFuture<CompletableInfo<VortexClanStatisticsInfo>> clanUserListInfoVortexAsync(long clanId, String type, Integer season) {
             URI uri;
-            if (type.equalsIgnoreCase("cvc")) {
+            if ("cvc".equalsIgnoreCase(type)) {
                 uri = clanUserListInfoVortexUriCvc(clanId, season);
             } else {
                 uri = clanUserListInfoVortexUri(clanId, type);
@@ -222,6 +245,8 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(VortexClanUserInfo.to(server, JsonUtils.json().parse(HttpCodec.response(data))));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }
@@ -229,7 +254,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId, String type, Integer season) throws
                 BasicException {
             URI uri;
-            if (type.equalsIgnoreCase("cvc")) {
+            if ("cvc".equalsIgnoreCase(type)) {
                 uri = clanUserListInfoVortexUriCvc(clanId, season);
             } else {
                 uri = clanUserListInfoVortexUri(clanId, type);
@@ -250,7 +275,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
         }
 
         public URI clanUserListInfoVortexUri(long clanId, String type) {
-            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=%s", clanId, type));
+            return URI.create(server.clans() + String.format("/api/members/%s/?battle_type=%s", clanId, type == null ? "pvp" : type));
         }
 
         public URI clanUserListInfoVortexUriCvc(long clanId, Integer season) {

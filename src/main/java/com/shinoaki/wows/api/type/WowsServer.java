@@ -56,7 +56,7 @@ public enum WowsServer {
                 return v;
             }
         }
-        throw new NullPointerException(code + " 匹配不到对应服务器");
+        throw new IllegalArgumentException(code + " 匹配不到对应服务器");
     }
 
 

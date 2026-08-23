@@ -6,7 +6,6 @@ import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Xun
@@ -56,19 +55,19 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                             role.path("name").asString(),
                             role.path("order").asInt(),
                             js.path("days_in_clan").asInt(),
-                            Optional.ofNullable(js.path("is_bonus_activated")).map(JsonNode::asBoolean).orElse(Boolean.FALSE),
+                            js.path("is_bonus_activated").asBoolean(),
                             js.path("battles_per_day").asDouble(),
                             js.path("damage_per_battle").asDouble(),
-                            Optional.ofNullable(js.path("rank")).map(JsonNode::asInt).orElse(0),
+                            js.path("rank").asInt(),
                             js.path("exp_per_battle").asDouble(),
                             js.path("online_status").asBoolean(),
                             js.path("battles_count").asInt(),
                             js.path("is_press").asBoolean(),
-                            Optional.ofNullable(js.path("season_id")).map(JsonNode::asInt).orElse(0),
+                            js.path("season_id").asInt(),
                             js.path("is_hidden_statistics").asBoolean(),
                             js.path("wins_percentage").asDouble(),
                             js.path("abnormal_results").asBoolean(),
-                            Optional.ofNullable(js.path("frags_per_battle")).map(JsonNode::asDouble).orElse(0.0),
+                            js.path("frags_per_battle").asDouble(),
                             js.path("is_banned").asBoolean(),
                             js.path("profile_link").asString()
                     ));

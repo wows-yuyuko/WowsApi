@@ -2,11 +2,11 @@ package com.shinoaki.wows.api.developers.clan;
 
 
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,11 +36,11 @@ public record DevelopersClanInfo(int members_count,
         JsonNode node = JsonUtils.json().parse(response);
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(clanId));
-        var membersIds =JsonUtils.json().parse(data.path("members_ids").toString(), new TypeReference<List<Long>>() {
-            @Override
-            public Type getType() {
-                return super.getType();
-            }
+        if (data == null || data.isNull()) {
+            throw new BasicException(HttpThrowableStatus.DATA_STATUS, "未找到公会数据 clanId=" + clanId);
+        }
+        JsonNode membersIdsNode = data.path("members_ids");
+        var membersIds = membersIdsNode.isMissingNode() || membersIdsNode.isNull() ? List.<Long>of() : JsonUtils.json().parse(membersIdsNode.toString(), new TypeReference<List<Long>>() {
         });
         return new DevelopersClanInfo(
                 data.path("members_count").asInt(),

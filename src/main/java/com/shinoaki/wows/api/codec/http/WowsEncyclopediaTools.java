@@ -4,7 +4,9 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossary;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.CompletableInfo;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsServer;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -31,6 +33,8 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
                     return CompletableInfo.ok(DevelopersGlossary.parse(HttpCodec.response(data)));
                 } catch (BasicException e) {
                     return CompletableInfo.error(e);
+                } catch (JacksonException e) {
+                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
                 }
             });
         }

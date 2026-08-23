@@ -7,7 +7,6 @@ import com.shinoaki.wows.api.utils.WowsUtils;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -35,19 +34,17 @@ public record DevelopersUserInfoPrivate(
 ) {
 
     public static DevelopersUserInfoPrivate parse(JsonNode node) throws BasicException {
-        if (node == null || node.isNull()) {
+        if (node == null || node.isNull() || node.isMissingNode()) {
             return null;
         }
+        JsonNode port = node.path("port");
+        var portList = port.isMissingNode() || port.isNull() ? List.<Long>of() : JsonUtils.json().parse(port.toString(), new TypeReference<List<Long>>() {
+        });
         return new DevelopersUserInfoPrivate(
                 WowsUtils.json(node.path("wows_premium_expires_at"), 0),
                 WowsUtils.json(node.path("gold"), 0),
                 WowsUtils.json(node.path("free_xp"), 0),
-                JsonUtils.json().parse(node.path("port").toString(), new TypeReference<List<Long>>() {
-                    @Override
-                    public Type getType() {
-                        return super.getType();
-                    }
-                }),
+                portList,
                 WowsUtils.json(node.path("credits"), 0),
                 WowsUtils.json(node.path("premium_expires_at"), 0),
                 WowsUtils.json(node.path("empty_slots"), 0),

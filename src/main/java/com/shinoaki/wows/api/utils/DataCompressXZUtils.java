@@ -45,6 +45,12 @@ public class DataCompressXZUtils {
         return r;
     }
 
+    /**
+     * 解压并反序列化战舰数据
+     * <p>
+     * 说明：内部使用 ObjectInputStream 反序列化，仅用于解析本库自己生成的压缩包
+     * （可信数据源，如 ship.dict.zstd），不会解析不可信的外部输入。
+     */
     public static Map<WowsBattlesType, List<ShipInfo>> decode(ByteArrayOutputStream r) throws IOException, ClassNotFoundException {
         try (XZInputStream in = new XZInputStream(new ByteArrayInputStream(r.toByteArray()))) {
             try (ObjectInputStream inputStream = new ObjectInputStream(in)) {

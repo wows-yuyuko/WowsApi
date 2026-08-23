@@ -27,16 +27,13 @@ public class GzipUtils {
         if (str == null || str.isEmpty()) {
             return new byte[0];
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        GZIPOutputStream gzip;
-        try {
-            gzip = new GZIPOutputStream(out);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream(); GZIPOutputStream gzip = new GZIPOutputStream(out)) {
             gzip.write(str.getBytes(encoding));
-            gzip.close();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("gzip压缩异常", e);
+            throw new IllegalStateException("gzip压缩失败", e);
         }
-        return out.toByteArray();
     }
 
     public static byte[] compress(byte[] data) throws IOException {
@@ -55,18 +52,17 @@ public class GzipUtils {
         if (bytes == null || bytes.length == 0) {
             return new byte[0];
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        try {
-            GZIPInputStream ungzip = new GZIPInputStream(in);
-            byte[] buffer = new byte[256];
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             GZIPInputStream ungzip = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
+            byte[] buffer = new byte[8192];
             int n;
             while ((n = ungzip.read(buffer)) >= 0) {
                 out.write(buffer, 0, n);
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("gzip解压异常", e);
+            throw new IllegalStateException("gzip解压失败", e);
         }
-        return out.toByteArray();
     }
 }

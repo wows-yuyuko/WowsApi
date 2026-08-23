@@ -6,7 +6,6 @@ import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -18,10 +17,6 @@ public record DevelopersSearchClan(int members_count, long created_at, long clan
         JsonNode node = JsonUtils.json().parse(response);
         BasicException.status(node);
         return JsonUtils.json().parse(node.path("data").toString(), new TypeReference<List<DevelopersSearchClan>>() {
-            @Override
-            public Type getType() {
-                return super.getType();
-            }
         });
     }
 }

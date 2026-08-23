@@ -13,7 +13,7 @@ public class WorkUtils {
     public static <T> List<List<T>> work(List<T> infoList, int workChunkTarget) {
         List<List<T>> workList = new ArrayList<>();
         Deque<Spliterator<T>> spliterators = new ArrayDeque<>();
-        spliterators.add(infoList.stream().parallel().spliterator());
+        spliterators.add(infoList.stream().spliterator());
         while (!spliterators.isEmpty()) {
             Spliterator<T> spliterator = spliterators.pop();
             Spliterator<T> prefix;
