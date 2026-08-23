@@ -4,10 +4,11 @@ import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
 import tools.jackson.databind.JsonNode;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public record ShipExpansion(int topGrade) {
+public record ShipExpansion(int topGrade) implements Serializable {
 
     public static ShipExpansion of(VortexShipStatistics shipStatistics) {
         return new ShipExpansion(topGradeOf(shipStatistics.masterySign()));
