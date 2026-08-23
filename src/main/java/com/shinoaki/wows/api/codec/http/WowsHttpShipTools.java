@@ -4,21 +4,19 @@ import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.CompletableInfo;
-import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
-import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 用户战舰信息查询
+ * <p>
+ * 说明：本类只提供同步方法；需要异步时建议使用线程池或JDK21虚拟线程自行包装（参考README）。
  *
  * @author Xun
  * @date 2023/4/24 23:49 星期一
@@ -38,40 +36,8 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             return vortexShipList(server, type, accountId);
         }
 
-        public CompletableFuture<CompletableInfo<VortexUserShip>> shipListAsync(WowsBattlesType type) {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(type))).thenApplyAsync(data -> {
-                        try {
-                            return CompletableInfo.ok(VortexUserShip.parse(type, JsonUtils.json().parse(HttpCodec.response(data))));
-                        } catch (BasicException e) {
-                            return CompletableInfo.error(e);
-                        } catch (JacksonException e) {
-                            return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
-                        }
-                    }
-            );
-        }
-
         public VortexUserShip shipList(WowsBattlesType type) throws BasicException {
             return VortexUserShip.parse(type, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type))))));
-        }
-
-        public CompletableFuture<CompletableInfo<Map<WowsBattlesType, VortexUserShip>>> shipListMapAsync(WowsBattlesType[] types) {
-            Map<WowsBattlesType, CompletableFuture<CompletableInfo<VortexUserShip>>> futures = new EnumMap<>(WowsBattlesType.class);
-            for (WowsBattlesType type : types) {
-                futures.put(type, shipListAsync(type));
-            }
-            return CompletableFuture.allOf(futures.values().toArray(new CompletableFuture<?>[0]))
-                    .thenApplyAsync(v -> {
-                        Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
-                        for (var entry : futures.entrySet()) {
-                            var value = entry.getValue().join();
-                            if (value.isErr()) {
-                                return CompletableInfo.copy(value, shipMap);
-                            }
-                            shipMap.put(entry.getKey(), value.data());
-                        }
-                        return CompletableInfo.ok(shipMap);
-                    });
         }
 
         public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws BasicException {
@@ -90,36 +56,12 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
 
     public record Developers(HttpClient httpClient, WowsServer server, long accountId, String token) {
 
-        public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipListAsync() {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri())).thenApplyAsync(data -> {
-                try {
-                    return CompletableInfo.ok(DevelopersUserShip.parse(JsonUtils.json().parse(HttpCodec.response(data))));
-                } catch (BasicException e) {
-                    return CompletableInfo.error(e);
-                } catch (JacksonException e) {
-                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
-                }
-            });
-        }
-
         public DevelopersUserShip shipList() throws BasicException {
             return DevelopersUserShip.parse(JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri())))));
         }
 
         public Map<Long, ShipExpansion> shipBadges() throws BasicException {
             return ShipExpansion.parseDevelopers(accountId, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipBadgesUri())))));
-        }
-
-        public CompletableFuture<CompletableInfo<DevelopersUserShip>> shipListOaAsync(String accessToken) {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(shipListUri(accessToken))).thenApplyAsync(data -> {
-                try {
-                    return CompletableInfo.ok(DevelopersUserShip.parse(JsonUtils.json().parse(HttpCodec.response(data))));
-                } catch (BasicException e) {
-                    return CompletableInfo.error(e);
-                } catch (JacksonException e) {
-                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
-                }
-            });
         }
 
         public DevelopersUserShip shipListOa(String accessToken) throws BasicException {

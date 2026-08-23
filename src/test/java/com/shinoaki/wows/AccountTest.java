@@ -13,7 +13,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Xun
@@ -22,14 +21,14 @@ import java.util.concurrent.ExecutionException;
 public class AccountTest {
 
     @Test
-    public void searchUserAsia() throws InterruptedException, ExecutionException {
+    public void searchUserAsia() {
         try {
             String u1 = "JustOn";
             HttpClient client = HttpClient.newBuilder().build();
             WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
-            System.out.println(asia.searchUserVortexAsync(u1).get().data());
+            System.out.println(asia.searchUserVortex(u1));
             System.out.println("=================");
-            System.out.println(asia.searchUserDevelopersAsync(DevelopersTest.token, u1));
+            System.out.println(asia.searchUserDevelopers(DevelopersTest.token, u1));
             System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
             System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
             System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
@@ -51,24 +50,24 @@ public class AccountTest {
     }
 
     @Test
-    public void searchUserCn() throws InterruptedException, ExecutionException {
+    public void searchUserCn() throws BasicException {
         String u1 = "西行寺雨季";
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
-        List<VortexSearchUser> vortex = asia.searchUserVortexAsync(u1).get().data();
-        List<VortexSearchUser> vortex2 = asia.searchUserVortexCnAsync("西行寺").get().data();
+        List<VortexSearchUser> vortex = asia.searchUserVortex(u1);
+        List<VortexSearchUser> vortex2 = asia.searchUserVortexCn("西行寺");
         System.out.println(vortex);
         System.out.println("=============================");
         System.out.println(vortex2);
     }
 
     @Test
-    public void userInfo() throws InterruptedException, ExecutionException {
+    public void userInfo() throws BasicException {
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
-        var data = asia.userVortexAsync(7048262455L).get().data();
-        var data1 = asia.userVortexAsync(7050218428L).get().data();
-        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopersAsync("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L).get().data();
+        var data = asia.userVortex(7048262455L);
+        var data1 = asia.userVortex(7050218428L);
+        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
         System.out.println(data);
         System.out.println("===========");
         System.out.println(data1);

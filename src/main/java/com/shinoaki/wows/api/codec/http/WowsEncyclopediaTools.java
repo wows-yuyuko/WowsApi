@@ -3,16 +3,16 @@ package com.shinoaki.wows.api.codec.http;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossary;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.CompletableInfo;
-import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsServer;
-import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.util.concurrent.CompletableFuture;
 
 /**
+ * 百科全书查询
+ * <p>
+ * 说明：本类只提供同步方法；需要异步时建议使用线程池或JDK21虚拟线程自行包装（参考README）。
+ *
  * @author Xun
  */
 public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
@@ -27,18 +27,6 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
 
 
     public record Developers(  HttpClient httpClient, WowsServer server, String token) {
-        public CompletableFuture<CompletableInfo<DevelopersGlossary>> glossaryAsync() {
-            return HttpCodec.sendAsync(httpClient, HttpCodec.request(glossaryUri())).thenApplyAsync(data -> {
-                try {
-                    return CompletableInfo.ok(DevelopersGlossary.parse(HttpCodec.response(data)));
-                } catch (BasicException e) {
-                    return CompletableInfo.error(e);
-                } catch (JacksonException e) {
-                    return CompletableInfo.error(new BasicException(HttpThrowableStatus.DATA_PARSE, e));
-                }
-            });
-        }
-
         public DevelopersGlossary glossary() throws BasicException {
             return DevelopersGlossary.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
         }

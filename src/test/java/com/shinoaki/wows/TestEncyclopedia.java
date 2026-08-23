@@ -1,11 +1,11 @@
 package com.shinoaki.wows;
 
 import com.shinoaki.wows.api.codec.http.WowsEncyclopediaTools;
+import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;
 import org.junit.Test;
 
 import java.net.http.HttpClient;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Xun
@@ -17,9 +17,9 @@ public class TestEncyclopedia {
     WowsEncyclopediaTools TOOLS = new WowsEncyclopediaTools(client, WS);
 
     @Test
-    public void glossary() throws ExecutionException, InterruptedException {
+    public void glossary() throws BasicException {
         var r = TOOLS.developers(token);
-        var data = r.glossaryAsync();
-        System.out.println(data.get());
+        var data = r.glossary();
+        System.out.println(data);
     }
 }

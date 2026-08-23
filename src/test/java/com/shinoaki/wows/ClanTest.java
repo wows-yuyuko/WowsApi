@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.net.http.HttpClient;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Xun
@@ -22,44 +21,44 @@ public class ClanTest {
     WowsHttpClanTools WT = new WowsHttpClanTools(client, WS);
 
     @Test
-    public void season() throws ExecutionException, InterruptedException {
-        var data = WT.developers(token).seasonAsync();
-        System.out.println(data.get());
+    public void season() throws BasicException {
+        var data = WT.developers(token).season();
+        System.out.println(data);
     }
 
     @Test
-    public void searchDev() throws InterruptedException, ExecutionException {
+    public void searchDev() throws BasicException {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.developers(token).searchClanDevelopersAsync("YU_RI").get().data());
-        System.out.println(tools.developers(token).searchClanDevelopersAsync("YU_RI2").get().data());
+        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI"));
+        System.out.println(tools.developers(token).searchClanDevelopers("YU_RI2"));
     }
 
     @Test
-    public void clanInfoDev() throws InterruptedException, ExecutionException {
+    public void clanInfoDev() throws BasicException {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2000022706L;
-        System.out.println(tools.developers(token).clanInfoDevelopersAsync(id).get().data());
+        System.out.println(tools.developers(token).clanInfoDevelopers(id));
     }
 
     @Test
-    public void accountSearchClanDev() throws InterruptedException, ExecutionException {
+    public void accountSearchClanDev() throws BasicException {
         WowsServer server = WowsServer.ASIA;
         var tools = new WowsHttpClanTools(client, server);
         long id = 2007474948;
-        System.out.println(tools.developers(token).userSearchClanDevelopersAsync(id).get().data());
+        System.out.println(tools.developers(token).userSearchClanDevelopers(id));
     }
 
     @Test
-    public void searchTestVortex() throws InterruptedException, ExecutionException {
+    public void searchTestVortex() throws BasicException {
         searchUserVortex(WowsServer.CN, 7047921442L);
         System.out.println("===============================");
         searchUserVortex(WowsServer.ASIA, 2022515210L);
     }
 
     @Test
-    public void clanInfoVortex() throws InterruptedException, ExecutionException {
+    public void clanInfoVortex() throws BasicException {
         clanInfoVortex(WowsServer.ASIA, 2000016057L);
     }
 
@@ -78,7 +77,7 @@ public class ClanTest {
     }
 
     @Test
-    public void clanMembersVortex() throws InterruptedException, ExecutionException {
+    public void clanMembersVortex() throws BasicException {
         clanInfoMembersVortex(WowsServer.ASIA, 2000025691L);
     }
 
@@ -89,18 +88,18 @@ public class ClanTest {
         System.out.println();
     }
 
-    public void clanInfoMembersVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
+    public void clanInfoMembersVortex(WowsServer server, long id) throws BasicException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().clanUserListInfoVortexAsync(id).get().data());
+        System.out.println(tools.vortex().clanUserListInfoVortex(id));
     }
 
-    public void clanInfoVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
+    public void clanInfoVortex(WowsServer server, long id) throws BasicException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().clanInfoVortexAsync(id).get().data());
+        System.out.println(tools.vortex().clanInfoVortex(id));
     }
 
-    public void searchUserVortex(WowsServer server, long id) throws InterruptedException, ExecutionException {
+    public void searchUserVortex(WowsServer server, long id) throws BasicException {
         var tools = new WowsHttpClanTools(client, server);
-        System.out.println(tools.vortex().userSearchClanVortexAsync(id).get().data());
+        System.out.println(tools.vortex().userSearchClanVortex(id));
     }
 }

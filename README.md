@@ -26,3 +26,31 @@
 # 如何使用
 
 参考test文件夹下面的测试方法
+
+# 关于异步
+
+本SDK**只提供同步方法**（直接返回结果，异常以`BasicException`抛出），不再提供`xxxAsync`异步方法。
+
+如果需要异步调用，建议在调用方自行包装，使用**线程池**或**JDK21虚拟线程**：
+
+线程池示例：
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(8);
+CompletableFuture<VortexUserInfo> future = CompletableFuture.supplyAsync(() -> {
+    try {
+        return tools.userVortex(accountId);
+    } catch (BasicException e) {
+        throw new RuntimeException(e);
+    }
+}, executor);
+```
+
+虚拟线程示例（JDK21+）：
+
+```java
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    var future = executor.submit(() -> tools.userVortex(accountId));
+    var data = future.get();
+}
+```
