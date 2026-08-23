@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.developers.account;
 
 import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -28,12 +29,16 @@ public record DevelopersUserInfo(
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
-            return new DevelopersUserInfo(-1, null, null, "", true, 0);
+            throw new BasicException(HttpThrowableStatus.DATA_STATUS, accountId + "用户数据状态异常");
+        }
+        var hidden = node.path("hidden_profile");
+        if (!hidden.isMissingNode() && hidden.asBoolean()) {
+            throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
         }
         var statistics = DevelopersUserInfoStatistics.parse(data.path("statistics"));
         var infoPrivate = DevelopersUserInfoPrivate.parse(data.path("private"));
         return new DevelopersUserInfo(data.path("account_id").asLong(), statistics, infoPrivate,
-                data.path("nickname").asString(), data.path("hidden_profile").asBoolean(),
+                data.path("nickname").asString(), false,
                 data.path("created_at").asLong());
     }
 }

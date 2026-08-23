@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.vortex;
 
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
@@ -44,10 +45,9 @@ public record VortexUserShip(WowsBattlesType type, long accountId, boolean hidde
 
     private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
         String name = node.path("name").asString();
-        JsonNode hiddenProfile = node.path("hidden_profile");
-        if (!hiddenProfile.isMissingNode() && hiddenProfile.asBoolean()) {
-            //用户隐藏了战绩
-            return new VortexUserShip(type, accountId, true, name, Map.of(), 0, 0, 0L);
+        var hidden = node.path("hidden_profile");
+        if (!hidden.isMissingNode() && hidden.asBoolean()) {
+            throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
         }
         Map<Long, VortexShipStatistics> shipMap = new HashMap<>();
         for (var map : node.path("statistics").properties()) {

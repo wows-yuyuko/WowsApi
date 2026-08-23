@@ -1,9 +1,10 @@
 package com.shinoaki.wows.api.data;
 
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
- 
+
 
 /**
  * 游戏账号基础信息
@@ -28,17 +29,21 @@ public record AccountInfo(
         AccountClanInfo clan
 ) {
 
-    public static AccountInfo parse(  long accountId, String json, AccountClanInfo clan) throws BasicException {
-        JsonNode node =  JsonUtils.json().parse(json);
+    public static AccountInfo parse(long accountId, String json, AccountClanInfo clan) throws BasicException {
+        JsonNode node = JsonUtils.json().parse(json);
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
-            return new AccountInfo(-1, null, 0, false, 0, 0, 0, clan);
+            throw new BasicException(HttpThrowableStatus.DATA_STATUS, accountId + "用户数据状态异常");
+        }
+        var hidden = node.path("hidden_profile");
+        if (!hidden.isMissingNode() && hidden.asBoolean()) {
+            throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
         }
         return new AccountInfo(data.path("account_id").asLong(),
                 data.path("nickname").asString(),
                 data.path("created_at").asLong(),
-                data.path("hidden_profile").asBoolean(),
+                false,
                 data.path("last_battle_time").asLong(),
                 data.path("stats_updated_at").asLong(),
                 data.path("logout_at").asLong(),
