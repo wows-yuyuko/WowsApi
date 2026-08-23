@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.vortex.account;
 
 import com.shinoaki.wows.api.data.DogTag;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HiddenProfileException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.vortex.account.statistics.VortexUserInfoStatistics;
 import tools.jackson.databind.JsonNode;
@@ -24,7 +25,7 @@ public record VortexUserInfo(
             if (data != null) {
                 var hidden = data.path("hidden_profile");
                 if (!hidden.isMissingNode() && hidden.asBoolean()) {
-                    throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
+                    throw new HiddenProfileException(accountId);
                 }
                 String name = data.path("name").asString();
                 double createAt = data.path("created_at").asDouble();

@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.developers.account;
 
 import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.HiddenProfileException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
@@ -31,9 +32,10 @@ public record DevelopersUserInfo(
         if (data == null || data.isNull()) {
             throw new BasicException(HttpThrowableStatus.DATA_STATUS, accountId + "用户数据状态异常");
         }
-        var hidden = node.path("hidden_profile");
+        //hidden_profile在data下的账号节点中，不在响应根节点
+        var hidden = data.path("hidden_profile");
         if (!hidden.isMissingNode() && hidden.asBoolean()) {
-            throw new BasicException(HttpThrowableStatus.HIDDEN, accountId + "用户隐藏了战绩!");
+            throw new HiddenProfileException(accountId);
         }
         var statistics = DevelopersUserInfoStatistics.parse(data.path("statistics"));
         var infoPrivate = DevelopersUserInfoPrivate.parse(data.path("private"));
