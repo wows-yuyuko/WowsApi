@@ -15,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +32,14 @@ public class HttpCodec {
 
     }
 
+    private static int requestTimeout = 3;
+
+    public static void updateTimeout(int timeoutSeconds) {
+        requestTimeout = timeoutSeconds;
+    }
+
     public static final String CONTENT_ENCODING = "Content-Encoding";
+
     public static HttpRequest request(URI uri) {
         //注意：只声明 gzip/deflate，不声明 br（brotli），因为本库未实现br解压；若声明br服务端可能返回br导致解析失败
         return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate")
@@ -43,6 +51,7 @@ public class HttpCodec {
                 .setHeader("Sec-Fetch-Dest", "document")
                 .setHeader("Sec-Fetch-User", "?1")
                 .setHeader("Sec-Fetch-Site", "none")
+                .timeout(Duration.ofSeconds(requestTimeout))
                 .build();
     }
 
