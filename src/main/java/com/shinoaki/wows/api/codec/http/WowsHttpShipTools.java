@@ -1,6 +1,7 @@
 package com.shinoaki.wows.api.codec.http;
 
-import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.codec.ApiHttp;
+import com.shinoaki.wows.api.codec.VortexHttp;
 import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.error.BasicException;
@@ -17,6 +18,8 @@ import java.util.*;
  * 用户战舰信息查询
  * <p>
  * 说明：本类只提供同步方法；需要异步时建议使用线程池或JDK21虚拟线程自行包装（参考README）。
+ * <p>
+ * 请求通道：vortex接口走 {@link VortexHttp}，官方开发者API走 {@link ApiHttp}（自动cookie管理与重定向处理，兼容莱服 ）。
  *
  * @author Xun
  * @date 2023/4/24 23:49 星期一
@@ -37,14 +40,14 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public VortexUserShip shipList(WowsBattlesType type) throws BasicException {
-            return VortexUserShip.parse(type, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type))))));
+            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type))))));
         }
 
         public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws BasicException {
             Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
             for (WowsBattlesType type : types) {
                 shipMap.put(type, VortexUserShip.parse(type,
-                        JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(type)))))));
+                        JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type)))))));
             }
             return shipMap;
         }
@@ -57,15 +60,19 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
     public record Developers(HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public DevelopersUserShip shipList() throws BasicException {
-            return DevelopersUserShip.parse(JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri())))));
+            return DevelopersUserShip.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri())))));
         }
 
         public Map<Long, ShipExpansion> shipBadges() throws BasicException {
-            return ShipExpansion.parseDevelopers(accountId, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipBadgesUri())))));
+            //不支持莱服
+            if (server() == WowsServer.RU) {
+                return Map.of();
+            }
+            return ShipExpansion.parseDevelopers(accountId, JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipBadgesUri())))));
         }
 
         public DevelopersUserShip shipListOa(String accessToken) throws BasicException {
-            return DevelopersUserShip.parse(JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(shipListUri(accessToken))))));
+            return DevelopersUserShip.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri(accessToken))))));
         }
 
         public URI shipListUri() {
@@ -84,13 +91,13 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                 }
             }
             builder.deleteCharAt(builder.length() - 1);
-            if (server()==WowsServer.RU){
+            if (server() == WowsServer.RU) {
                 if (accessToken.isEmpty()) {
                     return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
                 }
                 return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
                         accountId, accessToken, builder));
-            }else {
+            } else {
                 if (accessToken.isEmpty()) {
                     return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
                 }

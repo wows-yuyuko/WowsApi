@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +22,12 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
+ * 底层HTTP编码/解码工具,同时作为历史兼容入口。
+ * <p>
+ * 请求发送请按业务通道使用 {@link ApiHttp}(官方开发者API,内置cookie与重定向处理)或
+ * {@link VortexHttp}(vortex接口)。本类的 request/requestApi/send/sendAsync 方法保留原签名,
+ * 分别委托给对应通道,保证旧调用方在 api.korabli.su 等带防护的服务器上也能正常工作。
+ *
  * @author Xun
  * @date 2023/3/18 14:31 星期六
  */
@@ -38,37 +43,38 @@ public class HttpCodec {
         requestTimeout = timeoutSeconds;
     }
 
+    /**
+     * 当前请求超时时间(秒),供各请求通道读取。
+     */
+    static int requestTimeout() {
+        return requestTimeout;
+    }
+
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
+    /**
+     * 构造官方开发者API请求(已携带浏览器标识并支持重放,详见 {@link ApiHttp#request(URI)})。
+     */
+    public static HttpRequest requestApi(URI uri) {
+        return ApiHttp.request(uri);
+    }
+
+    /**
+     * 构造vortex请求(浏览器标识等,详见 {@link VortexHttp#request(URI)})。
+     */
     public static HttpRequest request(URI uri) {
-        //注意：只声明 gzip/deflate，不声明 br（brotli），因为本库未实现br解压；若声明br服务端可能返回br导致解析失败
-        return HttpRequest.newBuilder().uri(uri).setHeader("Accept-Encoding", "gzip, deflate")
-                .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
-                .setHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"")
-                .setHeader("Sec-Ch-Ua-Mobile", "?0")
-                .setHeader("Sec-Ch-Ua-Platform", "\"Windows\"")
-                .setHeader("Sec-Fetch-Mode", "navigate")
-                .setHeader("Sec-Fetch-Dest", "document")
-                .setHeader("Sec-Fetch-User", "?1")
-                .setHeader("Sec-Fetch-Site", "none")
-                .timeout(Duration.ofSeconds(requestTimeout))
-                .build();
+        return VortexHttp.request(uri);
     }
 
     public static CompletableFuture<HttpResponse<byte[]>> sendAsync(HttpClient client, HttpRequest request) {
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+        return ApiHttp.sendAsync(client, request);
     }
 
+    /**
+     * 发送请求。已升级为自动管理cookie并跟随重定向,见 {@link ApiHttp#send(HttpClient, HttpRequest)}。
+     */
     public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws BasicException {
-        try {
-            return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new BasicException(e);
-        } catch (IOException e) {
-            log.error("网络请求异常！", e);
-            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
-        }
+        return ApiHttp.send(client, request);
     }
 
 

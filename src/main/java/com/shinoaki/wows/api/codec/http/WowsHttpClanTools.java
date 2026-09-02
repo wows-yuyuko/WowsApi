@@ -1,6 +1,8 @@
 package com.shinoaki.wows.api.codec.http;
 
+import com.shinoaki.wows.api.codec.ApiHttp;
 import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.codec.VortexHttp;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
@@ -22,6 +24,8 @@ import java.util.List;
  * 用户公会信息o
  * <p>
  * 说明：本类只提供同步方法；需要异步时建议使用线程池或JDK21虚拟线程自行包装（参考README）。
+ * <p>
+ * 请求通道：vortex接口走 {@link VortexHttp}，官方开发者API走 {@link ApiHttp}（自动cookie管理与重定向处理，兼容莱服 ）。
  *
  * @author Xun
  * @date 2023/5/22 21:42 星期一
@@ -39,21 +43,21 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
     public record Developers(HttpClient httpClient, WowsServer server, String token) {
 
         public DevelopersSearchUserClan userSearchClanDevelopers(long accountId) throws BasicException {
-            return DevelopersSearchUserClan.parse(accountId, HttpCodec.response(HttpCodec.send(httpClient,
-                    HttpCodec.request(userSearchClanDevelopersUri(accountId)))));
+            return DevelopersSearchUserClan.parse(accountId, ApiHttp.response(ApiHttp.send(httpClient,
+                    ApiHttp.request(userSearchClanDevelopersUri(accountId)))));
         }
 
         public DevelopersClanInfo clanInfoDevelopers(long clanId) throws BasicException {
-            return DevelopersClanInfo.parse(clanId, HttpCodec.response(HttpCodec.send(httpClient,
-                    HttpCodec.request(clanInfoDevelopersUri(clanId)))));
+            return DevelopersClanInfo.parse(clanId, ApiHttp.response(ApiHttp.send(httpClient,
+                    ApiHttp.request(clanInfoDevelopersUri(clanId)))));
         }
 
         public List<DevelopersSearchClan> searchClanDevelopers(String clanTag) throws BasicException {
-            return DevelopersSearchClan.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanDevelopersUri(clanTag)))));
+            return DevelopersSearchClan.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(searchClanDevelopersUri(clanTag)))));
         }
 
         public List<DevelopersSeasonInfo> season() throws BasicException {
-            return DevelopersSeasonInfo.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(seasonUri()))));
+            return DevelopersSeasonInfo.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(seasonUri()))));
         }
 
         public URI seasonUri() {
@@ -91,7 +95,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          * @param accountId aid
          */
         public VortexSearchClanUser userSearchClanVortex(long accountId) throws BasicException {
-            var data = HttpCodec.send(httpClient, HttpCodec.request(userSearchClanVortexUri(accountId)));
+            var data = VortexHttp.send(httpClient, VortexHttp.request(userSearchClanVortexUri(accountId)));
             /*
              * 说明：非API服务器（vortex代理）查无公会时返回404，这里兜底返回空数据；
              * API服务器按正常响应处理。此差异源于不同服务器的接口语义，请勿统一。
@@ -99,7 +103,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             if (!server.isApi() && (data.statusCode() == 404)) {
                 return new VortexSearchClanUser("", VortexSearchClanUser.VortexSearchClanInfo.empty(), "", 0);
             }
-            return VortexSearchClanUser.to(JsonUtils.json().parse(HttpCodec.response(data)));
+            return VortexSearchClanUser.to(JsonUtils.json().parse(VortexHttp.response(data)));
         }
 
         /**
@@ -109,16 +113,16 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
          * @return
          */
         public List<VortexSearchClan> searchClanVortex(String clanTag) throws BasicException {
-            return VortexSearchClan.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(searchClanVortexUri(clanTag)))));
+            return VortexSearchClan.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(searchClanVortexUri(clanTag)))));
         }
 
         public VortexClanInfo clanInfoVortex(long clanId) throws BasicException {
-            return VortexClanInfo.to(server, clanId, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(clanInfoVortexUri(clanId))))));
+            return VortexClanInfo.to(server, clanId, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(clanInfoVortexUri(clanId))))));
         }
 
         public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId) throws BasicException {
-            return VortexClanUserInfo.to(server, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient,
-                    HttpCodec.request(clanUserListInfoVortexUri(clanId))))));
+            return VortexClanUserInfo.to(server, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient,
+                    VortexHttp.request(clanUserListInfoVortexUri(clanId))))));
         }
 
         public VortexClanStatisticsInfo clanUserListInfoVortex(long clanId, String type, Integer season) throws
@@ -129,7 +133,7 @@ public record WowsHttpClanTools(HttpClient httpClient, WowsServer server) {
             } else {
                 uri = clanUserListInfoVortexUri(clanId, type);
             }
-            return VortexClanUserInfo.to(server, JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uri)))));
+            return VortexClanUserInfo.to(server, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uri)))));
         }
 
         public URI userSearchClanVortexUri(long accountId) {

@@ -15,32 +15,37 @@ import java.util.concurrent.ExecutionException;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 public class BasicException extends Exception {
+    private final String detailMessage;
     private final HttpThrowableStatus code;
 
     public BasicException(HttpThrowableStatus code, Exception message) {
         super(message);
+        this.detailMessage = message.getMessage();
         this.code = code;
     }
 
     public BasicException(HttpThrowableStatus code, String message) {
         super(message);
+        this.detailMessage = message;
         this.code = code;
     }
 
 
-
     public BasicException(InterruptedException e) {
         super("线程被中断");
+        this.detailMessage = "线程被中断";
         this.code = HttpThrowableStatus.THREAD;
     }
 
     public BasicException(ExecutionException e) {
         super("多线程任务终止");
+        this.detailMessage = "多线程任务终止";
         this.code = HttpThrowableStatus.EXECUTION;
     }
 
     private BasicException(JsonNode node) {
         super("获取status节点异常 value=" + node);
+        this.detailMessage = "获取status节点异常 value=" + node;
         this.code = HttpThrowableStatus.DATA_STATUS;
     }
 

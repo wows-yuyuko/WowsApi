@@ -1,6 +1,7 @@
 package com.shinoaki.wows;
 
 
+import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
 import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.error.BasicException;
@@ -39,11 +40,14 @@ public class AccountTest {
 
     @Test
     public void searchUserRu()  {
-
+        HttpCodec.updateTimeout(20);
         HttpClient client = HttpClient.newBuilder().build();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
+        String token = "c984faa7dc529f4cb0139505d5e8043c";
         try {
-            System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers("c984faa7dc529f4cb0139505d5e8043c", 253171807, "b23c6ac59298c2dafdda2a405593f4f950eab316")));
+            System.out.println("searchUserRu result=" + asia.searchUserDevelopers(token, "yu_yu_ko"));
+            // 开发者账号详情(/mk/account/info)同样经过莱服307 
+            System.out.println("userInfoDevelopers result=" + asia.userInfoDevelopers(token, 212257020L));
         } catch (BasicException e) {
             e.printStackTrace();
         }

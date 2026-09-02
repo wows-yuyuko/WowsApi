@@ -1,6 +1,8 @@
 package com.shinoaki.wows.api.codec.http;
 
+import com.shinoaki.wows.api.codec.ApiHttp;
 import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.codec.VortexHttp;
 import com.shinoaki.wows.api.data.AccountClanInfo;
 import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
@@ -21,6 +23,8 @@ import java.util.List;
  * 用户信息查询
  * <p>
  * 说明：本类只提供同步方法；需要异步时建议使用线程池或JDK21虚拟线程自行包装（参考README）。
+ * <p>
+ * 请求通道：vortex接口走 {@link VortexHttp}，官方开发者API走 {@link ApiHttp}（自动cookie管理与重定向处理，兼容莱服 ）。
  *
  * @author Xun
  * @date 2023/5/22 21:42 星期一
@@ -30,7 +34,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     public List<VortexSearchUser> searchUserVortexCn(String userName) throws BasicException {
 
         try {
-            return VortexSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
+            return VortexSearchUser.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(userName)))));
         } catch (BasicException e) {
             if (e.getCode() == HttpThrowableStatus.HTTP_STATUS && (e.getMessage().contains("503"))) {
                 return List.of();
@@ -41,32 +45,31 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public List<VortexSearchUser> searchUserVortex(String userName) throws BasicException {
 
-        return VortexSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(userName)))));
+        return VortexSearchUser.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(userName)))));
     }
 
     public VortexUserInfo userVortex(long accountId) throws BasicException {
 
-        return VortexUserInfo.parse(JsonUtils.json().parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriVortex(accountId))))), accountId);
+        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId))))), accountId);
     }
 
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
-
-        return DevelopersSearchUser.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloper(token, userName)))));
+        return DevelopersSearchUser.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloper(token, userName)))));
     }
 
     public AccountInfo accountInfoDevelopers(String token, long accountId) throws BasicException {
 
-        var baseJson = HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token, accountId, "")));
+        var baseJson = ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token, accountId, "")));
         //检查公会是否存在
-        var accountInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
-        var accountClan = AccountClanInfo.accountClan( accountId, HttpCodec.response(accountInfo));
+        var accountInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
+        var accountClan = AccountClanInfo.accountClan(accountId, ApiHttp.response(accountInfo));
         //检测是否有公会，有则继续执行
         if (accountClan.clanId() > 0) {
-            var clanInfo = HttpCodec.send(httpClient, HttpCodec.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
-            var clan = DevelopersClanInfo.parse( accountClan.clanId(), HttpCodec.response(clanInfo));
+            var clanInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
+            var clan = DevelopersClanInfo.parse(accountClan.clanId(), ApiHttp.response(clanInfo));
             accountClan = AccountClanInfo.of(accountClan, clan);
         }
-        return AccountInfo.parse( accountId, HttpCodec.response(baseJson), accountClan);
+        return AccountInfo.parse(accountId, ApiHttp.response(baseJson), accountClan);
     }
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws BasicException {
@@ -75,7 +78,7 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId, String accessToken) throws BasicException {
 
-        return DevelopersUserInfo.parse( accountId, HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(uriDeveloperUserInfo(token,
+        return DevelopersUserInfo.parse(accountId, ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token,
                 accountId, accessToken)))));
     }
 
@@ -88,7 +91,11 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     private URI uriDeveloper(String token, String userName) {
-        return URI.create(server.api() + String.format("/wows/account/list/?application_id=%s&search=%s", token, HttpCodec.encodeURIComponent(userName)));
+        if (server() == WowsServer.RU) {
+            return URI.create(server.api() + String.format("/mk/account/list/?application_id=%s&search=%s", token, HttpCodec.encodeURIComponent(userName)));
+        } else {
+            return URI.create(server.api() + String.format("/wows/account/list/?application_id=%s&search=%s", token, HttpCodec.encodeURIComponent(userName)));
+        }
     }
 
     private URI uriDeveloperUserInfo(String token, long accountId, String accessToken) {
