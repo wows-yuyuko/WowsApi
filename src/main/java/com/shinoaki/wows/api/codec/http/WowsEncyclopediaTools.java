@@ -18,25 +18,29 @@ import java.net.http.HttpClient;
 public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
 
     public Developers developers(String token) {
-        return new Developers(  httpClient, server, token);
+        return new Developers(httpClient, server, token);
     }
 
     public Vortex vortex() {
-        return new Vortex(  httpClient, server);
+        return new Vortex(httpClient, server);
     }
 
 
-    public record Developers(  HttpClient httpClient, WowsServer server, String token) {
+    public record Developers(HttpClient httpClient, WowsServer server, String token) {
         public DevelopersGlossary glossary() throws BasicException {
-            return DevelopersGlossary.parse( HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
+            return DevelopersGlossary.parse(HttpCodec.response(HttpCodec.send(httpClient, HttpCodec.request(glossaryUri()))));
         }
 
         public URI glossaryUri() {
-            return URI.create(server().api() + "/wows/clans/glossary/?application_id=" + token);
+            if (server() == WowsServer.RU) {
+                return URI.create(server().api() + "/mk/clans/glossary/?application_id=" + token);
+            } else {
+                return URI.create(server().api() + "/wows/clans/glossary/?application_id=" + token);
+            }
         }
     }
 
-    public record Vortex(  HttpClient httpClient, WowsServer server) {
+    public record Vortex(HttpClient httpClient, WowsServer server) {
 
     }
 }

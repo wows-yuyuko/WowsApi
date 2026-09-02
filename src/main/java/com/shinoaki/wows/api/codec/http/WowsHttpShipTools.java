@@ -84,11 +84,19 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
                 }
             }
             builder.deleteCharAt(builder.length() - 1);
-            if (accessToken.isEmpty()) {
-                return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+            if (server()==WowsServer.RU){
+                if (accessToken.isEmpty()) {
+                    return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+                }
+                return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
+                        accountId, accessToken, builder));
+            }else {
+                if (accessToken.isEmpty()) {
+                    return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+                }
+                return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
+                        accountId, accessToken, builder));
             }
-            return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
-                    accountId, accessToken, builder));
         }
     }
 }
