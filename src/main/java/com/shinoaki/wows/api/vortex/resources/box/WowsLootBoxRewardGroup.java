@@ -28,7 +28,7 @@ public record WowsLootBoxRewardGroup(
         String probability,
         int weight,
         double probabilityDisplayed,
-        Long savePoint,
+        long savePoint,
         boolean rerollNonUniqueCrews,
         boolean hasUniqueRewards
 ) {
@@ -48,7 +48,7 @@ public record WowsLootBoxRewardGroup(
                 node.path("probability").asString(""),
                 node.path("weight").asInt(0),
                 node.path("probabilityDisplayed").asDouble(0),
-                savePoint.isNumber() ? savePoint.asLong() : null,
+                savePoint.isNumber() ? savePoint.asLong() : 0,
                 node.path("rerollNonUniqueCrews").asBoolean(false),
                 node.path("hasUniqueRewards").asBoolean(false)
         );
