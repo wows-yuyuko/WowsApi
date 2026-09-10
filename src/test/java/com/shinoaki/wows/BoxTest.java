@@ -16,10 +16,10 @@ public class BoxTest {
             var server = WowsServer.ASIA;
             List<WowsBox> boxes = WowsBox.request(true, server, VortexResourcesLanguage.SG);
             System.out.println(boxes);
-            var wr = WowsResources.request(true, server, VortexResourcesLanguage.SG);
-            System.out.println(wr);
-            var rvr = RequestVortexResourcesInfo.request(true, server, VortexResourcesLanguage.SG);
-            System.out.println(rvr);
+//            var wr = WowsResources.request(true, server, VortexResourcesLanguage.SG);
+//            System.out.println(wr);
+//            var rvr = RequestVortexResourcesInfo.request(true, server, VortexResourcesLanguage.SG);
+//            System.out.println(rvr);
         } catch (BasicException e) {
             throw new RuntimeException(e);
         }

@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,9 +45,7 @@ public class RequestVortexResourcesInfo {
     }
 
     public static RequestVortexResourcesInfo request(boolean isPtServer, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
-        try (HttpClient client = HttpClient.newHttpClient()) {
-            return request(isPtServer, client, server, language);
-        }
+        return request(isPtServer, HttpCodec.client(), server, language);
     }
 
     public static RequestVortexResourcesInfo request(boolean isPtServer, HttpClient client, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
@@ -62,6 +61,7 @@ public class RequestVortexResourcesInfo {
         var url = isPtServer ? server.ptVortexServer() : server.vortex();
         var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                 .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(HttpCodec.requestTimeout()))
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
         var jsonNode = JsonUtils.json().parse(HttpCodec.response(resp));

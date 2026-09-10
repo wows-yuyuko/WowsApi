@@ -10,9 +10,9 @@ import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,15 +50,14 @@ public class WowsResources {
                     }
                 ]
                 """.replace("${language}", language.getLanguage());
-        try (HttpClient client = HttpClient.newHttpClient()) {
-            var url = isPtServer ? server.ptVortexServer() : server.vortex();
-            var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json)).build();
-            var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
-            var data = HttpCodec.response(resp);
-            return WowsResources.parse(JsonUtils.json().parse(data));
-        }
+        var url = isPtServer ? server.ptVortexServer() : server.vortex();
+        var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(HttpCodec.requestTimeout()))
+                .POST(HttpRequest.BodyPublishers.ofString(json)).build();
+        var resp = HttpCodec.client().send(req, HttpResponse.BodyHandlers.ofByteArray());
+        var data = HttpCodec.response(resp);
+        return WowsResources.parse(JsonUtils.json().parse(data));
     }
 
     private static List<WowsResources> parse(JsonNode jsonNode) {

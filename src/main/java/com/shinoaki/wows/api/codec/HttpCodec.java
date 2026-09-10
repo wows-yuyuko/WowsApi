@@ -15,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -44,10 +45,49 @@ public class HttpCodec {
     }
 
     /**
-     * 当前请求超时时间(秒),供各请求通道读取。
+     * 当前请求超时时间(秒),供各请求通道与资源类读取,统一以本处配置为准。
      */
-    static int requestTimeout() {
+    public static int requestTimeout() {
         return requestTimeout;
+    }
+
+    /**
+     * 共享客户端当前绑定的超时(秒),与{@link #requestTimeout}不一致时触发重建。
+     */
+    private static volatile int clientTimeout = Integer.MIN_VALUE;
+
+    private static volatile HttpClient client;
+
+    /**
+     * 全局共享的 {@link HttpClient},库内统一使用本实例。
+     * <p>
+     * JDK 的 HttpClient 线程安全且自带连接池,复用同一个实例可避免每次请求都重建
+     * selector/executor 线程与 TCP、TLS 连接(高频请求下开销显著)。
+     * <b>因此库内不再各自 {@code HttpClient.newHttpClient()},一律通过本方法获取。</b>
+     * <p>
+     * 该实例不跟随重定向、不挂 CookieHandler:重定向与会话 Cookie 由{@link HttpTransport}
+     * 按主机自行处理,此处若自动跟随重定向会破坏 api.korabli.su 的 307 握手。
+     * <p>
+     * 连接超时取自{@link #requestTimeout},调用{@link #updateTimeout(int)}后会在下次取用时
+     * 重建为新的超时;重建不影响进行中的请求(它们仍持有旧实例)。
+     *
+     * @return 共享HttpClient
+     */
+    public static HttpClient client() {
+        HttpClient shared = client;
+        int timeout = requestTimeout;
+        if (shared == null || clientTimeout != timeout) {
+            synchronized (HttpCodec.class) {
+                if (client == null || clientTimeout != timeout) {
+                    client = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(timeout))
+                            .build();
+                    clientTimeout = timeout;
+                }
+                shared = client;
+            }
+        }
+        return shared;
     }
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
