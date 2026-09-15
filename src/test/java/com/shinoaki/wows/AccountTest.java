@@ -68,16 +68,17 @@ public class AccountTest {
     @Test
     public void userInfo() throws BasicException {
         HttpClient client = HttpClient.newBuilder().build();
+        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+        System.out.println(data2);
+        System.out.println("===========");
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
         var data = asia.userVortex(7048262455L);
-        var data1 = asia.userVortex(7050218428L);
-        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
         System.out.println(data);
         System.out.println("===========");
+        var data1 = asia.userVortex(7050218428L);
         System.out.println(data1);
         System.out.println("===========");
-        System.out.println(data2);
-        System.out.println();
+
     }
 
     @Test

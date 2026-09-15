@@ -3,6 +3,7 @@ package com.shinoaki.wows;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
+import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
@@ -30,7 +31,10 @@ public class DevelopersTest {
     public void shipTest() throws BasicException {
         WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
         DevelopersUserShip developers = tools.developers(token).shipList();
+        var developersUserShipOper = tools.developers(token).shipOperList();
         System.out.println(developers);
+
+
         Map<WowsBattlesType, List<ShipInfo>> shipInfoMap = developers.toShipInfoMap();
         var list = shipInfoMap.get(WowsBattlesType.PVP);
         var d1 = list.stream().filter(f -> f.shipId() == 4276041424L).findFirst().get();
