@@ -4,6 +4,7 @@ import com.shinoaki.wows.api.codec.ApiHttp;
 import com.shinoaki.wows.api.codec.VortexHttp;
 import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
+import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
@@ -12,7 +13,9 @@ import com.shinoaki.wows.api.vortex.VortexUserShip;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 用户战舰信息查询
@@ -63,6 +66,13 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             return DevelopersUserShip.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri())))));
         }
 
+        /**
+         * 行动模式
+         */
+        public DevelopersUserShipOper shipOperList() throws BasicException {
+            return DevelopersUserShipOper.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipOperListUri(""))))));
+        }
+
         public Map<Long, ShipExpansion> shipBadges() throws BasicException {
             //不支持莱服
             if (server() == WowsServer.RU) {
@@ -81,6 +91,23 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
 
         public URI shipBadgesUri() {
             return URI.create(server.api() + String.format("/wows/ships/badges/?application_id=%s&account_id=%s", token, accountId));
+        }
+
+        public URI shipOperListUri(String accessToken) {
+            String builder = "oper_div,oper_div_hard,oper_solo";
+            if (server() == WowsServer.RU) {
+                if (accessToken.isEmpty()) {
+                    return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+                }
+                return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
+                        accountId, accessToken, builder));
+            } else {
+                if (accessToken.isEmpty()) {
+                    return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
+                }
+                return URI.create(server.api() + String.format("/wows/ships/stats/?application_id=%s&account_id=%s&access_token=%s&in_garage=1&extra=%s", token,
+                        accountId, accessToken, builder));
+            }
         }
 
         public URI shipListUri(String accessToken) {
