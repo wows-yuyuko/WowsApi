@@ -1,0 +1,14 @@
+{
+  "schemaKey" : "api:asia:/wows/ships/badges/?account_id={id}",
+  "capturedAt" : "2026-10-10T08:48:50.441291100Z",
+  "fields" : {
+    "data" : "object",
+    "data.*[]" : "object",
+    "data.*[].ship_id" : "number",
+    "data.*[].top_grade_class" : "number",
+    "meta" : "object",
+    "meta.count" : "number",
+    "meta.hidden" : "null",
+    "status" : "string"
+  }
+}

@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.codec;
 
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -155,13 +156,19 @@ public class HttpCodec {
         try {
             if (response.statusCode() == 200) {
                 var encoding = response.headers().firstValue(HttpCodec.CONTENT_ENCODING).orElse("").toLowerCase(Locale.ROOT);
+                final String json;
                 if (encoding.contains("gzip")) {
-                    return new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
+                    json = new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
+                } else if (encoding.contains("deflate")) {
+                    json = new String(HttpCodec.unDeflate(response.body()), StandardCharsets.UTF_8);
+                } else {
+                    json = new String(response.body(), StandardCharsets.UTF_8);
                 }
-                if (encoding.contains("deflate")) {
-                    return new String(HttpCodec.unDeflate(response.body()), StandardCharsets.UTF_8);
+                //字段漂移监视的采集挂钩:默认关闭,未开启时只有一次 ThreadLocal 读取
+                if (SchemaRecorder.enabled()) {
+                    SchemaRecorder.record(response.uri(), json);
                 }
-                return new String(response.body(), StandardCharsets.UTF_8);
+                return json;
             }
         } catch (IOException e) {
             log.error("网络请求响应异常！", e);

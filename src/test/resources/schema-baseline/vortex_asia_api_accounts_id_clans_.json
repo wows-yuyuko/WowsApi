@@ -1,0 +1,17 @@
+{
+  "schemaKey" : "vortex:asia:/api/accounts/{id}/clans/",
+  "capturedAt" : "2026-10-10T08:45:08.991900100Z",
+  "fields" : {
+    "data" : "object",
+    "data.clan" : "object",
+    "data.clan.color" : "number",
+    "data.clan.max_members_count" : "number",
+    "data.clan.members_count" : "number",
+    "data.clan.name" : "string",
+    "data.clan.tag" : "string",
+    "data.clan_id" : "number",
+    "data.joined_at" : "string",
+    "data.role" : "string",
+    "status" : "string"
+  }
+}

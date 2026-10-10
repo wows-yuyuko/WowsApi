@@ -1,0 +1,12 @@
+{
+  "schemaKey" : "api:asia:/wows/account/list/?search={text}",
+  "capturedAt" : "2026-10-10T08:48:22.594719800Z",
+  "fields" : {
+    "data[]" : "object",
+    "data[].account_id" : "number",
+    "data[].nickname" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

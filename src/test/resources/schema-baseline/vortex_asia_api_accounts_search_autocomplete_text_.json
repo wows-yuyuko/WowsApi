@@ -1,0 +1,11 @@
+{
+  "schemaKey" : "vortex:asia:/api/accounts/search/autocomplete/{text}/",
+  "capturedAt" : "2026-10-10T08:56:52.431901700Z",
+  "fields" : {
+    "data[]" : "object",
+    "data[].hidden" : "boolean",
+    "data[].name" : "string",
+    "data[].spa_id" : "number",
+    "status" : "string"
+  }
+}

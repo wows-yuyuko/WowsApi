@@ -1,0 +1,17 @@
+{
+  "schemaKey" : "api:asia:/wows/clans/list/?search={text}",
+  "capturedAt" : "2026-10-10T08:48:51.971014100Z",
+  "fields" : {
+    "data[]" : "object",
+    "data[].clan_id" : "number",
+    "data[].created_at" : "number",
+    "data[].members_count" : "number",
+    "data[].name" : "string",
+    "data[].tag" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "meta.page" : "number",
+    "meta.total" : "number",
+    "status" : "string"
+  }
+}

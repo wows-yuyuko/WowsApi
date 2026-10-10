@@ -1,0 +1,14 @@
+{
+  "schemaKey" : "clans:asia:/api/search/autocomplete/?search={text}&type=clans",
+  "capturedAt" : "2026-10-10T08:57:19.128028700Z",
+  "fields" : {
+    "_meta_" : "object",
+    "_meta_.collection" : "string",
+    "_meta_.total_clans" : "number",
+    "search_autocomplete_result[]" : "object",
+    "search_autocomplete_result[].hex_color" : "string",
+    "search_autocomplete_result[].id" : "number",
+    "search_autocomplete_result[].name" : "string",
+    "search_autocomplete_result[].tag" : "string"
+  }
+}

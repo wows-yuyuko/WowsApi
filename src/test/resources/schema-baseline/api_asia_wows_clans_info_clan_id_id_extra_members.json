@@ -1,0 +1,33 @@
+{
+  "schemaKey" : "api:asia:/wows/clans/info/?clan_id={id}&extra=members",
+  "capturedAt" : "2026-10-10T08:45:16.299447200Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.clan_id" : "number",
+    "data.*.created_at" : "number",
+    "data.*.creator_id" : "number",
+    "data.*.creator_name" : "string",
+    "data.*.description" : "string",
+    "data.*.is_clan_disbanded" : "boolean",
+    "data.*.leader_id" : "number",
+    "data.*.leader_name" : "string",
+    "data.*.members" : "object",
+    "data.*.members.*" : "object",
+    "data.*.members.*.account_id" : "number",
+    "data.*.members.*.account_name" : "string",
+    "data.*.members.*.joined_at" : "number",
+    "data.*.members.*.role" : "string",
+    "data.*.members_count" : "number",
+    "data.*.members_ids[]" : "number",
+    "data.*.name" : "string",
+    "data.*.old_name" : "null",
+    "data.*.old_tag" : "null",
+    "data.*.renamed_at" : "null",
+    "data.*.tag" : "string",
+    "data.*.updated_at" : "number",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

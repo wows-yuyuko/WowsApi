@@ -1,0 +1,15 @@
+{
+  "schemaKey" : "vortex:asia:/api/graphql/glossary/#Lootbox",
+  "capturedAt" : "2026-10-10T08:43:56.532441900Z",
+  "fields" : {
+    "[]" : "object",
+    "[].data" : "object",
+    "[].data.lootbox[]" : "object",
+    "[].data.lootbox[].icons" : "object",
+    "[].data.lootbox[].icons.default" : "string",
+    "[].data.lootbox[].id" : "string",
+    "[].data.lootbox[].isPremium" : "boolean",
+    "[].data.lootbox[].shortTitle" : "string",
+    "[].data.lootbox[].title" : "string"
+  }
+}

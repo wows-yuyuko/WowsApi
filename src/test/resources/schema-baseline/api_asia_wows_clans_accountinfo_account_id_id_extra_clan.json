@@ -1,0 +1,22 @@
+{
+  "schemaKey" : "api:asia:/wows/clans/accountinfo/?account_id={id}&extra=clan",
+  "capturedAt" : "2026-10-10T08:45:16.295932300Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.account_id" : "number",
+    "data.*.account_name" : "string",
+    "data.*.clan" : "object",
+    "data.*.clan.clan_id" : "number",
+    "data.*.clan.created_at" : "number",
+    "data.*.clan.members_count" : "number",
+    "data.*.clan.name" : "string",
+    "data.*.clan.tag" : "string",
+    "data.*.clan_id" : "number",
+    "data.*.joined_at" : "number",
+    "data.*.role" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schemaKey" : "vortex:asia:/api/graphql/glossary/#Items",
+  "capturedAt" : "2026-10-10T08:44:23.353996200Z",
+  "fields" : {
+    "[]" : "object",
+    "[].data" : "object",
+    "[].data.items[]" : "object",
+    "[].data.items[].description" : "string",
+    "[].data.items[].icons" : "object",
+    "[].data.items[].icons.default" : "string",
+    "[].data.items[].id" : "string",
+    "[].data.items[].prices" : "object",
+    "[].data.items[].prices.credit" : "number",
+    "[].data.items[].prices.gold" : "number",
+    "[].data.items[].prices.xp" : "number",
+    "[].data.items[].restrictions" : "object",
+    "[].data.items[].restrictions.levels[]" : "array",
+    "[].data.items[].slot" : "null",
+    "[].data.items[].tags[]" : "string",
+    "[].data.items[].title" : "string",
+    "[].data.items[].titleShort" : "string",
+    "[].data.items[].ttc" : "null",
+    "[].data.items[].ttc[]" : "object",
+    "[].data.items[].ttc[].name" : "string",
+    "[].data.items[].ttc[].title" : "string",
+    "[].data.items[].ttc[].value" : "string",
+    "[].data.items[].type" : "object",
+    "[].data.items[].type.name" : "string",
+    "[].data.items[].type.title" : "string",
+    "[].data.items[].typeName" : "string"
+  }
+}
