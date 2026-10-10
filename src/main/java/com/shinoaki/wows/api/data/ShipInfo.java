@@ -31,6 +31,7 @@ import java.io.Serializable;
  * @param expansion 扩展字段
  * @param lastBattleTime                  最后的战斗时间
  * @param recordTime                      记录时间
+ * @param source                          数据来源(vortex / 官方开发者API)，用于判断哪些字段在这份数据里有效
  * @author Xun
  * @date 2023/4/8 16:21 星期六
  */
@@ -41,7 +42,8 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        HitRatio ratioTpd, HitRatio ratioTbomb, HitRatio ratioBomb, HitRatio ratioRocket, HitRatio ratioSkip,
                        ShipExpansion expansion,
                        long lastBattleTime,
-                       long recordTime) implements Serializable {
+                       long recordTime,
+                       ShipInfoSource source) implements Serializable {
 
     public static ShipInfo empty(long shipId) {
         return prInfo(shipId, 0, 0, 0, 0);
@@ -53,7 +55,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 0, 0, 0, 0, MaxInfo.empty(),
                 ControlCapturedAndDroppedPoints.empty()
                 , HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(),
-                ShipExpansion.empty(), 0, 0);
+                ShipExpansion.empty(), 0, 0, ShipInfoSource.UNKNOWN);
     }
 
     public static ShipInfo to(long shipId, VortexShipStatistics shipStatistics, long recordTime) {
@@ -61,9 +63,9 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info)
                 , (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.shots_by_main(), info.hits_by_main()), new HitRatio(info.shots_by_atba(),
-                info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.shots_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
+                info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.hits_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
                 new HitRatio(info.shots_by_bomb(), info.hits_by_bomb()), new HitRatio(info.shots_by_rocket(), info.hits_by_rocket()),
-                new HitRatio(info.shots_by_skip(), info.hits_by_skip()), ShipExpansion.of(shipStatistics), 0L, recordTime);
+                new HitRatio(info.shots_by_skip(), info.hits_by_skip()), ShipExpansion.of(shipStatistics), 0L, recordTime, ShipInfoSource.VORTEX);
     }
 
     public static ShipInfo to(long shipId, DevelopersShipBattleType info, long lastBattleTime, long recordTime) {
@@ -73,7 +75,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()), new HitRatio(info.torpedoes().shots(), info.torpedoes().hits()),
                 new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0),
                 ShipExpansion.empty(),
-                lastBattleTime, recordTime);
+                lastBattleTime, recordTime, ShipInfoSource.DEVELOPERS);
     }
 
     /**
@@ -105,7 +107,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioSkip().addition(history.ratioSkip),
                 //expansion为最新状态字段（如精通徽章等级），聚合时保留新值(this)，不取历史值
                 this.expansion,
-                this.lastBattleTime(), history.recordTime());
+                this.lastBattleTime(), history.recordTime(), ShipInfoSource.merge(this.source, history.source));
     }
 
     /**
@@ -137,7 +139,7 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.ratioSkip().subtraction(history.ratioSkip),
                 //expansion为最新状态字段（如精通徽章等级），相减时保留新值(this)，不取历史值
                 this.expansion,
-                this.lastBattleTime(), history.recordTime());
+                this.lastBattleTime(), history.recordTime(), ShipInfoSource.merge(this.source, history.source));
     }
 
     /**
@@ -232,10 +234,54 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
 
     /**
      * 基础经验
+     * <p>
+     * 官方开发者API 没有基础经验字段（{@link #hasBasicXp()} 为 false 时本方法恒为 0）。
      *
-     * @return
+     * @return 基础经验
      */
     public double gameBasicXp() {
         return battle.battle() <= 0 ? basicXp : basicXp / (double) battle.battle();
+    }
+
+    //----------------------------------------------------------------- 字段可用性(跨来源聚合前先看这里)
+
+    /**
+     * 基础经验（{@code basicXp} / {@code maxInfo.maxBasicXp}）在这份数据里是否有意义。
+     * <p>
+     * 官方开发者API 没有该字段，值为 0 只代表"没有这个数据"，与 vortex 的数据相加减会失真。
+     */
+    public boolean hasBasicXp() {
+        return source.providesBasicXp();
+    }
+
+    /**
+     * 深水炸弹数据（{@code fragsInfo.fragsByDbomb} / {@code maxInfo.maxFragsByDbomb}）是否有意义。
+     */
+    public boolean hasDbomb() {
+        return source.providesDbomb();
+    }
+
+    /**
+     * 深弹/炸弹/火箭/跳弹命中（{@code ratioTbomb/ratioBomb/ratioRocket/ratioSkip}）是否有意义。
+     */
+    public boolean hasOtherHitRatio() {
+        return source.providesOtherHitRatio();
+    }
+
+    /**
+     * {@code lastBattleTime} 是否有意义（vortex 单船接口不返回该船的最后战斗时间）。
+     */
+    public boolean hasLastBattleTime() {
+        return source.providesLastBattleTime();
+    }
+
+    /**
+     * {@code expansion}（精通徽章等级）是否有意义。
+     * <p>
+     * 官方开发者API 的舰船统计里没有徽章，需要另外调用 {@code /wows/ships/badges/}
+     * （{@code WowsHttpShipTools.Developers#shipBadges()}）后自行合并；莱服不支持该接口。
+     */
+    public boolean hasExpansion() {
+        return source.providesExpansion();
     }
 }
