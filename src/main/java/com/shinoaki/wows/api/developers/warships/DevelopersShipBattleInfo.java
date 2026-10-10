@@ -1,5 +1,6 @@
 package com.shinoaki.wows.api.developers.warships;
 
+import com.shinoaki.wows.api.developers.account.DevelopersUserInfoPrivate;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
@@ -12,7 +13,8 @@ import java.util.*;
  * @date 2023/4/24 20:54 星期一
  */
 public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattleType> shipBattleTypeMap, long last_battle_time, long account_id, int distance,
-                                       long updated_at, int battles, long ship_id) {
+                                       long updated_at, int battles, long ship_id,
+                                       DevelopersUserInfoPrivate privateInfo) {
     public static List<DevelopersShipBattleInfo> parse(JsonNode node) throws BasicException {
         List<DevelopersShipBattleInfo> list = new ArrayList<>();
         for (var data : node) {
@@ -22,7 +24,8 @@ public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattle
                 shipBattleTypeMap.put(type, DevelopersShipBattleType.parse(jsonNode));
             }
             list.add(new DevelopersShipBattleInfo(shipBattleTypeMap, data.path("last_battle_time").asLong(), data.path("account_id").asLong(), data.get(
-                    "distance").asInt(), data.path("updated_at").asLong(), data.path("battles").asInt(), data.path("ship_id").asLong()));
+                    "distance").asInt(), data.path("updated_at").asLong(), data.path("battles").asInt(), data.path("ship_id").asLong(),
+                    DevelopersUserInfoPrivate.parse(data.path("private"))));
         }
         return list;
     }

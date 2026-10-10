@@ -1,5 +1,7 @@
 package com.shinoaki.wows.api.data;
 
+import com.shinoaki.wows.api.developers.account.DevelopersUserInfoPrivate;
+import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HiddenProfileException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
@@ -8,16 +10,27 @@ import tools.jackson.databind.JsonNode;
 
 
 /**
- * 游戏账号基础信息
+ * 游戏账号基础信息，对应官方API {@code /wows/account/info/}（莱服 {@code /mk/account/info/}）。
+ * <p>
+ * 响应字段：data.<accountId> 下的 account_id / nickname / created_at / hidden_profile / karma /
+ * leveling_points / leveling_tier / last_battle_time / logout_at / stats_updated_at / updated_at /
+ * private / statistics。
  *
- * @param accountId 账号id
- * @param nickname  账号名称
- * @param createdAt 创建时间
+ * @param accountId     账号id
+ * @param nickname      账号名称
+ * @param createdAt     创建时间
  * @param hiddenProfile 是否隐藏战绩
  * @param lastBattleTime    最后战斗时间
  * @param statsUpdatedAt    账号状态更新时间
- * @param logoutAt  登出时间
- * @param clan 公会信息
+ * @param logoutAt      登出时间
+ * @param clan          公会信息(由调用方单独查询后传入)
+ * @param karma         业力
+ * @param levelingPoints 等级经验
+ * @param levelingTier  等级
+ * @param updatedAt     数据更新时间
+ * @param userInfoPrivate 私有数据(需要 access_token，否则为 null)
+ * @param statistics    各战斗类型战绩
+ * @author Xun
  */
 public record AccountInfo(
         long accountId,
@@ -27,7 +40,13 @@ public record AccountInfo(
         long lastBattleTime,
         long statsUpdatedAt,
         long logoutAt,
-        AccountClanInfo clan
+        AccountClanInfo clan,
+        int karma,
+        int levelingPoints,
+        int levelingTier,
+        long updatedAt,
+        DevelopersUserInfoPrivate userInfoPrivate,
+        DevelopersUserInfoStatistics statistics
 ) {
 
     public static AccountInfo parse(long accountId, String json, AccountClanInfo clan) throws BasicException {
@@ -49,6 +68,12 @@ public record AccountInfo(
                 data.path("last_battle_time").asLong(),
                 data.path("stats_updated_at").asLong(),
                 data.path("logout_at").asLong(),
-                clan);
+                clan,
+                data.path("karma").asInt(),
+                data.path("leveling_points").asInt(),
+                data.path("leveling_tier").asInt(),
+                data.path("updated_at").asLong(),
+                DevelopersUserInfoPrivate.parse(data.path("private")),
+                DevelopersUserInfoStatistics.parse(data.path("statistics")));
     }
 }
