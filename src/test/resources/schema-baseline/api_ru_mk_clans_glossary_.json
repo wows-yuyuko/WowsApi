@@ -1,0 +1,32 @@
+{
+  "schemaKey" : "api:ru:/mk/clans/glossary/",
+  "capturedAt" : "2026-10-10T11:46:03.648361500Z",
+  "fields" : {
+    "data" : "object",
+    "data.building_types" : "object",
+    "data.building_types.*" : "object",
+    "data.building_types.*.building_type_id" : "number",
+    "data.building_types.*.name" : "string",
+    "data.buildings" : "object",
+    "data.buildings.*" : "object",
+    "data.buildings.*.bonus_type" : "string",
+    "data.buildings.*.bonus_value" : "number",
+    "data.buildings.*.building_id" : "number",
+    "data.buildings.*.building_type_id" : "number",
+    "data.buildings.*.cost" : "number",
+    "data.buildings.*.name" : "string",
+    "data.buildings.*.ship_nation" : "null",
+    "data.buildings.*.ship_tier" : "null",
+    "data.buildings.*.ship_type" : "null",
+    "data.clans_roles" : "object",
+    "data.clans_roles.commander" : "string",
+    "data.clans_roles.commissioned_officer" : "string",
+    "data.clans_roles.executive_officer" : "string",
+    "data.clans_roles.officer" : "string",
+    "data.clans_roles.private" : "string",
+    "data.clans_roles.recruitment_officer" : "string",
+    "data.settings" : "object",
+    "data.settings.max_members_count" : "number",
+    "status" : "string"
+  }
+}

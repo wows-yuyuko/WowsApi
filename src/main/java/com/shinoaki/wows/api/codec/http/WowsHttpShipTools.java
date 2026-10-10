@@ -7,6 +7,7 @@ import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
+import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
@@ -39,24 +40,55 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
     public record Vortex(HttpClient httpClient, WowsServer server, long accountId) {
 
         public URI shipListUri(WowsBattlesType type) {
-            return vortexShipList(server, type, accountId);
+            return shipListUri(WowsBattlesTypeRu.of(type));
         }
 
         public VortexUserShip shipList(WowsBattlesType type) throws BasicException {
-            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type))))));
+            return shipList(WowsBattlesTypeRu.of(type));
         }
 
         public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws BasicException {
             Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
             for (WowsBattlesType type : types) {
-                shipMap.put(type, VortexUserShip.parse(type,
-                        JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type)))))));
+                shipMap.put(type, shipList(type));
             }
             return shipMap;
         }
 
-        private URI vortexShipList(WowsServer server, WowsBattlesType type, long accountId) {
-            return URI.create(server.vortex() + String.format("/api/accounts/%s/ships/%s/", accountId, type.name().toLowerCase(Locale.ROOT)));
+        //------------------------------------------------------------------------- 莱服专属战斗类型
+
+        /**
+         * 莱服专属战斗类型({@code brawl}/{@code clan}/{@code rating*} 等)的战舰列表地址。
+         * <p>
+         * 莱服独有的类型只在 {@code korabli.su} 上有效，其它服调用会抛 {@link IllegalArgumentException}。
+         */
+        public URI shipListUri(WowsBattlesTypeRu type) {
+            return vortexShipList(server, type, accountId);
+        }
+
+        /**
+         * 莱服专属战斗类型的战舰列表。
+         */
+        public VortexUserShip shipList(WowsBattlesTypeRu type) throws BasicException {
+            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type))))));
+        }
+
+        /**
+         * 批量取莱服战斗类型的战舰列表：类型 -> 战舰列表。
+         */
+        public Map<WowsBattlesTypeRu, VortexUserShip> shipListMap(WowsBattlesTypeRu[] types) throws BasicException {
+            Map<WowsBattlesTypeRu, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesTypeRu.class);
+            for (WowsBattlesTypeRu type : types) {
+                shipMap.put(type, shipList(type));
+            }
+            return shipMap;
+        }
+
+        private URI vortexShipList(WowsServer server, WowsBattlesTypeRu type, long accountId) {
+            if (type.isRuOnly() && server != WowsServer.RU) {
+                throw new IllegalArgumentException(type + " 是莱服(korabli.su)专属战斗类型，当前服务器=" + server.getCode());
+            }
+            return URI.create(server.vortex() + String.format("/api/accounts/%s/ships/%s/", accountId, type.code()));
         }
     }
 

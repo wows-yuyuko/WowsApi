@@ -15,10 +15,12 @@ import java.io.Serializable;
  * @param damageDealt                     场均
  * @param scoutingDamage                  潜在
  * @param fragsInfo                       击杀信息
+ * @param assistInfo                      助攻信息(莱服新增，其它服恒为 0)
  * @param shipsSpotted                    发现战舰数
  * @param planesKilled                    飞机击落数
  * @param artAgro                         主武器潜在
  * @param tpdAgro                         鱼雷潜在
+ * @param minesAgro                       水雷潜在(只有 vortex 通道的莱服数据里有)
  * @param maxInfo                         最高历史记录
  * @param controlCapturedAndDroppedPoints 占领和防御贡献
  * @param ratioMain                       主武器命中数据
@@ -35,8 +37,9 @@ import java.io.Serializable;
  * @author Xun
  * @date 2023/4/8 16:21 星期六
  */
-public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long damageDealt, long scoutingDamage, FragsInfo fragsInfo, int shipsSpotted,
-                       int planesKilled, long artAgro, long tpdAgro,
+public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long damageDealt, long scoutingDamage, FragsInfo fragsInfo, AssistInfo assistInfo,
+                       int shipsSpotted,
+                       int planesKilled, long artAgro, long tpdAgro, long minesAgro,
 
                        MaxInfo maxInfo, ControlCapturedAndDroppedPoints controlCapturedAndDroppedPoints, HitRatio ratioMain, HitRatio ratioAtba,
                        HitRatio ratioTpd, HitRatio ratioTbomb, HitRatio ratioBomb, HitRatio ratioRocket, HitRatio ratioSkip,
@@ -48,10 +51,16 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
     /**
      * 兼容旧数据：加 {@code source} 之前序列化的数据（Java 原生序列化或用户自存的 JSON）读出来该字段是 null，
      * 这里统一归一为 {@link ShipInfoSource#UNKNOWN}（最保守：所有 {@code hasXxx()} 返回 false），避免 NPE。
+     * <p>
+     * 同理，加 {@code assistInfo}（2.7.0，莱服助攻字段）之前的数据读出来也是 null，归一为 {@link AssistInfo#empty()}。
+     * {@code minesAgro} 是原始类型 long，旧数据自动为 0。
      */
     public ShipInfo {
         if (source == null) {
             source = ShipInfoSource.UNKNOWN;
+        }
+        if (assistInfo == null) {
+            assistInfo = AssistInfo.empty();
         }
     }
 
@@ -61,8 +70,8 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
 
     public static ShipInfo prInfo(long shipId, int battle, long damageDealt, int wins, int frags) {
         return new ShipInfo(shipId, new Battle(battle, wins, 0, 0, 0), 0, 0, damageDealt, 0,
-                new FragsInfo(frags, 0, 0, 0, 0, 0, 0),
-                0, 0, 0, 0, MaxInfo.empty(),
+                new FragsInfo(frags, 0, 0, 0, 0, 0, 0), AssistInfo.empty(),
+                0, 0, 0, 0, 0, MaxInfo.empty(),
                 ControlCapturedAndDroppedPoints.empty()
                 , HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(), HitRatio.empty(),
                 ShipExpansion.empty(), 0, 0, ShipInfoSource.UNKNOWN);
@@ -71,7 +80,8 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
     public static ShipInfo to(long shipId, VortexShipStatistics shipStatistics, long recordTime) {
         var info = shipStatistics.shipInfo();
         return new ShipInfo(shipId, Battle.to(info), info.premium_exp(), info.original_exp(), info.damage_dealt(), info.scouting_damage(), FragsInfo.to(info)
-                , (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), MaxInfo.to(shipId, info),
+                , AssistInfo.to(info), (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.tpd_agro(), info.mines_agro(),
+                MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.shots_by_main(), info.hits_by_main()), new HitRatio(info.shots_by_atba(),
                 info.hits_by_atba()), new HitRatio(info.shots_by_tpd(), info.hits_by_tpd()), new HitRatio(info.shots_by_tbomb(), info.hits_by_tbomb()),
                 new HitRatio(info.shots_by_bomb(), info.hits_by_bomb()), new HitRatio(info.shots_by_rocket(), info.hits_by_rocket()),
@@ -79,8 +89,10 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
     }
 
     public static ShipInfo to(long shipId, DevelopersShipBattleType info, long lastBattleTime, long recordTime) {
-        return new ShipInfo(shipId, Battle.to(info), info.xp(), 0, info.damage_dealt(), info.damage_scouting(), FragsInfo.to(info),
-                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.torpedo_agro(), MaxInfo.to(shipId, info),
+        return new ShipInfo(shipId, Battle.to(info), info.xp(), 0, info.damage_dealt(), info.damage_scouting(), FragsInfo.to(info), AssistInfo.to(info),
+                (int) info.ships_spotted(), (int) info.planes_killed(), info.art_agro(), info.torpedo_agro(),
+                //官方开发者API 没有水雷数据（只有 vortex 的莱服数据里有 mines_agro）
+                0L, MaxInfo.to(shipId, info),
                 ControlCapturedAndDroppedPoints.to(info), new HitRatio(info.main_battery().shots(), info.main_battery().hits()),
                 new HitRatio(info.second_battery().shots(), info.second_battery().hits()), new HitRatio(info.torpedoes().shots(), info.torpedoes().hits()),
                 new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0), new HitRatio(0, 0),
@@ -102,10 +114,12 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.damageDealt() + history.damageDealt(),
                 this.scoutingDamage() + history.scoutingDamage(),
                 this.fragsInfo().addition(history.fragsInfo()),
+                this.assistInfo().addition(history.assistInfo()),
                 this.shipsSpotted() + history.shipsSpotted(),
                 this.planesKilled() + history.planesKilled(),
                 this.artAgro() + history.artAgro(),
                 this.tpdAgro() + history.tpdAgro(),
+                this.minesAgro() + history.minesAgro(),
                 this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().addition(history.controlCapturedAndDroppedPoints()),
                 this.ratioMain().addition(history.ratioMain),
@@ -134,10 +148,12 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                 this.damageDealt() - history.damageDealt(),
                 this.scoutingDamage() - history.scoutingDamage(),
                 this.fragsInfo().subtraction(history.fragsInfo()),
+                this.assistInfo().subtraction(history.assistInfo()),
                 this.shipsSpotted() - history.shipsSpotted(),
                 this.planesKilled() - history.planesKilled()
                 , this.artAgro() - history.artAgro(),
                 this.tpdAgro() - history.tpdAgro(),
+                this.minesAgro() - history.minesAgro(),
                 this.maxInfo().sort(history.maxInfo),
                 this.controlCapturedAndDroppedPoints().subtraction(history.controlCapturedAndDroppedPoints()),
                 this.ratioMain().subtraction(history.ratioMain),
@@ -213,6 +229,24 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
      */
     public double gameWins() {
         return battle.gameWins();
+    }
+
+    /**
+     * 水雷潜在(场均)
+     *
+     * @return 场均水雷潜在
+     */
+    public double gameMinesAgro() {
+        return battle.battle() <= 0 ? minesAgro : minesAgro / (double) battle.battle();
+    }
+
+    /**
+     * 助攻伤害(场均)
+     *
+     * @return 场均助攻伤害
+     */
+    public double gameAssistDamage() {
+        return battle.battle() <= 0 ? assistInfo.assistDamage() : assistInfo.assistDamage() / (double) battle.battle();
     }
 
     /**

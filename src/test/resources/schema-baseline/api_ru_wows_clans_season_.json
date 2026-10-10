@@ -1,0 +1,22 @@
+{
+  "schemaKey" : "api:ru:/wows/clans/season/",
+  "capturedAt" : "2026-10-10T11:46:03.386104500Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.division_points" : "number",
+    "data.*.finish_time" : "number",
+    "data.*.leagues[]" : "object",
+    "data.*.leagues[].color" : "string",
+    "data.*.leagues[].icon" : "string",
+    "data.*.leagues[].name" : "string",
+    "data.*.name" : "string",
+    "data.*.season_id" : "number",
+    "data.*.ship_tier_max" : "number",
+    "data.*.ship_tier_min" : "number",
+    "data.*.start_time" : "number",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

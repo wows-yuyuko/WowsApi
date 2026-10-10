@@ -1,0 +1,10 @@
+{
+  "schemaKey" : "clans:ru:/api/search/autocomplete/?search={text}&type=clans",
+  "capturedAt" : "2026-10-10T11:45:20.724539600Z",
+  "fields" : {
+    "_meta_" : "object",
+    "_meta_.collection" : "string",
+    "_meta_.total_clans" : "number",
+    "search_autocomplete_result[]" : "array"
+  }
+}

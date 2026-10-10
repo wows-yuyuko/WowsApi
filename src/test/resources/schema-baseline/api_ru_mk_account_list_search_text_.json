@@ -1,0 +1,12 @@
+{
+  "schemaKey" : "api:ru:/mk/account/list/?search={text}",
+  "capturedAt" : "2026-10-10T11:46:00.078226300Z",
+  "fields" : {
+    "data[]" : "object",
+    "data[].account_id" : "number",
+    "data[].nickname" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

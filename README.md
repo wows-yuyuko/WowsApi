@@ -17,6 +17,18 @@
 - `ShipInfo` 新增 `source`(来源标记) 与 `hasBasicXp()/hasDbomb()/hasOtherHitRatio()/hasLastBattleTime()/hasExpansion()`；
 - **直接 `new` 这些 record 的下游代码需要跟着改**（用库提供的 `parse(...)`/`to(...)` 工厂方法则不受影响）。
 
+# 2.7.0版本起 支持莱服(korabli.su)分家后的字段与战斗类型
+
+- vortex：`VortexShipInfo` 80→104 字段（莱服 +18：助攻/水雷/副炮/版本计数；oper_mm 再 +6：tasks_completed0..5，其它服恒为 0）；
+- vortex 账号统计新增莱服专属数据块 brawl/clan/oper_mm/rank/rank_old/rating/rating_div/rating_solo 与 `rating_info`；`Basic` 加 `mastery_rank`；
+- 莱服战斗类型**不塞进** `WowsBattlesType`（那边是各服通用的稳定集合），改用新枚举 `WowsBattlesTypeRu`：
+  `of(WowsBattlesType)` / `toWowsBattlesType()` 双向兼容，莱服独有的 `isRuOnly()==true`、转换返回 null；
+  `VortexUserShip` 加 `typeRu` 字段（莱服独有时 `type()` 为 null），`WowsHttpShipTools.Vortex` 加了对应重载；
+  取块用 `VortexUserInfoStatistics.block(WowsBattlesTypeRu)`；
+- 官方API：`DevelopersShipBattleType` 47→61 字段（莱服 +14）；莱服的官方通道不返回侦查伤害；
+- `ShipInfo` 新增 `assistInfo`（助攻）与 `minesAgro`（水雷潜在，只有 vortex 的莱服数据有）；`MaxInfo` 加 maxAssistDamage/maxAssistKills；
+- 老缓存兼容：`ShipInfo`/`MaxInfo` 的紧凑构造器把新字段归一为空值，2.6.x 的 Java 序列化数据仍可读。
+
 # 序列化兼容性
 
 数据模型大多是 record，Java 原生序列化对 record 的处理与普通类不同（已实测）：

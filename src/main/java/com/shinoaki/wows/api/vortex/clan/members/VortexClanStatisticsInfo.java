@@ -13,6 +13,8 @@ import java.util.List;
  * @param status             状态
  * @param is_hidden_statistics 是否隐藏了统计
  * @param last_updated_at    数据更新时间
+ * @param league_best        历史最高联赛名(莱服独有，没打过为 null；其它服的响应里没有该字段)
+ * @param league_best_rating 历史最高联赛时的评分(莱服独有，没打过为 null)
  * @author Xun
  */
 public record VortexClanStatisticsInfo(
@@ -23,10 +25,12 @@ public record VortexClanStatisticsInfo(
         List<VortexClanUserInfo> infos,
         String status,
         boolean is_hidden_statistics,
-        String last_updated_at
+        String last_updated_at,
+        String league_best,
+        Integer league_best_rating
 ) {
 
     public static VortexClanStatisticsInfo empty() {
-        return new VortexClanStatisticsInfo(0, 0, 0, 0, List.of(), "", false, "");
+        return new VortexClanStatisticsInfo(0, 0, 0, 0, List.of(), "", false, "", null, null);
     }
 }

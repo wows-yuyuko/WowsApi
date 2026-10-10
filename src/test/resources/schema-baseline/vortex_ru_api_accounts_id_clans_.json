@@ -1,0 +1,18 @@
+{
+  "schemaKey" : "vortex:ru:/api/accounts/{id}/clans/",
+  "capturedAt" : "2026-10-10T11:45:14.611937600Z",
+  "fields" : {
+    "data" : "object",
+    "data.clan" : "object",
+    "data.clan.color" : "number",
+    "data.clan.game_data" : "object",
+    "data.clan.game_data.max_members_count" : "number",
+    "data.clan.members_count" : "number",
+    "data.clan.name" : "string",
+    "data.clan.tag" : "string",
+    "data.clan_id" : "number",
+    "data.joined_at" : "string",
+    "data.role" : "string",
+    "status" : "string"
+  }
+}

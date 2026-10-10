@@ -36,7 +36,12 @@ public record VortexClanWowsLadderInfo(
         boolean is_disbanded,
         boolean is_best_season_rating,
         VortexClanMaxPosition max_position,
-        int leading_team_number
+        int leading_team_number,
+        /**
+         * 莱服 {@code mk_ladder} 独有的 stage 节点；其它服的 {@code wows_ladder} 里没有该字段。
+         * 实测为 {@code null}（对象结构未知），这里原样保留，不做结构假设。
+         */
+        JsonNode stage
 ) {
 
     public static VortexClanWowsLadderInfo parse(long clanId, final JsonNode node) {
@@ -71,7 +76,8 @@ public record VortexClanWowsLadderInfo(
                 WowsUtils.json(node.path("is_disbanded"), false),
                 WowsUtils.json(node.path("is_best_season_rating"), false),
                 VortexClanMaxPosition.parse(node.path("max_position")),
-                WowsUtils.json(node.path("leading_team_number"), 0)
+                WowsUtils.json(node.path("leading_team_number"), 0),
+                node.path("stage")
         );
     }
 }

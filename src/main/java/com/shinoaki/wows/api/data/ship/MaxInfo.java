@@ -24,6 +24,8 @@ import java.io.Serializable;
  * @param maxSuppressionsCount      最大抑制计数
  * @param maxXp                     最高经验
  * @param maxBasicXp                最高基础经验
+ * @param maxAssistDamage           最高助攻伤害(莱服新增，其它服恒为 0)
+ * @param maxAssistKills            最高助攻击杀(莱服新增，其它服恒为 0)
  * @author Xun
  * @date 2023/4/8 16:28 星期六
  */
@@ -31,14 +33,29 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                       MaxShipInfo maxFragsByAtba,
                       MaxShipInfo maxDamageDealtToBuildings, MaxShipInfo maxFragsByPlanes, MaxShipInfo maxDamageDealt, MaxShipInfo maxScoutingDamage,
                       MaxShipInfo maxPlanesKilled,
-                      MaxShipInfo maxShipsSpotted, MaxShipInfo maxTotalAgro, MaxShipInfo maxSuppressionsCount, MaxShipInfo maxXp, MaxShipInfo maxBasicXp) implements Serializable {
+                      MaxShipInfo maxShipsSpotted, MaxShipInfo maxTotalAgro, MaxShipInfo maxSuppressionsCount, MaxShipInfo maxXp, MaxShipInfo maxBasicXp,
+                      MaxShipInfo maxAssistDamage, MaxShipInfo maxAssistKills) implements Serializable {
+
+    /**
+     * 兼容旧数据：{@code maxAssistDamage}/{@code maxAssistKills} 是 2.7.0 加的（莱服助攻纪录），
+     * 旧缓存（Java 序列化/JSON）读出来是 null，这里归一为 {@link MaxShipInfo#empty()}，避免 NPE。
+     */
+    public MaxInfo {
+        if (maxAssistDamage == null) {
+            maxAssistDamage = MaxShipInfo.empty();
+        }
+        if (maxAssistKills == null) {
+            maxAssistKills = MaxShipInfo.empty();
+        }
+    }
 
     public static MaxInfo empty() {
         return new MaxInfo(
                 MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(),
                 MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(),
                 MaxShipInfo.empty(),
-                MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty()
+                MaxShipInfo.empty(), MaxShipInfo.empty(), MaxShipInfo.empty(),
+                MaxShipInfo.empty(), MaxShipInfo.empty()
         );
     }
 
@@ -62,7 +79,9 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                 new MaxShipInfo(holder(shipId, info.max_total_agro_vehicle()), (int) info.max_total_agro()),
                 new MaxShipInfo(holder(shipId, info.max_suppressions_count_vehicle()), (int) info.max_suppressions_count()),
                 new MaxShipInfo(holder(shipId, info.max_premium_exp_vehicle()), (int) info.max_premium_exp()),
-                new MaxShipInfo(holder(shipId, info.max_exp_vehicle()), (int) info.max_exp()));
+                new MaxShipInfo(holder(shipId, info.max_exp_vehicle()), (int) info.max_exp()),
+                new MaxShipInfo(holder(shipId, info.max_assist_damage_vehicle()), (int) info.max_assist_damage()),
+                new MaxShipInfo(holder(shipId, info.max_assist_kills_vehicle()), (int) info.max_assist_kills()));
     }
 
     /**
@@ -85,7 +104,9 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                 new MaxShipInfo(holder(shipId, info.max_total_agro_ship_id()), (int) info.max_total_agro()),
                 new MaxShipInfo(holder(shipId, info.max_suppressions_ship_id()), (int) info.max_suppressions_count()),
                 new MaxShipInfo(holder(shipId, info.max_xp_ship_id()), info.max_xp()),
-                new MaxShipInfo(shipId, 0));
+                new MaxShipInfo(shipId, 0),
+                new MaxShipInfo(holder(shipId, info.max_assist_damage_ship_id()), (int) info.max_assist_damage()),
+                new MaxShipInfo(holder(shipId, info.max_assist_kills_ship_id()), (int) info.max_assist_kills()));
     }
 
     /**
@@ -117,7 +138,9 @@ public record MaxInfo(MaxShipInfo maxFrags, MaxShipInfo maxFragsByMain, MaxShipI
                 this.maxTotalAgro().max(history.maxTotalAgro),
                 this.maxSuppressionsCount().max(history.maxSuppressionsCount),
                 this.maxXp().max(history.maxXp),
-                this.maxBasicXp().max(history.maxBasicXp)
+                this.maxBasicXp().max(history.maxBasicXp),
+                this.maxAssistDamage().max(history.maxAssistDamage),
+                this.maxAssistKills().max(history.maxAssistKills)
         );
     }
 

@@ -93,7 +93,10 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
                         list,
                         status,
                         body.path("is_hidden_statistics").asBoolean(false),
-                        body.path("last_updated_at").asString(""));
+                        body.path("last_updated_at").asString(""),
+                        //莱服独有；其它服没有这两个字段
+                        stringOrNull(statistics.path("league_best")),
+                        integerOrNull(statistics.path("league_best_rating")));
             }
         }
         return VortexClanStatisticsInfo.empty();
@@ -109,5 +112,9 @@ public record VortexClanUserInfo(long accountId, String nickName, WowsServer wow
 
     private static Long longOrNull(JsonNode node) {
         return node != null && node.isNumber() ? node.asLong() : null;
+    }
+
+    private static String stringOrNull(JsonNode node) {
+        return node != null && node.isString() ? node.asString() : null;
     }
 }

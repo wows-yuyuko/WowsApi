@@ -1,6 +1,7 @@
 package com.shinoaki.wows.field_coverage;
 
 import com.shinoaki.wows.api.data.ShipInfo;
+import com.shinoaki.wows.api.data.ship.AssistInfo;
 import com.shinoaki.wows.api.data.ShipInfoSource;
 import com.shinoaki.wows.api.data.ship.MaxInfo;
 import com.shinoaki.wows.api.utils.JsonUtils;
@@ -62,7 +63,7 @@ public class ShipInfoSerializationCompatTest {
         expect("fragsInfo", expected.fragsInfo(), old.fragsInfo());
         expect("shipsSpotted/planesKilled", expected.shipsSpotted() + "/" + expected.planesKilled(), old.shipsSpotted() + "/" + old.planesKilled());
         expect("artAgro/tpdAgro", expected.artAgro() + "/" + expected.tpdAgro(), old.artAgro() + "/" + old.tpdAgro());
-        expect("maxInfo", expected.maxInfo(), old.maxInfo());
+        expect("maxInfo(2.5.1 已有的 16 项)", maxInfoBase(expected.maxInfo()), maxInfoBase(old.maxInfo()));
         expect("controlCapturedAndDroppedPoints", expected.controlCapturedAndDroppedPoints(), old.controlCapturedAndDroppedPoints());
         expect("ratioMain", expected.ratioMain(), old.ratioMain());
         expect("ratioAtba", expected.ratioAtba(), old.ratioAtba());
@@ -72,6 +73,12 @@ public class ShipInfoSerializationCompatTest {
         expect("expansion", expected.expansion(), old.expansion());
         expect("lastBattleTime", expected.lastBattleTime(), old.lastBattleTime());
         expect("recordTime", expected.recordTime(), old.recordTime());
+
+        section("新增字段的归一（旧数据里没有这些字段）");
+        expect("assistInfo()", AssistInfo.empty(), old.assistInfo());
+        expect("minesAgro()", 0L, old.minesAgro());
+        expect("maxInfo.maxAssistDamage()", MaxInfo.MaxShipInfo.empty(), old.maxInfo().maxAssistDamage());
+        expect("maxInfo.maxAssistKills()", MaxInfo.MaxShipInfo.empty(), old.maxInfo().maxAssistKills());
 
         section("新增字段 source 的归一（旧数据里没有这个字段）");
         expect("source()", ShipInfoSource.UNKNOWN.name(), old.source().name());
@@ -93,7 +100,7 @@ public class ShipInfoSerializationCompatTest {
         expect("equals 原对象", true, expected.equals(roundTrip));
         expect("hasBasicXp()", true, roundTrip.hasBasicXp());
         ShipInfo devLike = new ShipInfo(expected.shipId(), expected.battle(), expected.xp(), 0, expected.damageDealt(), 0,
-                expected.fragsInfo(), 0, 0, 0, 0, MaxInfo.empty(),
+                expected.fragsInfo(), AssistInfo.empty(), 0, 0, 0, 0, 0, MaxInfo.empty(),
                 expected.controlCapturedAndDroppedPoints(), expected.ratioMain(), expected.ratioAtba(), expected.ratioTpd(),
                 expected.ratioTbomb(), expected.ratioBomb(), expected.ratioRocket(), expected.ratioSkip(),
                 expected.expansion(), 0, recordTime, ShipInfoSource.DEVELOPERS);
@@ -137,6 +144,16 @@ public class ShipInfoSerializationCompatTest {
             return Files.readAllBytes(path);
         }
         throw new IllegalStateException("找不到测试资源: " + resource);
+    }
+
+    /**
+     * 2.5.1 时 {@link MaxInfo} 已有的 16 项（2.7.0 追加的莱服助攻纪录不在其中）。
+     */
+    private static String maxInfoBase(MaxInfo info) {
+        return info.maxFrags() + "|" + info.maxFragsByMain() + "|" + info.maxFragsByTpd() + "|" + info.maxFragsByDbomb() + "|"
+                + info.maxFragsByRam() + "|" + info.maxFragsByAtba() + "|" + info.maxDamageDealtToBuildings() + "|" + info.maxFragsByPlanes() + "|"
+                + info.maxDamageDealt() + "|" + info.maxScoutingDamage() + "|" + info.maxPlanesKilled() + "|" + info.maxShipsSpotted() + "|"
+                + info.maxTotalAgro() + "|" + info.maxSuppressionsCount() + "|" + info.maxXp() + "|" + info.maxBasicXp();
     }
 
     private static void section(String title) {

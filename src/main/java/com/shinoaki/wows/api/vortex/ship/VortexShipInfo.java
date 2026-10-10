@@ -78,6 +78,17 @@ import tools.jackson.databind.JsonNode;
  * <p>
  * 各 {@code max_*_vehicle} 字段记录该项纪录是由哪条战舰创造的（战舰ID）；
  * 账号汇总接口(/api/accounts/{id}/)的战斗数据块为 80 个字段，单船数据块为其子集(64 个)。
+ * <p>
+ * <b>莱服(korabli.su)在分家后多出 18 个字段</b>（助攻 {@code assist_*}、水雷 {@code *_by_mines}/{@code mines_agro}、
+ * 副炮 {@code *_by_secondary}、版本计数 {@code battles_count_2608}）：莱服账号块为 98 个字段、单船块为 78 个，
+ * 其它服这 18 个字段缺失、解析后恒为 0。其中真正有数据的是 {@code assist_*}/{@code max_assist_*}、
+ * {@code mines_agro}、{@code battles_count_2608}；{@code *_by_secondary} 与 {@code *_by_mines} 实测恒为 0
+ * （莱服的副炮数据仍在旧的 {@code *_by_atba} 上），这里先原样接住。
+ * 另外莱服 {@code statistics.oper_mm}(行动模式) 的数据块还多 6 个 {@code tasks_completed0..5}，
+ * 该块共 104 个字段；其它块和其它服没有这 6 个字段。
+
+
+
  *
  * @author Xun
  * @date 2023/3/18 11:39 星期六
@@ -95,7 +106,16 @@ public record VortexShipInfo(long max_frags_by_main, long battles_count_512, lon
                              long max_damage_dealt_to_buildings_vehicle, long max_exp_vehicle, long max_premium_exp_vehicle, long max_frags_vehicle, long max_frags_by_main_vehicle,
                              long max_frags_by_tpd_vehicle, long max_frags_by_dbomb_vehicle, long max_frags_by_ram_vehicle, long max_frags_by_atba_vehicle,
                              long max_frags_by_planes_vehicle, long max_planes_killed_vehicle, long max_ships_spotted_vehicle, long max_scouting_damage_vehicle,
-                             long max_total_agro_vehicle, long max_suppressions_count_vehicle) {
+                             long max_total_agro_vehicle, long max_suppressions_count_vehicle,
+                             // ---- 以下 18 个为莱服(korabli.su)独有，其它服缺失、恒为 0 ----
+                             long assist_damage, long assist_damage_kills, long assist_kills, long assist_spot_kills,
+                             long max_assist_damage, long max_assist_damage_vehicle, long max_assist_kills, long max_assist_kills_vehicle,
+                             long frags_by_mines, long max_frags_by_mines, long max_frags_by_mines_vehicle,
+                             long frags_by_secondary, long max_frags_by_secondary, long max_frags_by_secondary_vehicle,
+                             long hits_by_secondary, long shots_by_secondary, long mines_agro, long battles_count_2608,
+                             // ---- 以下 6 个只在莱服的 oper_mm(行动模式) 数据块里出现 ----
+                             long tasks_completed0, long tasks_completed1, long tasks_completed2, long tasks_completed3, long tasks_completed4,
+                             long tasks_completed5) {
 
     public static VortexShipInfo parse(JsonNode node) throws BasicException {
         if (node.isEmpty()) {
@@ -107,7 +127,9 @@ public record VortexShipInfo(long max_frags_by_main, long battles_count_512, lon
     public static VortexShipInfo defaultValue() {
         return new VortexShipInfo(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
                 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
-                0L, 0L, 0L, 0L);
+                0L, 0L, 0L, 0L,
+                0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                0L, 0L, 0L, 0L, 0L, 0L);
     }
 
     /**
