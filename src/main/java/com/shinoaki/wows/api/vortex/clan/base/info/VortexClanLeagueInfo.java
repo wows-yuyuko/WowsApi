@@ -104,6 +104,10 @@ public class VortexClanLeagueInfo {
      * 最高公开分数
      */
     private int maxPositionPublicRating;
+    /**
+     * 最高段位(结构化)
+     */
+    private VortexClanMaxPosition maxPosition;
 
     /**
      * 当前联盟
@@ -183,8 +187,10 @@ public class VortexClanLeagueInfo {
             info.setIsQualified(data.path("is_qualified").asBoolean() ? 1 : 0);
             info.setLeague(data.path("league").asInt());
             info.setMaxPublicRating(data.path("max_public_rating").asInt());
+            info.setPublicRating(data.path("public_rating").asInt());
             info.setIsBestSeasonRating(data.path("is_best_season_rating").asBoolean() ? 1 : 0);
             JsonNode maxPosition = data.path("max_position");
+            info.setMaxPosition(VortexClanMaxPosition.parse(maxPosition));
             info.setMaxPositionDivision(maxPosition.path("division").asInt());
             info.setMaxPositionDivisionRating(maxPosition.path("division_rating").asInt());
             info.setMaxPositionPublicRating(maxPosition.path("public_rating").asInt());

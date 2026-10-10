@@ -33,6 +33,13 @@ import java.util.List;
  * @param title      箱子标题
  * @param shortTitle 箱子短标题
  * @param slots      槽位，通常仅一个
+ * @param cancharge  是否可充值获得
+ * @param cardprob   卡牌掉落概率
+ * @param clanresource 军团资源数量
+ * @param dogtagprob 狗牌掉落概率
+ * @param epicprob   史诗掉落概率
+ * @param nestinglevel 嵌套等级
+ * @param price      价格(金币)
  * @author Xun
  */
 public record WowsLootBox(
@@ -46,7 +53,14 @@ public record WowsLootBox(
         WowsLootBoxIcon icons,
         String title,
         String shortTitle,
-        List<WowsLootBoxSlot> slots
+        List<WowsLootBoxSlot> slots,
+        boolean cancharge,
+        double cardprob,
+        long clanresource,
+        double dogtagprob,
+        double epicprob,
+        int nestinglevel,
+        long price
 ) {
     private static final String PATH = "/api/get_lootbox/%s/%s/";
 
@@ -96,7 +110,14 @@ public record WowsLootBox(
                 WowsLootBoxIcon.parse(data.path("icons")),
                 data.path("title").asString(""),
                 data.path("shortTitle").asString(""),
-                WowsLootBoxSlot.parseList(data.path("slots"))
+                WowsLootBoxSlot.parseList(data.path("slots")),
+                data.path("cancharge").asBoolean(false),
+                data.path("cardprob").asDouble(0),
+                data.path("clanresource").asLong(0),
+                data.path("dogtagprob").asDouble(0),
+                data.path("epicprob").asDouble(0),
+                data.path("nestinglevel").asInt(0),
+                data.path("price").asLong(0)
         );
     }
 }

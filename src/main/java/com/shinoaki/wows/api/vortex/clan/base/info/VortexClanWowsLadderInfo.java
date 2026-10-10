@@ -35,7 +35,7 @@ public record VortexClanWowsLadderInfo(
         int wins_count,
         boolean is_disbanded,
         boolean is_best_season_rating,
-        JsonNode max_position,
+        VortexClanMaxPosition max_position,
         int leading_team_number
 ) {
 
@@ -70,7 +70,7 @@ public record VortexClanWowsLadderInfo(
                 WowsUtils.json(node.path("wins_count"), 0),
                 WowsUtils.json(node.path("is_disbanded"), false),
                 WowsUtils.json(node.path("is_best_season_rating"), false),
-                node.path("max_position"),
+                VortexClanMaxPosition.parse(node.path("max_position")),
                 WowsUtils.json(node.path("leading_team_number"), 0)
         );
     }

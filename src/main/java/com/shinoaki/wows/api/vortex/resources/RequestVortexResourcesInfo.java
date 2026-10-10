@@ -9,6 +9,11 @@ import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.ComponentIcons;
 import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.TextureData;
 import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.VortexClanTag;
 import com.shinoaki.wows.api.vortex.resources.dogtagcomponents.VortexDogTagComponents;
+import com.shinoaki.wows.api.vortex.resources.glossary.VortexAchievement;
+import com.shinoaki.wows.api.vortex.resources.glossary.VortexAchievementsGroup;
+import com.shinoaki.wows.api.vortex.resources.glossary.VortexBattleType;
+import com.shinoaki.wows.api.vortex.resources.glossary.VortexNation;
+import com.shinoaki.wows.api.vortex.resources.glossary.VortexVehicleType;
 import com.shinoaki.wows.api.vortex.resources.vehicles.VortexVehicles;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,14 +32,40 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * 资料库数据，对应 graphql {@code /api/graphql/glossary/} 的 operationName=getGlossData。
+ * <p>
+ * 响应字段：data 下的 version / nations / vehicleTypes / battleTypes / achievements /
+ * achievementsGroups / vehicles / dogTagComponents（全部已结构化）。
+ *
  * @author Xun
  * @date 2023/12/14 星期四
  */
 @Data
 @AllArgsConstructor
 public class RequestVortexResourcesInfo {
+    private String version;
     private List<VortexVehicles> vehicles;
     private List<VortexDogTagComponents> dogTagComponents;
+    /**
+     * 国家
+     */
+    private List<VortexNation> nations;
+    /**
+     * 舰种
+     */
+    private List<VortexVehicleType> vehicleTypes;
+    /**
+     * 战斗类型
+     */
+    private List<VortexBattleType> battleTypes;
+    /**
+     * 成就/勋章
+     */
+    private List<VortexAchievement> achievements;
+    /**
+     * 成就分组
+     */
+    private List<VortexAchievementsGroup> achievementsGroups;
 
     public RequestVortexResourcesInfo() {
     }
@@ -64,10 +95,26 @@ public class RequestVortexResourcesInfo {
                 .timeout(Duration.ofSeconds(HttpCodec.requestTimeout()))
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
-        var jsonNode = JsonUtils.json().parse(HttpCodec.response(resp));
+        return parse(JsonUtils.json().parse(HttpCodec.response(resp)), language.getLanguage());
+    }
+
+    /**
+     * 解析 getGlossData 的响应。
+     *
+     * @param jsonNode 完整响应
+     * @param language 语言(写入 vehicles.language)
+     */
+    public static RequestVortexResourcesInfo parse(JsonNode jsonNode, String language) {
+        JsonNode data = jsonNode.path("data");
         return new RequestVortexResourcesInfo(
-                vortexVehicles(JsonUtils.json(), jsonNode, language.getLanguage()),
-                vortexDogTagComponents(jsonNode));
+                data.path("version").asString(""),
+                vortexVehicles(JsonUtils.json(), jsonNode, language),
+                vortexDogTagComponents(jsonNode),
+                VortexNation.parseList(data.path("nations")),
+                VortexVehicleType.parseList(data.path("vehicleTypes")),
+                VortexBattleType.parseList(data.path("battleTypes")),
+                VortexAchievement.parseList(data.path("achievements")),
+                VortexAchievementsGroup.parseList(data.path("achievementsGroups")));
     }
 
     private static List<VortexDogTagComponents> vortexDogTagComponents(JsonNode data) {

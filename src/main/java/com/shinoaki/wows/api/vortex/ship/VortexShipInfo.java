@@ -75,20 +75,27 @@ import tools.jackson.databind.JsonNode;
  * @param control_dropped_points        控制掉点(机翻)    占领时被打掉的点数
  * @param team_control_captured_points  团队控制占领点(机翻) 团队防御点
  * @param team_control_dropped_points   团队控制丢分(机翻)  团队占领点
+ * <p>
+ * 各 {@code max_*_vehicle} 字段记录该项纪录是由哪条战舰创造的（战舰ID）；
+ * 账号汇总接口(/api/accounts/{id}/)的战斗数据块为 80 个字段，单船数据块为其子集(64 个)。
+ *
  * @author Xun
  * @date 2023/3/18 11:39 星期六
  */
-public record VortexShipInfo(long max_frags_by_main, long battles_count_512, long battles_count_510, long hits_by_skip, long hits_by_atba, long shots_by_main,
-                             long hits_by_rocket, long ships_spotted, long hits_by_bomb, long max_scouting_damage, long premium_exp, long dropped_capture_points,
-                             long max_frags_by_dbomb, long control_captured_points, long max_planes_killed, long battles_count, long planes_killed,
-                             long damage_dealt_to_buildings, long frags_by_tpd, long max_ships_spotted, long art_agro, long max_frags_by_ram, long battles_count_0711,
-                             long shots_by_tbomb, long original_exp, long frags, long max_frags_by_planes, long frags_by_planes, long max_total_agro,
-                             long shots_by_tpd, long capture_points, long frags_by_ram, long shots_by_bomb, long frags_by_dbomb, long max_suppressions_count,
-                             long suppressions_count, long max_damage_dealt_to_buildings, long shots_by_rocket, long survived, long scouting_damage,
-                             long frags_by_atba, long shots_by_skip, long control_dropped_points, long max_damage_dealt, long max_frags_by_tpd, long max_premium_exp,
-                             long hits_by_tpd, long max_frags_by_atba, long tpd_agro, long team_control_captured_points, long wins, long losses, long hits_by_main,
-                             long win_and_survived, long damage_dealt, long battles_count_078, long frags_by_main, long team_control_dropped_points, long max_frags,
-                             long exp, long max_exp, long battles_count_0910, long hits_by_tbomb, long shots_by_atba) {
+public record VortexShipInfo(long max_frags_by_main, long battles_count_512, long battles_count_510, long hits_by_skip, long hits_by_atba, long shots_by_main, long hits_by_rocket,
+                             long ships_spotted, long hits_by_bomb, long max_scouting_damage, long premium_exp, long dropped_capture_points, long max_frags_by_dbomb,
+                             long control_captured_points, long max_planes_killed, long battles_count, long planes_killed, long damage_dealt_to_buildings, long frags_by_tpd,
+                             long max_ships_spotted, long art_agro, long max_frags_by_ram, long battles_count_0711, long shots_by_tbomb, long original_exp, long frags,
+                             long max_frags_by_planes, long frags_by_planes, long max_total_agro, long shots_by_tpd, long capture_points, long frags_by_ram, long shots_by_bomb,
+                             long frags_by_dbomb, long max_suppressions_count, long suppressions_count, long max_damage_dealt_to_buildings, long shots_by_rocket, long survived,
+                             long scouting_damage, long frags_by_atba, long shots_by_skip, long control_dropped_points, long max_damage_dealt, long max_frags_by_tpd,
+                             long max_premium_exp, long hits_by_tpd, long max_frags_by_atba, long tpd_agro, long team_control_captured_points, long wins, long losses,
+                             long hits_by_main, long win_and_survived, long damage_dealt, long battles_count_078, long frags_by_main, long team_control_dropped_points,
+                             long max_frags, long exp, long max_exp, long battles_count_0910, long hits_by_tbomb, long shots_by_atba, long max_damage_dealt_vehicle,
+                             long max_damage_dealt_to_buildings_vehicle, long max_exp_vehicle, long max_premium_exp_vehicle, long max_frags_vehicle, long max_frags_by_main_vehicle,
+                             long max_frags_by_tpd_vehicle, long max_frags_by_dbomb_vehicle, long max_frags_by_ram_vehicle, long max_frags_by_atba_vehicle,
+                             long max_frags_by_planes_vehicle, long max_planes_killed_vehicle, long max_ships_spotted_vehicle, long max_scouting_damage_vehicle,
+                             long max_total_agro_vehicle, long max_suppressions_count_vehicle) {
 
     public static VortexShipInfo parse(JsonNode node) throws BasicException {
         if (node.isEmpty()) {
@@ -98,10 +105,10 @@ public record VortexShipInfo(long max_frags_by_main, long battles_count_512, lon
     }
 
     public static VortexShipInfo defaultValue() {
-        return new VortexShipInfo(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
-                0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
+        return new VortexShipInfo(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                0L, 0L, 0L, 0L);
     }
-
 
     /**
      * 场均击杀
