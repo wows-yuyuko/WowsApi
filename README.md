@@ -10,6 +10,30 @@
 
 # 2.3.0版本起 Jackson升级到Jackson3 代码不在向下兼容
 
+# 2.6.0版本起 数据模型(record)按真实响应补齐字段，部分 record 的构造器签名有变化
+
+- vortex：`VortexShipInfo` 64→80 字段；新增 mark_of_excellence/rank_info/seasons/visibility_settings 等结构；
+- 官方API：`DevelopersShipBattleType` 36→47 字段；账号/军团/词典补齐未解析字段；
+- `ShipInfo` 新增 `source`(来源标记) 与 `hasBasicXp()/hasDbomb()/hasOtherHitRatio()/hasLastBattleTime()/hasExpansion()`；
+- **直接 `new` 这些 record 的下游代码需要跟着改**（用库提供的 `parse(...)`/`to(...)` 工厂方法则不受影响）。
+
+# 序列化兼容性
+
+数据模型大多是 record，Java 原生序列化对 record 的处理与普通类不同（已实测）：
+
+| 变更 | 结果 |
+| --- | --- |
+| record **加**字段 | ✅ 旧数据可读，新字段取默认值（null/0） |
+| record **删**字段 | ✅ 旧数据可读，多余字段被跳过 |
+| record **改字段类型** | ❌ `InvalidClassException: incompatible types` |
+| 改包名/类名、record↔普通类互转 | ❌ ClassNotFoundException / 不兼容 |
+
+- record 的默认 `serialVersionUID` 恒为 `0L`（不是普通类那种结构哈希）→ **record 不要手写 serialVersionUID**；
+- 普通类一旦 `implements Serializable` **必须**手写 serialVersionUID，否则加字段就会让旧数据读不出来；
+- `ShipInfo` 的 `source` 字段在 2.5.1 的数据里不存在，读取时统一归一为 `ShipInfoSource.UNKNOWN`（最保守：`hasXxx()` 全为 false），不会 NPE；
+- 长期缓存/跨进程传输建议用 JSON（`JsonUtils`，按字段名匹配、缺字段走默认值），Java 原生序列化只当"同版本内短期缓存"；
+- 回归测试：`ShipInfoSerializationCompatTest`（用 2.5.1 写出的数据验证新版本仍可读）。
+
 ```xml
 
 <dependency>

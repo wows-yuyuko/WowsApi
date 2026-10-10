@@ -45,6 +45,16 @@ public record ShipInfo(long shipId, Battle battle, long xp, long basicXp, long d
                        long recordTime,
                        ShipInfoSource source) implements Serializable {
 
+    /**
+     * 兼容旧数据：加 {@code source} 之前序列化的数据（Java 原生序列化或用户自存的 JSON）读出来该字段是 null，
+     * 这里统一归一为 {@link ShipInfoSource#UNKNOWN}（最保守：所有 {@code hasXxx()} 返回 false），避免 NPE。
+     */
+    public ShipInfo {
+        if (source == null) {
+            source = ShipInfoSource.UNKNOWN;
+        }
+    }
+
     public static ShipInfo empty(long shipId) {
         return prInfo(shipId, 0, 0, 0, 0);
     }
