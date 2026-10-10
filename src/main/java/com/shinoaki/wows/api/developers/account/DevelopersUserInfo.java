@@ -58,7 +58,7 @@ public record DevelopersUserInfo(
         var statistics = DevelopersUserInfoStatistics.parse(data.path("statistics"));
         var infoPrivate = DevelopersUserInfoPrivate.parse(data.path("private"));
         return new DevelopersUserInfo(data.path("account_id").asLong(), statistics, infoPrivate,
-                data.path("nickname").asString(), false,
+                data.path("nickname").asString(""), false,
                 data.path("created_at").asLong(),
                 data.path("karma").asInt(),
                 data.path("leveling_points").asInt(),

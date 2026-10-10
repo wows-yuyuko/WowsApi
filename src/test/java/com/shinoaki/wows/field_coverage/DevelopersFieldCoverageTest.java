@@ -1,5 +1,10 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.field_coverage;
 
+import com.shinoaki.wows.api.codec.HttpCodec;
+import com.shinoaki.wows.api.codec.http.WowsEncyclopediaTools;
+import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
+import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
+import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
 import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
@@ -21,45 +26,72 @@ import com.shinoaki.wows.api.developers.warships.DevelopersShipBattleInfo;
 import com.shinoaki.wows.api.developers.warships.DevelopersShipOperBattleInfo;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersOperBattleType;
 import com.shinoaki.wows.api.developers.warships.type.DevelopersShipBattleType;
+import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import com.shinoaki.wows.api.type.WowsBattlesType;
+import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Stream;
 
 /**
  * 官方开发者API「响应字段是否都有对应结构体」的校验。
  * <p>
- * 数据用监视采集到的原始响应（{@code target/schema-raw/api_asia_*.json}），没有采集时跳过对应接口。
+ * 数据优先用监视采集到的原始响应（{@code target/schema-raw/api_asia_*.json}）；
+ * 没有采集时用下面的亚服测试账号与 token 现场抓一次（走 {@link SchemaRecorder} 钩子，拿到的就是库真实请求的返回）。
  * 做法与 {@link VortexFieldCoverageTest} 相同：逐层比对 JSON 字段名与结构体声明的字段名。
  * <p>
- * 用法：{@code java -cp ... com.shinoaki.wows.DevelopersFieldCoverageTest}；退出码 0 = 全部字段都有结构体。
+ * 用法：{@code java -cp ... com.shinoaki.wows.field_coverage.DevelopersFieldCoverageTest}；退出码 0 = 全部字段都有结构体。
+ * <br>可选参数：{@code -Dcoverage.live=true} 强制现场抓取（忽略本地采集）、{@code -Draw.dir=<目录>} 指定采集目录。
  *
  * @author Xun
  */
 public class DevelopersFieldCoverageTest {
+    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
+    private static final long account_id = 2022515210;
+    private static final WowsServer server = WowsServer.ASIA;
 
-    private static final Path RAW = Path.of("target/schema-raw");
+    private static final Path RAW = Path.of(System.getProperty("raw.dir", "target/schema-raw"));
+    /**
+     * 采集文件名(监视的 SchemaRawStore 命名规则)，前缀用于容忍 key 变化导致的哈希后缀变化。
+     */
     private static final String ACC = "api_asia_wows_account_info_account_id_id_extra_private_grouped_c_c5266c85.json";
     private static final String SHIPS = "api_asia_wows_ships_stats_account_id_id_extra_pvp_div2_pvp_div3__4c0b4c30.json";
     private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_oper_div_oper_div__6a74bb79.json";
+    private static final long CLAN_ID = 2000016057L;
+    private static final String SEARCH_USER = "JustOn";
+    private static final String SEARCH_CLAN = "YU_RI";
+
+    /**
+     * 本地没有采集时的现场抓取表(文件 -> 调用)。
+     * <p>
+     * 用 {@link SchemaRecorder} 挂钩子采集原始响应，所以拿到的就是库真实请求的返回；
+     * 抓到后只放在内存里，不写回 {@code target/schema-raw}(那是监视的仓库，由 SchemaMonitorTest 维护)。
+     */
+    private static final Map<String, Endpoint> FETCH = new LinkedHashMap<>();
+    private static final Map<String, JsonNode> LIVE = new LinkedHashMap<>();
 
     private static int failed = 0;
     private static int checked = 0;
 
     public static void main(String[] args) throws Exception {
-        System.out.println("数据来源: " + RAW.toAbsolutePath() + "（监视采集的原始响应）");
+        registry();
+        System.out.println("采集目录: " + RAW.toAbsolutePath() + (Boolean.getBoolean("coverage.live") ? "（已忽略，强制现场抓取）" : ""));
+        System.out.println("测试账号: " + server + " / " + account_id);
         checkAccountList();
         checkAccountInfo();
         checkShipsStats();
@@ -351,17 +383,143 @@ public class DevelopersFieldCoverageTest {
         throw new IllegalStateException("响应里没有 data 节点");
     }
 
+    /**
+     * 取某个接口的原始响应：优先用本地采集，没有就现场抓一次（{@link #FETCH}）。
+     *
+     * @return 响应根节点；既没有采集又抓取失败时返回 null（调用方跳过该接口）
+     */
     private static JsonNode load(String file) {
+        if (!Boolean.getBoolean("coverage.live")) {
+            Path path = find(file);
+            if (path != null) {
+                try {
+                    return JsonUtils.json().parse(path.toFile());
+                } catch (Exception e) {
+                    throw new IllegalStateException("解析失败: " + file, e);
+                }
+            }
+        }
+        JsonNode live = LIVE.get(file);
+        if (live != null) {
+            return live;
+        }
+        live = fetch(file);
+        if (live == null) {
+            System.out.println("跳过（没有采集，现场抓取也失败）: " + file);
+            return null;
+        }
+        LIVE.put(file, live);
+        return live;
+    }
+
+    /**
+     * 本地采集文件：先按名字精确匹配，再按前缀找（key 里的哈希后缀可能随参数变化）。
+     */
+    private static Path find(String file) {
         Path path = RAW.resolve(file);
-        if (!Files.isRegularFile(path)) {
-            System.out.println("跳过（没有采集）: " + file);
+        if (Files.isRegularFile(path)) {
+            return path;
+        }
+        Endpoint endpoint = FETCH.get(file);
+        if (endpoint == null || !Files.isDirectory(RAW)) {
+            return null;
+        }
+        try (Stream<Path> files = Files.list(RAW)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(p -> {
+                        String name = p.getFileName().toString();
+                        return name.startsWith(endpoint.prefix()) && name.endsWith(".json");
+                    })
+                    .sorted()
+                    .findFirst()
+                    .orElse(null);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * 现场抓一次：打开监视采集钩子 -> 调库的公开方法 -> 取原始响应。
+     */
+    private static JsonNode fetch(String file) {
+        Endpoint endpoint = FETCH.get(file);
+        if (endpoint == null) {
+            return null;
+        }
+        System.out.println("现场抓取: " + endpoint.keyHint() + " ...");
+        SchemaRecorder.enable();
+        List<SchemaRecorder.Record> records;
+        try {
+            endpoint.call().run();
+        } catch (Exception e) {
+            System.out.println("  抓取失败: " + e.getClass().getSimpleName() + " " + e.getMessage());
+            return null;
+        } finally {
+            records = SchemaRecorder.drain();
+            SchemaRecorder.disable();
+        }
+        //一次调用可能打多个接口(例如 accountInfoDevelopers 会再查公会)，按 schemaKey 命中目标
+        SchemaRecorder.Record hit = null;
+        for (SchemaRecorder.Record record : records) {
+            if (record.schemaKey().contains(endpoint.keyHint())) {
+                hit = record;
+                break;
+            }
+        }
+        if (hit == null && !records.isEmpty()) {
+            hit = records.get(0);
+            System.out.println("  未命中 " + endpoint.keyHint() + "，退化为第一条: " + hit.schemaKey());
+        }
+        if (hit == null) {
+            System.out.println("  没有采集到响应");
             return null;
         }
         try {
-            return JsonUtils.json().parse(path.toFile());
+            return JsonUtils.json().parse(hit.json());
         } catch (Exception e) {
-            throw new IllegalStateException("解析失败: " + file, e);
+            System.out.println("  响应解析失败: " + e.getMessage());
+            return null;
         }
+    }
+
+    /**
+     * 注册现场抓取用的调用（token/account_id 见类常量）。
+     */
+    private static void registry() {
+        HttpCodec.updateTimeout(25);
+        HttpClient client = HttpCodec.client();
+        WowsHttpUserTools user = new WowsHttpUserTools(client, server);
+        WowsHttpShipTools ship = new WowsHttpShipTools(client, server, account_id);
+        WowsHttpClanTools clan = new WowsHttpClanTools(client, server);
+        WowsEncyclopediaTools encyclopedia = new WowsEncyclopediaTools(client, server);
+
+        register("api_asia_wows_account_list_search_text_.json", "api_asia_wows_account_list", "/wows/account/list/",
+                () -> user.searchUserDevelopers(token, SEARCH_USER));
+        register(ACC, "api_asia_wows_account_info", "/wows/account/info/", () -> user.accountInfoDevelopers(token, account_id));
+        register(SHIPS, "api_asia_wows_ships_stats_account_id_id_extra_pvp", "/wows/ships/stats/", () -> ship.developers(token).shipList());
+        register(OPER, "api_asia_wows_ships_stats_account_id_id_extra_oper", "/wows/ships/stats/", () -> ship.developers(token).shipOperList());
+        register("api_asia_wows_ships_badges_account_id_id_.json", "api_asia_wows_ships_badges", "/wows/ships/badges/", () -> ship.developers(token).shipBadges());
+        register("api_asia_wows_clans_info_clan_id_id_extra_members.json", "api_asia_wows_clans_info", "/wows/clans/info/", () -> clan.developers(token).clanInfoDevelopers(CLAN_ID));
+        register("api_asia_wows_clans_list_search_text_.json", "api_asia_wows_clans_list", "/wows/clans/list/", () -> clan.developers(token).searchClanDevelopers(SEARCH_CLAN));
+        register("api_asia_wows_clans_accountinfo_account_id_id_extra_clan.json", "api_asia_wows_clans_accountinfo", "/wows/clans/accountinfo/",
+                () -> clan.developers(token).userSearchClanDevelopers(account_id));
+        register("api_asia_wows_clans_season_.json", "api_asia_wows_clans_season", "/wows/clans/season/", () -> clan.developers(token).season());
+        register("api_asia_wows_clans_glossary_.json", "api_asia_wows_clans_glossary", "/wows/clans/glossary/", () -> encyclopedia.developers(token).glossary());
+    }
+
+    private static void register(String file, String prefix, String keyHint, Call call) {
+        FETCH.put(file, new Endpoint(file, prefix, keyHint, call));
+    }
+
+    /**
+     * 一个接口的采集文件名、本地文件名字前缀、现场抓取时的 schemaKey 命中串与调用。
+     */
+    private record Endpoint(String file, String prefix, String keyHint, Call call) {
+    }
+
+    @FunctionalInterface
+    private interface Call {
+        void run() throws Exception;
     }
 
     private static void section(String title) {

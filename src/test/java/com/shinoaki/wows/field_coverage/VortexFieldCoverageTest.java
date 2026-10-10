@@ -1,4 +1,4 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.field_coverage;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * 做法：打开 {@link SchemaRecorder} 采集真实响应，再用库的解析类解析同一份 JSON，
  * 逐层比对「JSON 里出现的字段」与「结构体声明的字段」，把多出来的字段报出来。
  * <p>
- * 用法：{@code java -cp ... com.shinoaki.wows.VortexFieldCoverageTest}；退出码 0 = 全部字段都有结构体。
+ * 用法：{@code java -cp ... com.shinoaki.wows.field_coverage.VortexFieldCoverageTest}；退出码 0 = 全部字段都有结构体。
  *
  * @author Xun
  */

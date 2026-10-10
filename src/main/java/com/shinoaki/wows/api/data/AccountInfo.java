@@ -62,7 +62,7 @@ public record AccountInfo(
             throw new HiddenProfileException(accountId);
         }
         return new AccountInfo(data.path("account_id").asLong(),
-                data.path("nickname").asString(),
+                data.path("nickname").asString(""),
                 data.path("created_at").asLong(),
                 false,
                 data.path("last_battle_time").asLong(),
