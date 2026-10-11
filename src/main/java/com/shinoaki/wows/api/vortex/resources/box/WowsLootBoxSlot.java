@@ -17,13 +17,17 @@ import java.util.Map;
  * @param continuousRewards  是否连续奖励
  * @param commonRewards      普通奖励分组，key 为 list0/list1...
  * @param valuableRewards    高价值奖励分组，key 为 list0/list1...
+ * @param filler             该槽位的保底奖励(莱服独有：莱服把它放在槽位上，其它服在箱子级 {@link WowsLootBox#filler()})
+ * @param savePoint          该槽位的保底点数(莱服独有：其它服在箱子级 {@link WowsLootBox#savePoint()})
  * @author Xun
  */
 public record WowsLootBoxSlot(
         String title,
         boolean continuousRewards,
         Map<String, WowsLootBoxRewardGroup> commonRewards,
-        Map<String, WowsLootBoxRewardGroup> valuableRewards
+        Map<String, WowsLootBoxRewardGroup> valuableRewards,
+        WowsLootBoxFiller filler,
+        long savePoint
 ) {
     public static List<WowsLootBoxSlot> parseList(JsonNode node) {
         List<WowsLootBoxSlot> list = new ArrayList<>();
@@ -32,7 +36,9 @@ public record WowsLootBoxSlot(
                     slot.path("title").asString(""),
                     slot.path("continuousRewards").asBoolean(false),
                     parseGroups(slot.path("commonRewards")),
-                    parseGroups(slot.path("valuableRewards"))
+                    parseGroups(slot.path("valuableRewards")),
+                    WowsLootBoxFiller.parse(slot.path("filler")),
+                    slot.path("savePoint").asLong(0)
             ));
         }
         return list;

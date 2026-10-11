@@ -29,6 +29,16 @@
 - `ShipInfo` 新增 `assistInfo`（助攻）与 `minesAgro`（水雷潜在，只有 vortex 的莱服数据有）；`MaxInfo` 加 maxAssistDamage/maxAssistKills；
 - 老缓存兼容：`ShipInfo`/`MaxInfo` 的紧凑构造器把新字段归一为空值，2.6.x 的 Java 序列化数据仍可读。
 
+# 2.7.1版本起 箱子接口补莱服字段（依赖同步升级）
+
+- 依赖：jackson 3.0.4 → **3.2.3**、zstd-jni 1.5.7-7 → **1.5.7-22**（本地 `.workbuddy/build.ps1` 已同步，六个离线自检在新版本下复跑全绿）；
+- 箱子：同一个箱子 ID 在两服**不是同一个箱子**（实测 4288861104，奖励 255 vs 218、`isPremium` true vs false），
+  莱服多 `quotesTitle/rarity/sortOrder`，把保底 `filler/savePoint` 从箱子级挪到槽位级，
+  且不返回 `tags/price/cancharge/cardprob/clanresource/dogtagprob/epicprob/nestinglevel`（解析后是默认值，别当真实数据）；
+- `WowsLootBox` 加 `quotesTitle/rarity/sortOrder`；`WowsLootBoxSlot` 加 `filler/savePoint`；
+  `WowsLootBoxRewardData` 加 `rarity/l10nRarity/sortOrder`；`WowsLootBoxReward` 补上两条通道都有的 `defaultCrew`；
+- 覆盖自检下沉到箱子的嵌套层（`slots[]/valuableRewards/rewards[]/additionalData/icons`），两服箱子都逐个字段核对。
+
 # 序列化兼容性
 
 数据模型大多是 record，Java 原生序列化对 record 的处理与普通类不同（已实测）：

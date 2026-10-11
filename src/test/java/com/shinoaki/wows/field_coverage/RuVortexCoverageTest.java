@@ -18,6 +18,12 @@ import com.shinoaki.wows.api.vortex.clan.base.info.VortexClanMaxPosition;
 import com.shinoaki.wows.api.vortex.clan.base.info.VortexClanWowsLadderInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanStatisticsInfo;
 import com.shinoaki.wows.api.vortex.clan.members.VortexClanUserInfo;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBox;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxIcon;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxReward;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardData;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardGroup;
+import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxSlot;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
 import tools.jackson.databind.JsonNode;
@@ -75,6 +81,7 @@ public class RuVortexCoverageTest {
         checkBattlesType();
         checkAccount();
         checkShips();
+        checkLootBox();
         checkClanInfo();
         checkClanMembers();
 
@@ -232,6 +239,71 @@ public class RuVortexCoverageTest {
         expect("单船 mines_agro", first.path("mines_agro").asLong(0), info.shipInfo().mines_agro());
         expect("单船 masterySign(莱服缺字段->空)", "", info.masterySign());
         expect("单船 markOfExcellence(莱服缺字段->空)", true, info.markOfExcellence().personal().percentile() == 0);
+    }
+
+    //----------------------------------------------------------------- 箱子
+
+    /**
+     * 莱服箱子和其它服的区别：多 quotesTitle/rarity/sortOrder，保底(filler/savePoint)从箱子级挪到槽位级，
+     * 且不返回 tags/filler/price/savePoint/cancharge/*prob/nestinglevel（解析后是默认值，不能当真实数据）。
+     */
+    private static void checkLootBox() {
+        section("/api/get_lootbox/{lang}/{id}/ 箱子详情（莱服，同一个箱子ID 4288861104）");
+        Path file = DUMP_DIR.resolve("lootbox-RU-4288861104.json");
+        if (!Files.isRegularFile(file)) {
+            System.out.println("  跳过（缺少 " + file.toAbsolutePath() + "）");
+            return;
+        }
+        JsonNode root;
+        try {
+            root = JsonUtils.json().parse(file.toFile());
+        } catch (Exception e) {
+            failed++;
+            System.out.println("  [FAIL] 读取失败: " + e.getMessage());
+            return;
+        }
+        JsonNode data = root.path("data");
+        JsonNode slot = data.path("slots").path(0);
+        JsonNode group = slot.path("valuableRewards").path("list1");
+        JsonNode reward = group.path("rewards").path(0);
+        unknown(data, WowsLootBox.class, "data（莱服箱子）");
+        unknown(slot, WowsLootBoxSlot.class, "slots[0]");
+        unknown(group, WowsLootBoxRewardGroup.class, "valuableRewards.list1");
+        unknown(reward, WowsLootBoxReward.class, "rewards[0]");
+        unknown(reward.path("additionalData"), WowsLootBoxRewardData.class, "rewards[0].additionalData");
+        //图标类字段名沿用 WowsIcons 约定(default->defaultUrl)，按 JSON 原名放行
+        unknown(data.path("icons"), WowsLootBoxIcon.class, "icons", Set.of("default"));
+
+        WowsLootBox box;
+        try {
+            box = WowsLootBox.parse(root);
+        } catch (Exception e) {
+            failed++;
+            System.out.println("  [FAIL] WowsLootBox.parse 抛异常: " + e.getMessage());
+            return;
+        }
+        expect("quotesTitle(莱服独有)", data.path("quotesTitle").asString(""), box.quotesTitle());
+        expect("rarity(莱服独有)", data.path("rarity").asString(""), box.rarity());
+        expect("sortOrder(莱服独有)", data.path("sortOrder").asInt(0), box.sortOrder());
+        expect("slots[0].filler.type(莱服独有)", slot.path("filler").path("type").asString(""), box.slots().get(0).filler().type());
+        expect("slots[0].filler.amount(莱服独有)", slot.path("filler").path("amount").asInt(0), box.slots().get(0).filler().amount());
+        expect("slots[0].savePoint(莱服独有)", slot.path("savePoint").asLong(0), box.slots().get(0).savePoint());
+        expect("additionalData.rarity(莱服独有)", reward.path("additionalData").path("rarity").asString(""),
+                box.slots().get(0).valuableRewards().get("list1").rewards().get(0).additionalData().rarity());
+        //莱服不返回箱子级的这些字段，解析后是默认值，别当真实数据用
+        expect("price 莱服不返回->0", 0L, box.price());
+        expect("savePoint 莱服不返回->0", 0, box.savePoint());
+        expect("filler 莱服不返回->null", true, box.filler() == null);
+        expect("tags 莱服不返回->空", 0, box.tags().size());
+        int rewards = 0;
+        for (WowsLootBoxSlot one : box.slots()) {
+            for (Map<String, WowsLootBoxRewardGroup> groups : List.of(one.commonRewards(), one.valuableRewards())) {
+                for (WowsLootBoxRewardGroup rewardGroup : groups.values()) {
+                    rewards += rewardGroup.rewards().size();
+                }
+            }
+        }
+        expect("奖励条目总数", 255, rewards);
     }
 
     //----------------------------------------------------------------- 军团

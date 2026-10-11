@@ -19,6 +19,9 @@ import java.util.List;
  * @param defaultCrew 默认舰长原始数据，可能为 null
  * @param nation      国籍信息，可能为 null
  * @param icons       战舰图标，可能为 null
+ * @param rarity      稀有度(莱服独有，例如 elite)
+ * @param l10nRarity  稀有度本地化名(莱服独有，例如 "Элитный сигнал")
+ * @param sortOrder   排序权重(莱服独有)，可能为 null
  * @author Xun
  */
 public record WowsLootBoxRewardData(
@@ -30,7 +33,11 @@ public record WowsLootBoxRewardData(
         boolean isSpecial,
         JsonNode defaultCrew,
         WowsLootBoxNation nation,
-        WowsLootBoxShipIcons icons
+        WowsLootBoxShipIcons icons,
+        //---- 以下为莱服(korabli.su)独有，其它服缺失 ----
+        String rarity,
+        String l10nRarity,
+        Integer sortOrder
 ) {
     public static WowsLootBoxRewardData parse(JsonNode node) {
         List<String> tags = new ArrayList<>();
@@ -50,7 +57,10 @@ public record WowsLootBoxRewardData(
                 node.path("isSpecial").asBoolean(false),
                 (defaultCrew.isMissingNode() || defaultCrew.isNull()) ? null : defaultCrew,
                 (nation.isMissingNode() || nation.isNull()) ? null : WowsLootBoxNation.parse(nation),
-                (icons.isMissingNode() || icons.isNull()) ? null : WowsLootBoxShipIcons.parse(icons)
+                (icons.isMissingNode() || icons.isNull()) ? null : WowsLootBoxShipIcons.parse(icons),
+                node.path("rarity").asString(""),
+                node.path("l10nRarity").asString(""),
+                node.path("sortOrder").isNumber() ? node.path("sortOrder").asInt() : null
         );
     }
 }

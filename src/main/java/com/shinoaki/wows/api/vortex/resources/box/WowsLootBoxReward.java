@@ -14,7 +14,9 @@ import tools.jackson.databind.JsonNode;
  * @param amount               数量
  * @param type                 奖励类型，例如 ship/steel/coal/gold/signal/camoboost...
  * @param id                   奖励ID，可能为 null
- * @param crewLevel            舰长等级，可能为 null
+ * @param crewLevel            舰长等级，可能为 null（莱服不返回该字段，恒为 null）
+ * @param defaultCrew          默认舰长ID，可能为 null（两条通道都有；舰长详情在
+ *                             {@link WowsLootBoxRewardData#defaultCrew()} 里，是个对象）
  * @param addTop               是否附加顶级
  * @param additionalData       附加数据(名称/标签/国籍/图标等)，可能为 null
  * @author Xun
@@ -27,12 +29,14 @@ public record WowsLootBoxReward(
         String type,
         Long id,
         Integer crewLevel,
+        Long defaultCrew,
         boolean addTop,
         WowsLootBoxRewardData additionalData
 ) {
     public static WowsLootBoxReward parse(JsonNode node) {
         JsonNode id = node.path("id");
         JsonNode crewLevel = node.path("crewLevel");
+        JsonNode defaultCrew = node.path("defaultCrew");
         JsonNode additionalData = node.path("additionalData");
         return new WowsLootBoxReward(
                 node.path("probability").asString(""),
@@ -42,6 +46,7 @@ public record WowsLootBoxReward(
                 node.path("type").asString(""),
                 id.isNumber() ? id.asLong() : null,
                 crewLevel.isNumber() ? crewLevel.asInt() : null,
+                defaultCrew.isNumber() ? defaultCrew.asLong() : null,
                 node.path("addTop").asBoolean(false),
                 (additionalData.isMissingNode() || additionalData.isNull()) ? null : WowsLootBoxRewardData.parse(additionalData)
         );

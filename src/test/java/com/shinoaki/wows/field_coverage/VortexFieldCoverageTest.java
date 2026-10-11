@@ -320,6 +320,22 @@ public class VortexFieldCoverageTest {
             expect("cardprob", data.path("cardprob").asDouble(0), box.cardprob());
             expect("cancharge", data.path("cancharge").asBoolean(false), box.cancharge());
             expect("slots 数量", data.path("slots").size(), box.slots().size());
+            //嵌套层也要逐个校验：槽位 / 奖励分组 / 奖励项 / 奖励附加数据
+            JsonNode slot = data.path("slots").path(0);
+            JsonNode group = slot.path("valuableRewards").path("list1");
+            JsonNode reward = group.path("rewards").path(0);
+            unknown(slot, com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxSlot.class, "lootbox slots[0]");
+            unknown(group, com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardGroup.class, "lootbox valuableRewards.list1");
+            unknown(reward, com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxReward.class, "lootbox rewards[0]");
+            unknown(reward.path("additionalData"), com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardData.class, "lootbox rewards[0].additionalData");
+            unknown(data.path("icons"), com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxIcon.class, "lootbox icons", Set.of("default"));
+            expect("valuableRewards.list1.rewards 数量", group.path("rewards").size(), box.slots().get(0).valuableRewards().get("list1").rewards().size());
+            expect("rewards[0].defaultCrew", reward.path("defaultCrew").isNumber() ? reward.path("defaultCrew").asLong() : null,
+                    box.slots().get(0).valuableRewards().get("list1").rewards().get(0).defaultCrew());
+            //其它服没有莱服的专属字段
+            expect("quotesTitle(莱服独有)->空", "", box.quotesTitle());
+            expect("rarity(莱服独有)->空", "", box.rarity());
+            expect("sortOrder(莱服独有)->0", 0, box.sortOrder());
         }
     }
 

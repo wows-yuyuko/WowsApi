@@ -40,6 +40,15 @@ import java.util.List;
  * @param epicprob   史诗掉落概率
  * @param nestinglevel 嵌套等级
  * @param price      价格(金币)
+ * @param quotesTitle 带引号的展示名(莱服独有，例如 «Суперконтейнер»)
+ * @param rarity     稀有度(莱服独有，例如 elite；其它服在奖励的 additionalData.rarity 上)
+ * @param sortOrder  排序权重(莱服独有)
+ * <p>
+ * <b>莱服(korabli.su)差异</b>：多 {@code quotesTitle}/{@code rarity}/{@code sortOrder}；
+ * 不返回 {@code tags}/{@code filler}/{@code price}/{@code savePoint}/{@code cancharge}/{@code cardprob}/
+ * {@code clanresource}/{@code dogtagprob}/{@code epicprob}/{@code nestinglevel}——这些字段在莱服解析后是默认值
+ * (0/false/空列表)，<b>不要当成真实数据</b>：莱服的保底奖励与保底点数在 {@link WowsLootBoxSlot} 上
+ * ({@code filler}/{@code savePoint})，价格/充值/概率加成莱服整个不提供。
  * @author Xun
  */
 public record WowsLootBox(
@@ -60,7 +69,11 @@ public record WowsLootBox(
         double dogtagprob,
         double epicprob,
         int nestinglevel,
-        long price
+        long price,
+        //---- 以下为莱服(korabli.su)独有，其它服缺失、解析为默认值 ----
+        String quotesTitle,
+        String rarity,
+        int sortOrder
 ) {
     private static final String PATH = "/api/get_lootbox/%s/%s/";
 
@@ -117,7 +130,10 @@ public record WowsLootBox(
                 data.path("dogtagprob").asDouble(0),
                 data.path("epicprob").asDouble(0),
                 data.path("nestinglevel").asInt(0),
-                data.path("price").asLong(0)
+                data.path("price").asLong(0),
+                data.path("quotesTitle").asString(""),
+                data.path("rarity").asString(""),
+                data.path("sortOrder").asInt(0)
         );
     }
 }
