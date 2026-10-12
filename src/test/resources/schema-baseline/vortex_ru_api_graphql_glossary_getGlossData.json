@@ -1,6 +1,6 @@
 {
   "schemaKey" : "vortex:ru:/api/graphql/glossary/#getGlossData",
-  "capturedAt" : "2026-10-10T11:44:58.703007500Z",
+  "capturedAt" : "2026-10-12T17:06:33.633989Z",
   "fields" : {
     "data" : "object",
     "data.achievementsGroups[]" : "object",
@@ -31,7 +31,7 @@
     "data.achievements[].isProgress" : "boolean",
     "data.achievements[].maxProgress" : "number",
     "data.achievements[].multiple" : "boolean",
-    "data.achievements[].receivingRestriction" : "null",
+    "data.achievements[].receivingRestriction" : "string",
     "data.achievements[].title" : "string",
     "data.achievements[].type" : "string",
     "data.achievements[].typeTitle" : "string",

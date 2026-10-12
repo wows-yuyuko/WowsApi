@@ -73,10 +73,9 @@ public class DevelopersFieldCoverageTest {
     private static final String ACC = "api_asia_wows_account_info_account_id_id_extra_private_grouped_c_c5266c85.json";
     private static final String SHIPS = "api_asia_wows_ships_stats_account_id_id_extra_pvp_div2_pvp_div3__4c0b4c30.json";
     /**
-     * 全量战绩的原始响应：现行 dump 还是早期 oper 三元组的采集（块少、形状一致，解析校验照样有效）；
-     * 下次在线采集刷新后，把这里与 {@code registry()} 里的前缀换成新的全量文件名即可。
+     * 全量战绩的原始响应（2026-10 全量 extra 采集，单船 15 块）；key 哈希后缀变化时按前缀兜底。
      */
-    private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_oper_div_oper_div__6a74bb79.json";
+    private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_clan_oper_div_oper_bae61ea0.json";
     private static final long CLAN_ID = TestConfig.CLAN_ASIA;
     private static final String SEARCH_USER = TestConfig.SEARCH_USER_ASIA;
     private static final String SEARCH_CLAN = TestConfig.SEARCH_CLAN;
@@ -520,7 +519,7 @@ public class DevelopersFieldCoverageTest {
                 () -> user.searchUserDevelopers(token, SEARCH_USER));
         register(ACC, "api_asia_wows_account_info", "/wows/account/info/", () -> user.accountInfoDevelopers(token, account_id));
         register(SHIPS, "api_asia_wows_ships_stats_account_id_id_extra_pvp", "/wows/ships/stats/", () -> ship.developers(token).shipList());
-        register(OPER, "api_asia_wows_ships_stats_account_id_id_extra_oper", "/wows/ships/stats/", () -> ship.developers(token).shipOperList());
+        register(OPER, "api_asia_wows_ships_stats_account_id_id_extra_clan_oper", "/wows/ships/stats/", () -> ship.developers(token).shipOperList());
         register("api_asia_wows_ships_badges_account_id_id_.json", "api_asia_wows_ships_badges", "/wows/ships/badges/", () -> ship.developers(token).shipBadges());
         register("api_asia_wows_clans_info_clan_id_id_extra_members.json", "api_asia_wows_clans_info", "/wows/clans/info/", () -> clan.developers(token).clanInfoDevelopers(CLAN_ID));
         register("api_asia_wows_clans_list_search_text_.json", "api_asia_wows_clans_list", "/wows/clans/list/", () -> clan.developers(token).searchClanDevelopers(SEARCH_CLAN));
