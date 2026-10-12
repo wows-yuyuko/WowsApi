@@ -1,11 +1,15 @@
 package com.shinoaki.wows;
 
+import com.shinoaki.wows.api.auth.AuthKind;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HiddenProfileException;
 import com.shinoaki.wows.api.error.HttpNetworkException;
 import com.shinoaki.wows.api.error.HttpStatusException;
 import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.error.MissingCredentialException;
 import com.shinoaki.wows.api.error.ResponseParseException;
+import com.shinoaki.wows.api.error.UnsupportedOnServerException;
+import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 
 /**
@@ -35,6 +39,18 @@ public class ExceptionHierarchyTest {
         expect("ResponseParseException.code", HttpThrowableStatus.DATA_PARSE, parse.getCode());
         expect("HiddenProfileException 仍是独立子类", true, hidden instanceof BasicException);
         expect("HiddenProfileException.code", HttpThrowableStatus.HIDDEN, hidden.getCode());
+
+        // 3.0 重写新增的两类语义
+        var missing = new MissingCredentialException("dev.account.info", AuthKind.APPLICATION_ID);
+        var unsupported = new UnsupportedOnServerException("端点 dev.account.info", WowsServer.CN);
+        expect("MissingCredentialException 是 BasicException", true, missing instanceof BasicException);
+        expect("MissingCredentialException.code", HttpThrowableStatus.MISSING_CREDENTIAL, missing.getCode());
+        expect("MissingCredentialException.endpointId", "dev.account.info", missing.getEndpointId());
+        expect("MissingCredentialException.kind", AuthKind.APPLICATION_ID, missing.getKind());
+        expect("UnsupportedOnServerException 是 BasicException", true, unsupported instanceof BasicException);
+        expect("UnsupportedOnServerException.code", HttpThrowableStatus.UNSUPPORTED_ON_SERVER, unsupported.getCode());
+        expect("UnsupportedOnServerException.server", WowsServer.CN, unsupported.getServer());
+        expect("UnsupportedOnServerException 消息带服别", true, unsupported.getMessage().contains("cn"));
 
         section("响应解析包装（parseResponse）");
         try {

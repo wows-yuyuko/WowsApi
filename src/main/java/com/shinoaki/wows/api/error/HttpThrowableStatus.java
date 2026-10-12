@@ -30,5 +30,13 @@ public enum HttpThrowableStatus {
     /**
      * 隐藏战绩
      */
-    HIDDEN
+    HIDDEN,
+    /**
+     * 必填凭证缺失（发送前 fast-fail，不产生网络请求）——对应 {@link MissingCredentialException}
+     */
+    MISSING_CREDENTIAL,
+    /**
+     * 端点/类型在当前服务器不支持——对应 {@link UnsupportedOnServerException}
+     */
+    UNSUPPORTED_ON_SERVER
 }
