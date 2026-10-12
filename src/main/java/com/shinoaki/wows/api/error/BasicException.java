@@ -9,6 +9,18 @@ import tools.jackson.databind.JsonNode;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * 基础受检异常：所有请求/解析失败的公共父类，携带 {@link HttpThrowableStatus} 错误码与消息。
+ * <p>
+ * 按失败层次区分子类（便于 catch 与排障）：
+ * <ul>
+ *     <li>{@link HttpNetworkException}：网络传输失败（连接/超时/解压）——code {@code HTTP_IO}</li>
+ *     <li>{@link HttpStatusException}：HTTP 状态码异常（非200/重定向超限）——code {@code HTTP_STATUS}</li>
+ *     <li>{@link ResponseParseException}：响应解析失败（JSON 非法/字段解析）——code {@code DATA_PARSE}</li>
+ *     <li>{@link HiddenProfileException}：账号隐藏战绩——code {@code HIDDEN}</li>
+ * </ul>
+ * 其余场景（业务状态异常 {@code DATA_STATUS}、线程中断 {@code THREAD} 等）仍直接使用本类。
+ * 现有 {@code catch (BasicException)} 对全部子类依然生效。
+ *
  * @author Xun
  */
 @Getter
@@ -26,6 +38,15 @@ public class BasicException extends Exception {
 
     public BasicException(HttpThrowableStatus code, String message) {
         super(message);
+        this.detailMessage = message;
+        this.code = code;
+    }
+
+    /**
+     * 携带原因链的构造器（保留原始异常堆栈，便于定位）。
+     */
+    public BasicException(HttpThrowableStatus code, String message, Throwable cause) {
+        super(message, cause);
         this.detailMessage = message;
         this.code = code;
     }

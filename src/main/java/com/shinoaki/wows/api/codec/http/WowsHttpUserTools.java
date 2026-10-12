@@ -9,11 +9,13 @@ import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
 import com.shinoaki.wows.api.developers.account.DevelopersUserInfo;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.error.HttpStatusException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,47 +34,67 @@ import java.util.List;
 public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public List<VortexSearchUser> searchUserVortexCn(String userName) throws BasicException {
-
         try {
             return VortexSearchUser.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(userName)))));
-        } catch (BasicException e) {
-            if (e.getCode() == HttpThrowableStatus.HTTP_STATUS && (e.getMessage().contains("503"))) {
+        } catch (HttpStatusException e) {
+            //国服搜索接口对高频请求返回 503，按空结果处理
+            if (e.getStatusCode() == 503) {
                 return List.of();
             }
             throw e;
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
         }
     }
 
     public List<VortexSearchUser> searchUserVortex(String userName) throws BasicException {
-
-        return VortexSearchUser.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(userName)))));
+        try {
+            return VortexSearchUser.parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(userName)))));
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     public VortexUserInfo userVortex(long accountId) throws BasicException {
-        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, ""))))), accountId);
+        try {
+            return VortexUserInfo.parse(JsonUtils.json().parseResponse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, ""))))), accountId);
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     public VortexUserInfo userVortex(long accountId, String token) throws BasicException {
-        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, token))))), accountId);
+        try {
+            return VortexUserInfo.parse(JsonUtils.json().parseResponse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, token))))), accountId);
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
-        return DevelopersSearchUser.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloper(token, userName)))));
+        try {
+            return DevelopersSearchUser.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloper(token, userName)))));
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     public AccountInfo accountInfoDevelopers(String token, long accountId) throws BasicException {
-
-        var baseJson = ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token, accountId, "")));
-        //检查公会是否存在
-        var accountInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
-        var accountClan = AccountClanInfo.accountClan(accountId, ApiHttp.response(accountInfo));
-        //检测是否有公会，有则继续执行
-        if (accountClan.clanId() > 0) {
-            var clanInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
-            var clan = DevelopersClanInfo.parse(accountClan.clanId(), ApiHttp.response(clanInfo));
-            accountClan = AccountClanInfo.of(accountClan, clan);
+        try {
+            var baseJson = ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token, accountId, "")));
+            //检查公会是否存在
+            var accountInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.userSearchClanDevelopersUri(server, token, accountId)));
+            var accountClan = AccountClanInfo.accountClan(accountId, ApiHttp.response(accountInfo));
+            //检测是否有公会，有则继续执行
+            if (accountClan.clanId() > 0) {
+                var clanInfo = ApiHttp.send(httpClient, ApiHttp.request(WowsHttpClanTools.Developers.clanInfoDevelopersUri(server, token, accountClan.clanId())));
+                var clan = DevelopersClanInfo.parse(accountClan.clanId(), ApiHttp.response(clanInfo));
+                accountClan = AccountClanInfo.of(accountClan, clan);
+            }
+            return AccountInfo.parse(accountId, ApiHttp.response(baseJson), accountClan);
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
         }
-        return AccountInfo.parse(accountId, ApiHttp.response(baseJson), accountClan);
     }
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId) throws BasicException {
@@ -80,9 +102,12 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public DevelopersUserInfo userInfoDevelopers(String token, long accountId, String accessToken) throws BasicException {
-
-        return DevelopersUserInfo.parse(accountId, ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token,
-                accountId, accessToken)))));
+        try {
+            return DevelopersUserInfo.parse(accountId, ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(uriDeveloperUserInfo(token,
+                    accountId, accessToken)))));
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     private URI uriVortex(String userName) {

@@ -6,6 +6,7 @@ import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.clan.rank.ClanRankInfo;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
@@ -92,6 +93,8 @@ public class ClanRankUtils {
             Thread.currentThread().interrupt();
         } catch (BasicException e) {
             log.error("{}-{} 请求公会排名数据http异常！code={}", server.getCode(), season, e.getCode(), e);
+        } catch (JacksonException e) {
+            log.error("{}-{} 公会排名数据解析失败！", server.getCode(), season, e);
         }
         return List.of();
     }

@@ -1,7 +1,8 @@
 package com.shinoaki.wows.api.codec;
 
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.error.HttpNetworkException;
+import com.shinoaki.wows.api.error.HttpStatusException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -143,7 +144,7 @@ public final class HttpTransport {
             throw new BasicException(e);
         } catch (IOException e) {
             log.error("网络请求异常！", e);
-            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
+            throw new HttpNetworkException(e);
         }
     }
 
@@ -188,7 +189,7 @@ public final class HttpTransport {
                     return response;
                 }
                 if (redirects >= MAX_REDIRECTS) {
-                    throw new BasicException(HttpThrowableStatus.HTTP_STATUS, "http 重定向次数超过上限(" + MAX_REDIRECTS + "),已终止。最近一次 code="
+                    throw new HttpStatusException(response.statusCode(), "http 重定向次数超过上限(" + MAX_REDIRECTS + "),已终止。最近一次 code="
                             + response.statusCode() + ", location=" + response.headers().firstValue("Location").orElse(""));
                 }
                 redirects++;
@@ -199,7 +200,7 @@ public final class HttpTransport {
             throw new BasicException(e);
         } catch (IOException e) {
             log.error("网络请求异常！", e);
-            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
+            throw new HttpNetworkException(e);
         }
     }
 
@@ -317,7 +318,7 @@ public final class HttpTransport {
      */
     private static HttpRequest follow(HttpRequest from, HttpResponse<?> response) throws BasicException {
         URI location = from.uri().resolve(response.headers().firstValue("Location")
-                .orElseThrow(() -> new BasicException(HttpThrowableStatus.HTTP_STATUS, "重定向响应缺少Location头")));
+                .orElseThrow(() -> new HttpStatusException(-1, "重定向响应缺少Location头")));
         int code = response.statusCode();
         if (code == 307 || code == 308) {
             return HttpRequest.newBuilder(from, (name, value) -> !name.equalsIgnoreCase("Cookie"))

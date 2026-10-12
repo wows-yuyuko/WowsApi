@@ -3,9 +3,11 @@ package com.shinoaki.wows.api.vortex.resources.box;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.VortexHttp;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 import java.net.URI;
@@ -102,7 +104,11 @@ public record WowsLootBox(
         var url = isPtServer ? server.ptVortexServer() : server.vortex();
         var uri = URI.create(url + String.format(PATH, language.getLanguage(), lootboxId));
         var resp = VortexHttp.send(client, VortexHttp.request(uri));
-        return parse(JsonUtils.json().parse(VortexHttp.response(resp)));
+        try {
+            return parse(JsonUtils.json().parseResponse(VortexHttp.response(resp)));
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     public static WowsLootBox parse(JsonNode node) throws BasicException {

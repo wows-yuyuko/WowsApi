@@ -1,7 +1,8 @@
 package com.shinoaki.wows.api.codec;
 
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.HttpThrowableStatus;
+import com.shinoaki.wows.api.error.HttpNetworkException;
+import com.shinoaki.wows.api.error.HttpStatusException;
 import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -203,10 +204,10 @@ public class HttpCodec {
                 return json;
             }
         } catch (IOException e) {
-            log.error("网络请求响应异常！", e);
-            throw new BasicException(HttpThrowableStatus.HTTP_IO, e);
+            log.error("响应体处理异常！", e);
+            throw new HttpNetworkException("响应体解压/读取失败", e);
         }
-        throw new BasicException(HttpThrowableStatus.HTTP_STATUS, "http状态码异常 code=" + response.statusCode());
+        throw new HttpStatusException(response.statusCode(), "http状态码异常 code=" + response.statusCode());
     }
 
     public static byte[] unGzip(byte[] bytes) throws IOException {

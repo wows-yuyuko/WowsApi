@@ -1,7 +1,9 @@
 package com.shinoaki.wows.api.utils;
 
 
+import com.shinoaki.wows.api.error.ResponseParseException;
 import lombok.Getter;
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationFeature;
@@ -17,6 +19,11 @@ import java.io.IOException;
 @Getter
 public class JsonUtils {
     private static final JsonUtils instance = new JsonUtils();
+
+    /**
+     * 解析失败时回显响应开头的长度上限
+     */
+    private static final int ECHO_LIMIT = 200;
 
     private final JsonMapper mapper;
 
@@ -130,6 +137,31 @@ public class JsonUtils {
      */
     public JsonNode parse(String json) {
         return parse(json, JsonNode.class);
+    }
+
+    /**
+     * 把响应体解析为 JsonNode；解析失败抛受检的 {@link ResponseParseException}（与网络异常明确区分）。
+     * <p>
+     * 消息附带响应开头摘要（压缩空白后最多 {@value #ECHO_LIMIT} 字符），
+     * 可一眼识别"拿到的不是 JSON"（例如网关返回的 HTML 错误页）。
+     */
+    public JsonNode parseResponse(String json) throws ResponseParseException {
+        try {
+            return parse(json, JsonNode.class);
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage() + "；响应开头: " + echo(json), e);
+        }
+    }
+
+    /**
+     * 响应摘要：压缩空白并截断。
+     */
+    private static String echo(String json) {
+        if (json == null) {
+            return "null";
+        }
+        String flat = json.replaceAll("\\s+", " ").trim();
+        return flat.length() <= ECHO_LIMIT ? flat : flat.substring(0, ECHO_LIMIT) + "...";
     }
 
     public JsonNode parse(File json) throws IOException {

@@ -3,7 +3,9 @@ package com.shinoaki.wows.api.codec.http;
 import com.shinoaki.wows.api.codec.ApiHttp;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossary;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsServer;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -30,7 +32,11 @@ public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
 
     public record Developers(HttpClient httpClient, WowsServer server, String token) {
         public DevelopersGlossary glossary() throws BasicException {
-            return DevelopersGlossary.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(glossaryUri()))));
+            try {
+                return DevelopersGlossary.parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(glossaryUri()))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         public URI glossaryUri() {

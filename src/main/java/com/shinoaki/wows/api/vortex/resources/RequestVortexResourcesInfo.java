@@ -2,6 +2,7 @@ package com.shinoaki.wows.api.vortex.resources;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
@@ -17,6 +18,7 @@ import com.shinoaki.wows.api.vortex.resources.glossary.VortexVehicleType;
 import com.shinoaki.wows.api.vortex.resources.vehicles.VortexVehicles;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
@@ -95,7 +97,11 @@ public class RequestVortexResourcesInfo {
                 .timeout(Duration.ofSeconds(HttpCodec.requestTimeout()))
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         var resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
-        return parse(JsonUtils.json().parse(HttpCodec.response(resp)), language.getLanguage());
+        try {
+            return parse(JsonUtils.json().parseResponse(HttpCodec.response(resp)), language.getLanguage());
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     /**

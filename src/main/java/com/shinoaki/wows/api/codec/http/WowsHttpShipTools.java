@@ -6,10 +6,12 @@ import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
+import tools.jackson.core.JacksonException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -50,7 +52,11 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public VortexUserShip shipList(WowsBattlesType type, String token) throws BasicException {
-            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type, token))))));
+            try {
+                return VortexUserShip.parse(type, JsonUtils.json().parseResponse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type, token))))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws BasicException {
@@ -83,14 +89,22 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
     public record Developers(HttpClient httpClient, WowsServer server, long accountId, String token) {
 
         public DevelopersUserShip shipList() throws BasicException {
-            return DevelopersUserShip.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri())))));
+            try {
+                return DevelopersUserShip.parse(JsonUtils.json().parseResponse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri())))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         /**
          * 行动模式
          */
         public DevelopersUserShipOper shipOperList() throws BasicException {
-            return DevelopersUserShipOper.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipOperListUri(""))))));
+            try {
+                return DevelopersUserShipOper.parse(JsonUtils.json().parseResponse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipOperListUri(""))))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         public Map<Long, ShipExpansion> shipBadges() throws BasicException {
@@ -98,11 +112,19 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             if (server() == WowsServer.RU) {
                 return Map.of();
             }
-            return ShipExpansion.parseDevelopers(accountId, JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipBadgesUri())))));
+            try {
+                return ShipExpansion.parseDevelopers(accountId, JsonUtils.json().parseResponse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipBadgesUri())))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         public DevelopersUserShip shipListOa(String accessToken) throws BasicException {
-            return DevelopersUserShip.parse(JsonUtils.json().parse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri(accessToken))))));
+            try {
+                return DevelopersUserShip.parse(JsonUtils.json().parseResponse(ApiHttp.response(ApiHttp.send(httpClient, ApiHttp.request(shipListUri(accessToken))))));
+            } catch (JacksonException e) {
+                throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+            }
         }
 
         public URI shipListUri() {
