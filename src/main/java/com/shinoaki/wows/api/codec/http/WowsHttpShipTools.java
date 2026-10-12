@@ -7,7 +7,6 @@ import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
@@ -15,7 +14,6 @@ import com.shinoaki.wows.api.vortex.VortexUserShip;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.EnumMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -39,12 +37,20 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
 
     public record Vortex(HttpClient httpClient, WowsServer server, long accountId) {
 
-        public URI shipListUri(WowsBattlesType type) {
-            return shipListUri(WowsBattlesTypeRu.of(type));
+        /**
+         * 战舰列表地址。莱服专属类型（{@code brawl}/{@code clan}/{@code rating*} 等）只在
+         * {@code korabli.su} 上有效，其它服调用会抛 {@link IllegalArgumentException}。
+         */
+        public URI shipListUri(WowsBattlesType type, String token) {
+            return vortexShipList(server, type, accountId, token);
         }
 
         public VortexUserShip shipList(WowsBattlesType type) throws BasicException {
-            return shipList(WowsBattlesTypeRu.of(type));
+            return shipList(type, "");
+        }
+
+        public VortexUserShip shipList(WowsBattlesType type, String token) throws BasicException {
+            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type, token))))));
         }
 
         public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types) throws BasicException {
@@ -55,40 +61,22 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
             return shipMap;
         }
 
-        //------------------------------------------------------------------------- 莱服专属战斗类型
-
-        /**
-         * 莱服专属战斗类型({@code brawl}/{@code clan}/{@code rating*} 等)的战舰列表地址。
-         * <p>
-         * 莱服独有的类型只在 {@code korabli.su} 上有效，其它服调用会抛 {@link IllegalArgumentException}。
-         */
-        public URI shipListUri(WowsBattlesTypeRu type) {
-            return vortexShipList(server, type, accountId);
-        }
-
-        /**
-         * 莱服专属战斗类型的战舰列表。
-         */
-        public VortexUserShip shipList(WowsBattlesTypeRu type) throws BasicException {
-            return VortexUserShip.parse(type, JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(shipListUri(type))))));
-        }
-
-        /**
-         * 批量取莱服战斗类型的战舰列表：类型 -> 战舰列表。
-         */
-        public Map<WowsBattlesTypeRu, VortexUserShip> shipListMap(WowsBattlesTypeRu[] types) throws BasicException {
-            Map<WowsBattlesTypeRu, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesTypeRu.class);
-            for (WowsBattlesTypeRu type : types) {
-                shipMap.put(type, shipList(type));
+        public Map<WowsBattlesType, VortexUserShip> shipListMap(WowsBattlesType[] types, String token) throws BasicException {
+            Map<WowsBattlesType, VortexUserShip> shipMap = new EnumMap<>(WowsBattlesType.class);
+            for (WowsBattlesType type : types) {
+                shipMap.put(type, shipList(type, token));
             }
             return shipMap;
         }
 
-        private URI vortexShipList(WowsServer server, WowsBattlesTypeRu type, long accountId) {
-            if (type.isRuOnly() && server != WowsServer.RU) {
-                throw new IllegalArgumentException(type + " 是莱服(korabli.su)专属战斗类型，当前服务器=" + server.getCode());
+        private URI vortexShipList(WowsServer server, WowsBattlesType type, long accountId, String token) {
+            if (!type.supportedOn(server)) {
+                throw new IllegalArgumentException(type + " 在 " + server.getCode() + " 不支持，该类型仅支持: " + type.servers());
             }
-            return URI.create(server.vortex() + String.format("/api/accounts/%s/ships/%s/", accountId, type.code()));
+            if (token.isEmpty()) {
+                return URI.create(server.vortex() + String.format("/api/accounts/%s/ships/%s/", accountId, type.code()));
+            }
+            return URI.create(server.vortex() + String.format("/api/accounts/%s/ships/%s/?ac=%s", accountId, type.code(), token));
         }
     }
 
@@ -144,9 +132,9 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
 
         public URI shipListUri(String accessToken) {
             StringBuilder builder = new StringBuilder();
-            for (var type : WowsBattlesType.values()) {
+            for (var type : WowsBattlesType.DEVELOPERS_STATS_TYPES) {
                 if (WowsBattlesType.PVP != type) {
-                    builder.append(type.name().toLowerCase(Locale.ROOT)).append(",");
+                    builder.append(type.code()).append(",");
                 }
             }
             builder.deleteCharAt(builder.length() - 1);
