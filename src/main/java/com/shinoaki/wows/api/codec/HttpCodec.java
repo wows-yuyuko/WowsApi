@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -60,6 +61,32 @@ public class HttpCodec {
     private static volatile HttpClient client;
 
     /**
+     * 全局代理选择器（null = 全部直连）。
+     * <p>
+     * 用于按目标主机分流代理——例如只让某个服务器的域名走本地代理、其余直连。
+     * 设置后共享客户端会在下次取用时自动重建。测试配置见 {@code com.shinoaki.wows.testkit.TestConfig}。
+     */
+    private static volatile ProxySelector proxySelector;
+
+    /**
+     * 共享客户端当前绑定的代理选择器,与{@link #proxySelector}不一致时触发重建。
+     */
+    private static volatile ProxySelector clientProxy;
+
+    /**
+     * 更新全局代理选择器（null = 全部直连）。
+     * <p>
+     * 只影响本方法之后从{@link #client()}取用的实例;进行中的请求仍持有旧实例。
+     */
+    public static void updateProxySelector(ProxySelector selector) {
+        proxySelector = selector;
+    }
+
+    public static ProxySelector proxySelector() {
+        return proxySelector;
+    }
+
+    /**
      * 全局共享的 {@link HttpClient},库内统一使用本实例。
      * <p>
      * JDK 的 HttpClient 线程安全且自带连接池,复用同一个实例可避免每次请求都重建
@@ -77,13 +104,18 @@ public class HttpCodec {
     public static HttpClient client() {
         HttpClient shared = client;
         int timeout = requestTimeout;
-        if (shared == null || clientTimeout != timeout) {
+        ProxySelector proxy = proxySelector;
+        if (shared == null || clientTimeout != timeout || clientProxy != proxy) {
             synchronized (HttpCodec.class) {
-                if (client == null || clientTimeout != timeout) {
-                    client = HttpClient.newBuilder()
-                            .connectTimeout(Duration.ofSeconds(timeout))
-                            .build();
+                if (client == null || clientTimeout != timeout || clientProxy != proxy) {
+                    var builder = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(timeout));
+                    if (proxy != null) {
+                        builder.proxy(proxy);
+                    }
+                    client = builder.build();
                     clientTimeout = timeout;
+                    clientProxy = proxy;
                 }
                 shared = client;
             }
