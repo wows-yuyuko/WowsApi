@@ -1,13 +1,11 @@
 package com.shinoaki.wows.api.codec;
 
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.error.HttpNetworkException;
-import com.shinoaki.wows.api.error.HttpStatusException;
 import com.shinoaki.wows.api.monitor.SchemaRecorder;
+import com.shinoaki.wows.api.transport.HttpClientProvider;
+import com.shinoaki.wows.api.transport.ResponseCodec;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ProxySelector;
 import java.net.URI;
@@ -18,12 +16,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.InflaterInputStream;
 
 /**
  * 底层HTTP编码/解码工具,同时作为历史兼容入口。
@@ -41,87 +35,47 @@ public class HttpCodec {
 
     }
 
-    private static int requestTimeout = 3;
-
+    /**
+     * 更新请求超时（秒）。已委托到 3.0 重写底座的共享配置 {@link HttpClientProvider}。
+     */
     public static void updateTimeout(int timeoutSeconds) {
-        requestTimeout = timeoutSeconds;
+        HttpClientProvider.updateTimeout(timeoutSeconds);
     }
 
     /**
      * 当前请求超时时间(秒),供各请求通道与资源类读取,统一以本处配置为准。
      */
     public static int requestTimeout() {
-        return requestTimeout;
+        return HttpClientProvider.requestTimeout();
     }
-
-    /**
-     * 共享客户端当前绑定的超时(秒),与{@link #requestTimeout}不一致时触发重建。
-     */
-    private static volatile int clientTimeout = Integer.MIN_VALUE;
-
-    private static volatile HttpClient client;
-
-    /**
-     * 全局代理选择器（null = 全部直连）。
-     * <p>
-     * 用于按目标主机分流代理——例如只让某个服务器的域名走本地代理、其余直连。
-     * 设置后共享客户端会在下次取用时自动重建。测试配置见 {@code com.shinoaki.wows.testkit.TestConfig}。
-     */
-    private static volatile ProxySelector proxySelector;
-
-    /**
-     * 共享客户端当前绑定的代理选择器,与{@link #proxySelector}不一致时触发重建。
-     */
-    private static volatile ProxySelector clientProxy;
 
     /**
      * 更新全局代理选择器（null = 全部直连）。
      * <p>
-     * 只影响本方法之后从{@link #client()}取用的实例;进行中的请求仍持有旧实例。
+     * 已委托到 {@link HttpClientProvider};设置后共享客户端会在下次取用时自动重建。
+     * 测试配置见 {@code com.shinoaki.wows.testkit.TestConfig}。
      */
     public static void updateProxySelector(ProxySelector selector) {
-        proxySelector = selector;
+        HttpClientProvider.updateProxySelector(selector);
     }
 
     public static ProxySelector proxySelector() {
-        return proxySelector;
+        return HttpClientProvider.proxySelector();
     }
 
     /**
      * 全局共享的 {@link HttpClient},库内统一使用本实例。
      * <p>
-     * JDK 的 HttpClient 线程安全且自带连接池,复用同一个实例可避免每次请求都重建
-     * selector/executor 线程与 TCP、TLS 连接(高频请求下开销显著)。
-     * <b>因此库内不再各自 {@code HttpClient.newHttpClient()},一律通过本方法获取。</b>
+     * 实现已迁移到 {@link HttpClientProvider}（共享实例、超时/代理集中管理、变更自动重建），
+     * 本方法保留为历史兼容入口，新旧代码取到的是同一个实例。
      * <p>
-     * 该实例不跟随重定向、不挂 CookieHandler:重定向与会话 Cookie 由{@link HttpTransport}
+     * 该实例不跟随重定向、不挂 CookieHandler:重定向与会话 Cookie 由{@code HostPolicy}
      * 按主机自行处理,此处若自动跟随重定向会破坏 api.korabli.su 的 307 握手。
-     * <p>
-     * 连接超时取自{@link #requestTimeout},调用{@link #updateTimeout(int)}后会在下次取用时
-     * 重建为新的超时;重建不影响进行中的请求(它们仍持有旧实例)。
      *
      * @return 共享HttpClient
      */
     public static HttpClient client() {
-        HttpClient shared = client;
-        int timeout = requestTimeout;
-        ProxySelector proxy = proxySelector;
-        if (shared == null || clientTimeout != timeout || clientProxy != proxy) {
-            synchronized (HttpCodec.class) {
-                if (client == null || clientTimeout != timeout || clientProxy != proxy) {
-                    var builder = HttpClient.newBuilder()
-                            .connectTimeout(Duration.ofSeconds(timeout));
-                    if (proxy != null) {
-                        builder.proxy(proxy);
-                    }
-                    client = builder.build();
-                    clientTimeout = timeout;
-                    clientProxy = proxy;
-                }
-                shared = client;
-            }
-        }
-        return shared;
+        return HttpClientProvider.client();
     }
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
@@ -186,51 +140,19 @@ public class HttpCodec {
 
 
     public static String response(HttpResponse<byte[]> response) throws BasicException {
-        try {
-            if (response.statusCode() == 200) {
-                var encoding = response.headers().firstValue(HttpCodec.CONTENT_ENCODING).orElse("").toLowerCase(Locale.ROOT);
-                final String json;
-                if (encoding.contains("gzip")) {
-                    json = new String(HttpCodec.unGzip(response.body()), StandardCharsets.UTF_8);
-                } else if (encoding.contains("deflate")) {
-                    json = new String(HttpCodec.unDeflate(response.body()), StandardCharsets.UTF_8);
-                } else {
-                    json = new String(response.body(), StandardCharsets.UTF_8);
-                }
-                //字段漂移监视的采集挂钩:默认关闭,未开启时只有一次 ThreadLocal 读取
-                if (SchemaRecorder.enabled()) {
-                    SchemaRecorder.record(response.uri(), json);
-                }
-                return json;
-            }
-        } catch (IOException e) {
-            log.error("响应体处理异常！", e);
-            throw new HttpNetworkException("响应体解压/读取失败", e);
+        String json = ResponseCodec.decode(response);
+        //字段漂移监视的采集挂钩:默认关闭,未开启时只有一次 ThreadLocal 读取
+        if (SchemaRecorder.enabled()) {
+            SchemaRecorder.record(response.uri(), json);
         }
-        throw new HttpStatusException(response.statusCode(), "http状态码异常 code=" + response.statusCode());
+        return json;
     }
 
     public static byte[] unGzip(byte[] bytes) throws IOException {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
-            byte[] buffer = new byte[8192];
-            int n;
-            while ((n = gzipInputStream.read(buffer)) >= 0) {
-                out.write(buffer, 0, n);
-            }
-            return out.toByteArray();
-        }
+        return ResponseCodec.unGzip(bytes);
     }
 
     public static byte[] unDeflate(byte[] bytes) throws IOException {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             InflaterInputStream in = new InflaterInputStream(new ByteArrayInputStream(bytes))) {
-            byte[] buffer = new byte[8192];
-            int n;
-            while ((n = in.read(buffer)) >= 0) {
-                out.write(buffer, 0, n);
-            }
-            return out.toByteArray();
-        }
+        return ResponseCodec.unDeflate(bytes);
     }
 }
