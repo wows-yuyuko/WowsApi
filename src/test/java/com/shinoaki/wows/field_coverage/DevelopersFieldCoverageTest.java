@@ -72,6 +72,10 @@ public class DevelopersFieldCoverageTest {
      */
     private static final String ACC = "api_asia_wows_account_info_account_id_id_extra_private_grouped_c_c5266c85.json";
     private static final String SHIPS = "api_asia_wows_ships_stats_account_id_id_extra_pvp_div2_pvp_div3__4c0b4c30.json";
+    /**
+     * 全量战绩的原始响应：现行 dump 还是早期 oper 三元组的采集（块少、形状一致，解析校验照样有效）；
+     * 下次在线采集刷新后，把这里与 {@code registry()} 里的前缀换成新的全量文件名即可。
+     */
     private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_oper_div_oper_div__6a74bb79.json";
     private static final long CLAN_ID = TestConfig.CLAN_ASIA;
     private static final String SEARCH_USER = TestConfig.SEARCH_USER_ASIA;
@@ -189,21 +193,39 @@ public class DevelopersFieldCoverageTest {
         if (root == null) {
             return;
         }
-        section("/wows/ships/stats/(oper) 行动模式统计");
+        section("/wows/ships/stats/(全量) 战舰战绩");
         JsonNode items = onlyData(root);
-        Set<String> allowed = Set.of("private", "oper_div", "oper_div_hard", "oper_solo", "pvp");
+        //顶层不限定战斗类型：响应里出现的对象块全部放行，块内字段逐个核对
+        Set<String> allowed = new LinkedHashSet<>(Set.of("private"));
         for (JsonNode item : items) {
-            unknown(item, DevelopersShipOperBattleInfo.class, "data.<accountId>[" + item.path("ship_id").asLong() + "]", allowed);
-            unknown(item.path("oper_solo"), DevelopersOperBattleType.class, "oper_solo");
-            JsonNode pvp = item.path("pvp");
-            if (pvp.isObject() && !pvp.isEmpty()) {
-                unknown(pvp, DevelopersShipBattleType.class, "pvp");
+            for (Map.Entry<String, JsonNode> entry : item.properties()) {
+                if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                    allowed.add(entry.getKey());
+                }
             }
         }
+        int blocks = 0;
+        for (JsonNode item : items) {
+            unknown(item, DevelopersShipOperBattleInfo.class, "data.<accountId>[" + item.path("ship_id").asLong() + "]", allowed);
+            for (Map.Entry<String, JsonNode> entry : item.properties()) {
+                if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                    battleBlock(entry.getValue(), "ship." + item.path("ship_id").asLong() + "." + entry.getKey());
+                    blocks++;
+                }
+            }
+        }
+        System.out.println("   战舰 " + items.size() + " 条, 战斗数据块 " + blocks + " 个");
         List<DevelopersShipOperBattleInfo> parsed = DevelopersShipOperBattleInfo.parse(items);
         expect("解析条数", items.size(), parsed.size());
         JsonNode first = items.path(0);
-        expect("oper_solo.xp", first.path("oper_solo").path("xp").asLong(0), parsed.get(0).shipBattleTypeMap().get("oper_solo").xp());
+        int firstBlocks = 0;
+        for (Map.Entry<String, JsonNode> entry : first.properties()) {
+            if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                firstBlocks++;
+            }
+        }
+        expect("首船解析块数", firstBlocks, parsed.get(0).battleTypeMap().size() + parsed.get(0).operBattleTypeMap().size());
+        expect("oper_solo.xp", first.path("oper_solo").path("xp").asLong(0), parsed.get(0).operBattleTypeMap().get("oper_solo").xp());
         expect("pvp.xp", first.path("pvp").path("xp").asLong(0), parsed.get(0).pvp().xp());
     }
 

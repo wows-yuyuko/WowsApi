@@ -361,7 +361,7 @@ public class SchemaMonitorTest {
             probes.add(new Probe("官方-玩家详情", null, appId, () -> user.accountInfoDevelopers(appId, ACCOUNT_ID)));
             probes.add(new Probe("官方-玩家搜索", null, appId, () -> user.searchUserDevelopers(appId, TestConfig.SEARCH_USER_ASIA)));
             probes.add(new Probe("官方-战舰统计", null, appId, () -> ship.developers(appId).shipList()));
-            probes.add(new Probe("官方-战舰战绩", null, appId, () -> ship.developers(appId).shipOperList()));
+            probes.add(new Probe("官方-战舰全量战绩", null, appId, () -> ship.developers(appId).shipOperList()));
             probes.add(new Probe("官方-战舰徽章", null, appId, () -> ship.developers(appId).shipBadges()));
             probes.add(new Probe("官方-军团详情", null, appId, () -> clan.developers(appId).clanInfoDevelopers(CLAN_ID)));
             probes.add(new Probe("官方-军团搜索", null, appId, () -> clan.developers(appId).searchClanDevelopers(TestConfig.SEARCH_CLAN)));
@@ -374,7 +374,7 @@ public class SchemaMonitorTest {
             probes.add(new Probe("官方-莱服-玩家详情", null, null, () -> userRu.accountInfoDevelopers(appIdRu, ACCOUNT_ID_RU)));
             probes.add(new Probe("官方-莱服-玩家搜索", null, null, () -> userRu.searchUserDevelopers(appIdRu, TestConfig.SEARCH_USER_RU)));
             probes.add(new Probe("官方-莱服-战舰统计", null, null, () -> shipRu.developers(appIdRu).shipList()));
-            probes.add(new Probe("官方-莱服-行动模式", null, null, () -> shipRu.developers(appIdRu).shipOperList()));
+            probes.add(new Probe("官方-莱服-战舰全量战绩", null, null, () -> shipRu.developers(appIdRu).shipOperList()));
             probes.add(new Probe("官方-莱服-军团详情", null, null, () -> clanRu.developers(appIdRu).clanInfoDevelopers(CLAN_ID_RU)));
             probes.add(new Probe("官方-莱服-军团赛季", null, null, () -> clanRu.developers(appIdRu).season()));
             probes.add(new Probe("官方-莱服-词典", null, null, () -> encyclopediaRu.developers(appIdRu).glossary()));

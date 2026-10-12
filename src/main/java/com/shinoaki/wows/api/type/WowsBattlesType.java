@@ -18,7 +18,7 @@ import java.util.Set;
  * {@code oper_mm}/{@code brawl}/{@code clan}/{@code rating*} 见莱服 vortex 官网接口。
  * <p>
  * <b>调用方注意</b>：{@code values()} 现在是全量（22 个），业务遍历要选视图——
- * 官方开发者 API 的请求/解析用 {@link #DEVELOPERS_STATS_TYPES}，按服务器过滤用 {@link #supportedOn(WowsServer)}。
+ * 官方开发者 API 的请求/解析用 {@link #DEVELOPERS_STATS_TYPES}（轻量集合）或 {@link #DEVELOPERS_ALL_STATS_EXTRA}（全量串），按服务器过滤用 {@link #supportedOn(WowsServer)}。
  * 存储侧：{@code EnumMap} 序列化「旧写新读」安全、「新写旧读」遇新常量会抛；
  * 给枚举加值时 {@code switch} 语句不报编译错、会静默走 default。
  *
@@ -124,6 +124,17 @@ public enum WowsBattlesType implements Serializable {
      * 历史集合，改动前先看这两处调用方。
      */
     public static final List<WowsBattlesType> DEVELOPERS_STATS_TYPES = List.of(PVP, PVP_SOLO, PVP_DIV2, PVP_DIV3, RANK_SOLO);
+
+    /**
+     * 官方开发者 API {@code /wows/ships/stats/} 的<b>全量</b> extra 串（不含默认返回的 pvp 块）。
+     * <p>
+     * 组成：随机战 pvp_solo/div2/div3、联合作战 pve(_solo/_div2/_div3)、排位 rank_solo/div2/div3、
+     * 行动模式 oper_solo/div/div_hard、军团战 clan。{@code club} 已被官方禁用（请求不报错但不返回块）、
+     * {@code rank_old_*} 不在有效枚举内（INVALID_EXTRA），两者都不请求。
+     * <p>
+     * 2026-10 实测：亚服 / 欧服 / 莱服({@code /mk/}) 均接受该串，响应为「默认 pvp + 全部 14 个块」。
+     */
+    public static final String DEVELOPERS_ALL_STATS_EXTRA = "pvp_solo,pvp_div2,pvp_div3,pve,pve_solo,pve_div2,pve_div3,rank_solo,rank_div2,rank_div3,oper_solo,oper_div,oper_div_hard,clan";
 
     /**
      * 所有服务器——通用类型的即此集合。

@@ -97,7 +97,8 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         /**
-         * 行动模式
+         * 战舰全量战绩：extra 请求全部战斗类型（默认 pvp + 联合作战/排位/行动模式/军团战 共 14 类），
+         * 响应块全量解析（不再限定 oper 三种，见 {@link WowsBattlesType#DEVELOPERS_ALL_STATS_EXTRA}）。
          */
         public DevelopersUserShipOper shipOperList() throws BasicException {
             try {
@@ -136,7 +137,7 @@ public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long a
         }
 
         public URI shipOperListUri(String accessToken) {
-            String builder = "oper_div,oper_div_hard,oper_solo";
+            String builder = WowsBattlesType.DEVELOPERS_ALL_STATS_EXTRA;
             if (server() == WowsServer.RU) {
                 if (accessToken.isEmpty()) {
                     return URI.create(server.api() + String.format("/mk/ships/stats/?application_id=%s&account_id=%s&extra=%s", token, accountId, builder));
