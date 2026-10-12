@@ -49,8 +49,11 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
     }
 
     public VortexUserInfo userVortex(long accountId) throws BasicException {
+        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, ""))))), accountId);
+    }
 
-        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId))))), accountId);
+    public VortexUserInfo userVortex(long accountId, String token) throws BasicException {
+        return VortexUserInfo.parse(JsonUtils.json().parse(VortexHttp.response(VortexHttp.send(httpClient, VortexHttp.request(uriVortex(accountId, token))))), accountId);
     }
 
     public List<DevelopersSearchUser> searchUserDevelopers(String token, String userName) throws BasicException {
@@ -86,8 +89,11 @@ public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
         return URI.create(server.vortex() + String.format("/api/accounts/search/autocomplete/%s/", HttpCodec.encodeURIComponent(userName)));
     }
 
-    private URI uriVortex(long accountId) {
-        return URI.create(server.vortex() + String.format("/api/accounts/%s/", accountId));
+    private URI uriVortex(long accountId, String token) {
+        if (token.isEmpty()) {
+            return URI.create(server.vortex() + String.format("/api/accounts/%s/", accountId));
+        }
+        return URI.create(server.vortex() + String.format("/api/accounts/%s/?ac=%s", accountId, token));
     }
 
     private URI uriDeveloper(String token, String userName) {
