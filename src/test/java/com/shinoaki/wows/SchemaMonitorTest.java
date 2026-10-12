@@ -16,7 +16,6 @@ import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import com.shinoaki.wows.api.monitor.SchemaRules;
 import com.shinoaki.wows.api.monitor.SchemaTracker;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
@@ -26,6 +25,7 @@ import com.shinoaki.wows.api.vortex.resources.WowsResources;
 import com.shinoaki.wows.api.vortex.resources.box.WowsBox;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBox;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -59,8 +59,8 @@ import java.util.stream.Stream;
  *           --raw=&lt;目录&gt;（默认 target/schema-raw）
  * <p>
  * 不带参数直接运行即覆盖<b>亚服 + 莱服</b>两条线：vortex 接口不需要令牌；
- * 官方开发者API 需要令牌——亚服走环境变量 {@code WOWS_APP_ID}（或 {@code -Dwows.appId=}），
- * 莱服走 {@code WOWS_APP_ID_RU}（或 {@code -Dwows.appIdRu=}），没配的那一边自动跳过。
+ * 官方开发者API 的令牌由 {@code TestConfig} 提供（内置公开测试 key，零配置可跑；
+ * 也可用环境变量 {@code WOWS_APP_ID}/{@code WOWS_APP_ID_RU} 或 {@code -Dwows.appId*=} 覆盖）。
  * 基线按「通道:服别」分开存，莱服的是 {@code vortex_ru_*.json} / {@code api_ru_*.json}。
  * </pre>
  *
@@ -74,16 +74,16 @@ public class SchemaMonitorTest {
     private static final Path RAW_DIR = Path.of("target/schema-raw");
 
     private static final WowsServer SERVER = WowsServer.ASIA;
-    private static final long ACCOUNT_ID = 2022515210L;
-    private static final long CLAN_ID = 2000016057L;
-    private static final long CLAN_MEMBERS_ID = 2000025691L;
-    private static final long LOOTBOX_ID = 4288861104L;
+    private static final long ACCOUNT_ID = TestConfig.ACCOUNT_ASIA;
+    private static final long CLAN_ID = TestConfig.CLAN_ASIA;
+    private static final long CLAN_MEMBERS_ID = TestConfig.CLAN_MEMBERS_ASIA;
+    private static final long LOOTBOX_ID = TestConfig.LOOTBOX_ASIA;
 
     //---- 莱服(korabli.su)：域名、路径(/mk/)、字段集都和 WG 那边不一样，单独一组基线 ----
     private static final WowsServer SERVER_RU = WowsServer.RU;
-    private static final long ACCOUNT_ID_RU = 212112137L;
-    private static final long CLAN_ID_RU = 451731L;
-    private static final long LOOTBOX_ID_RU = 4134720432L;
+    private static final long ACCOUNT_ID_RU = TestConfig.ACCOUNT_RU;
+    private static final long CLAN_ID_RU = TestConfig.CLAN_RU;
+    private static final long LOOTBOX_ID_RU = TestConfig.LOOTBOX_RU;
 
     /**
      * graphql 一个 URL 对应多个 schema，URI 区分不了，必须显式声明 key。
@@ -235,11 +235,10 @@ public class SchemaMonitorTest {
     private static List<SchemaMonitor.Result> online(SchemaMonitor monitor, SchemaRawStore rawStore, boolean precise) {
         //箱子/战舰列表等接口响应较大，给足超时
         HttpCodec.updateTimeout(20);
-        HttpClient client = HttpCodec.client();
+        HttpClient client = TestConfig.client();
         String appId = appId();
         String appIdRu = appIdRu();
-        System.out.println("开发者令牌: 亚服 WOWS_APP_ID=" + (appId == null ? "未配置（跳过亚服官方API探测）" : "已配置")
-                + "；莱服 WOWS_APP_ID_RU=" + (appIdRu == null ? "未配置（跳过莱服官方API探测）" : "已配置"));
+        System.out.println("开发者令牌: 亚服/莱服均使用内置公开测试 key（环境变量或 -Dwows.appId* 可覆盖）");
         System.out.println();
 
         List<SchemaMonitor.Result> results = new ArrayList<>();
@@ -332,12 +331,12 @@ public class SchemaMonitorTest {
         probes.add(new Probe("资源索引", GRAPHQL + "getGlossData", null,
                 () -> RequestVortexResourcesInfo.request(SERVER, VortexResourcesLanguage.SG)));
         probes.add(new Probe("玩家详情", null, null, () -> user.userVortex(ACCOUNT_ID)));
-        probes.add(new Probe("玩家搜索", null, null, () -> user.searchUserVortex("JustOn")));
+        probes.add(new Probe("玩家搜索", null, null, () -> user.searchUserVortex(TestConfig.SEARCH_USER_ASIA)));
         probes.add(new Probe("玩家战舰列表", null, null, () -> ship.vortex().shipList(WowsBattlesType.PVP)));
         probes.add(new Probe("玩家所属军团", null, null, () -> clan.vortex().userSearchClanVortex(ACCOUNT_ID)));
         probes.add(new Probe("军团详情", null, null, () -> clan.vortex().clanInfoVortex(CLAN_ID)));
         probes.add(new Probe("军团成员", null, null, () -> clan.vortex().clanUserListInfoVortex(CLAN_MEMBERS_ID)));
-        probes.add(new Probe("军团搜索", null, null, () -> clan.vortex().searchClanVortex("YU_RI")));
+        probes.add(new Probe("军团搜索", null, null, () -> clan.vortex().searchClanVortex(TestConfig.SEARCH_CLAN)));
 
         //---- 莱服 vortex：同样不需要令牌，域名 korabli.su、军团走 mk_ladder、战斗类型更多 ----
         probes.add(new Probe("莱服-箱子详情", null, null,
@@ -349,23 +348,23 @@ public class SchemaMonitorTest {
         probes.add(new Probe("莱服-资源索引", GRAPHQL_RU + "getGlossData", null,
                 () -> RequestVortexResourcesInfo.request(SERVER_RU, VortexResourcesLanguage.RU)));
         probes.add(new Probe("莱服-玩家详情", null, null, () -> userRu.userVortex(ACCOUNT_ID_RU)));
-        probes.add(new Probe("莱服-玩家搜索", null, null, () -> userRu.searchUserVortex("JustOn")));
+        probes.add(new Probe("莱服-玩家搜索", null, null, () -> userRu.searchUserVortex(TestConfig.SEARCH_USER_RU)));
         probes.add(new Probe("莱服-玩家战舰列表", null, null, () -> shipRu.vortex().shipList(WowsBattlesType.PVP)));
-        probes.add(new Probe("莱服-玩家评级战绩", null, null, () -> shipRu.vortex().shipList(WowsBattlesTypeRu.RATING_SOLO)));
+        probes.add(new Probe("莱服-玩家评级战绩", null, null, () -> shipRu.vortex().shipList(WowsBattlesType.RATING_SOLO)));
         probes.add(new Probe("莱服-玩家所属军团", null, null, () -> clanRu.vortex().userSearchClanVortex(ACCOUNT_ID_RU)));
         probes.add(new Probe("莱服-军团详情", null, null, () -> clanRu.vortex().clanInfoVortex(CLAN_ID_RU)));
         probes.add(new Probe("莱服-军团成员", null, null, () -> clanRu.vortex().clanUserListInfoVortex(CLAN_ID_RU)));
-        probes.add(new Probe("莱服-军团搜索", null, null, () -> clanRu.vortex().searchClanVortex("YU_RI")));
+        probes.add(new Probe("莱服-军团搜索", null, null, () -> clanRu.vortex().searchClanVortex(TestConfig.SEARCH_CLAN)));
 
         //---- 官方开发者API(亚服)：需要 application_id ----
         if (appId != null) {
             probes.add(new Probe("官方-玩家详情", null, appId, () -> user.accountInfoDevelopers(appId, ACCOUNT_ID)));
-            probes.add(new Probe("官方-玩家搜索", null, appId, () -> user.searchUserDevelopers(appId, "JustOn")));
+            probes.add(new Probe("官方-玩家搜索", null, appId, () -> user.searchUserDevelopers(appId, TestConfig.SEARCH_USER_ASIA)));
             probes.add(new Probe("官方-战舰统计", null, appId, () -> ship.developers(appId).shipList()));
             probes.add(new Probe("官方-战舰战绩", null, appId, () -> ship.developers(appId).shipOperList()));
             probes.add(new Probe("官方-战舰徽章", null, appId, () -> ship.developers(appId).shipBadges()));
             probes.add(new Probe("官方-军团详情", null, appId, () -> clan.developers(appId).clanInfoDevelopers(CLAN_ID)));
-            probes.add(new Probe("官方-军团搜索", null, appId, () -> clan.developers(appId).searchClanDevelopers("YU_RI")));
+            probes.add(new Probe("官方-军团搜索", null, appId, () -> clan.developers(appId).searchClanDevelopers(TestConfig.SEARCH_CLAN)));
             probes.add(new Probe("官方-军团赛季", null, appId, () -> clan.developers(appId).season()));
             probes.add(new Probe("官方-词典", null, appId, () -> encyclopedia.developers(appId).glossary()));
         }
@@ -373,7 +372,7 @@ public class SchemaMonitorTest {
         //---- 莱服官方开发者API：api.korabli.su + /mk/ 路径，需要莱服自己的 application_id ----
         if (appIdRu != null) {
             probes.add(new Probe("官方-莱服-玩家详情", null, null, () -> userRu.accountInfoDevelopers(appIdRu, ACCOUNT_ID_RU)));
-            probes.add(new Probe("官方-莱服-玩家搜索", null, null, () -> userRu.searchUserDevelopers(appIdRu, "JustOn")));
+            probes.add(new Probe("官方-莱服-玩家搜索", null, null, () -> userRu.searchUserDevelopers(appIdRu, TestConfig.SEARCH_USER_RU)));
             probes.add(new Probe("官方-莱服-战舰统计", null, null, () -> shipRu.developers(appIdRu).shipList()));
             probes.add(new Probe("官方-莱服-行动模式", null, null, () -> shipRu.developers(appIdRu).shipOperList()));
             probes.add(new Probe("官方-莱服-军团详情", null, null, () -> clanRu.developers(appIdRu).clanInfoDevelopers(CLAN_ID_RU)));
@@ -418,23 +417,15 @@ public class SchemaMonitorTest {
     }
 
     private static String appId() {
-        return token("WOWS_APP_ID", "wows.appId");
+        return TestConfig.appId(WowsServer.ASIA);
     }
 
     /**
      * 莱服的令牌：莱服官方API(api.korabli.su)只认莱服自己发的 application_id，WG 的 key 无效。
+     * 默认用 TestConfig 内置的公开测试 key，环境变量/-D 可覆盖——零配置即可跑全两条线。
      */
     private static String appIdRu() {
-        return token("WOWS_APP_ID_RU", "wows.appIdRu");
-    }
-
-    private static String token(String envName, String propertyName) {
-        String fromEnv = System.getenv(envName);
-        if (fromEnv != null && !fromEnv.isBlank()) {
-            return fromEnv.trim();
-        }
-        String fromProperty = System.getProperty(propertyName);
-        return fromProperty == null || fromProperty.isBlank() ? null : fromProperty.trim();
+        return TestConfig.appId(WowsServer.RU);
     }
 
     private static boolean flag(String[] args, String name) {

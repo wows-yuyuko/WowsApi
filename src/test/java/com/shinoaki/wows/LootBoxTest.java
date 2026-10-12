@@ -7,13 +7,14 @@ import com.shinoaki.wows.api.vortex.resources.box.WowsLootBox;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxReward;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardGroup;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxSlot;
+import com.shinoaki.wows.testkit.TestConfig;
 
 import java.util.Map;
 
 public class LootBoxTest {
     public static void main(String[] args) {
         try {
-            var box = WowsLootBox.request(WowsServer.ASIA, VortexResourcesLanguage.SG, 4288861104L);
+            var box = WowsLootBox.request(WowsServer.ASIA, VortexResourcesLanguage.SG, TestConfig.LOOTBOX_ASIA);
             System.out.println("status     = " + box.status());
             System.out.println("id         = " + box.id());
             System.out.println("name       = " + box.name());

@@ -1,9 +1,7 @@
 package com.shinoaki.wows.field_coverage;
 
-import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
@@ -26,6 +24,7 @@ import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxRewardGroup;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBoxSlot;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.Field;
@@ -58,8 +57,8 @@ public class RuVortexCoverageTest {
 
     private static final Path DUMP_DIR = Path.of("target/ru-dump");
     private static final WowsServer SERVER = WowsServer.RU;
-    private static final long ACCOUNT_ID = 212112137L;
-    private static final long CLAN_ID = 451731L;
+    private static final long ACCOUNT_ID = TestConfig.ACCOUNT_RU;
+    private static final long CLAN_ID = TestConfig.CLAN_RU;
 
     private static int failed = 0;
     private static JsonNode accountJson;
@@ -93,27 +92,32 @@ public class RuVortexCoverageTest {
     //----------------------------------------------------------------- 战斗类型枚举
 
     private static void checkBattlesType() {
-        section("WowsBattlesTypeRu（莱服专属战斗类型，兼容 WowsBattlesType）");
-        expect("枚举数量", 22, WowsBattlesTypeRu.values().length);
+        section("WowsBattlesType（合并后：通用 + 服务器专属标识）");
+        expect("枚举数量", 22, WowsBattlesType.values().length);
+        int common = 0;
         for (WowsBattlesType type : WowsBattlesType.values()) {
-            WowsBattlesTypeRu ru = WowsBattlesTypeRu.of(type);
-            expect("of(" + type + ").toWowsBattlesType()", type, ru.toWowsBattlesType());
-            expect("of(" + type + ").isRuOnly()", false, ru.isRuOnly());
+            if (type.isCommon()) {
+                common++;
+            }
         }
-        expect("BRAWL.isRuOnly()", true, WowsBattlesTypeRu.BRAWL.isRuOnly());
-        expect("BRAWL.toWowsBattlesType()", null, WowsBattlesTypeRu.BRAWL.toWowsBattlesType());
-        expect("findCode(rating_solo)", WowsBattlesTypeRu.RATING_SOLO, WowsBattlesTypeRu.findCode("rating_solo"));
-        expect("code(PVE_DIV2)", "pve_div2", WowsBattlesTypeRu.PVE_DIV2.code());
+        expect("通用(所有服)数量", 14, common);
+        expect("PVP.isCommon()", true, WowsBattlesType.PVP.isCommon());
+        expect("BRAWL.isExclusive()", true, WowsBattlesType.BRAWL.isExclusive());
+        expect("BRAWL.servers() 含 RU", true, WowsBattlesType.BRAWL.servers().contains(WowsServer.RU));
+        expect("BRAWL.supportedOn(RU)", true, WowsBattlesType.BRAWL.supportedOn(WowsServer.RU));
+        expect("BRAWL.supportedOn(ASIA)", false, WowsBattlesType.BRAWL.supportedOn(WowsServer.ASIA));
+        expect("findCode(rating_solo)", WowsBattlesType.RATING_SOLO, WowsBattlesType.findCode("rating_solo"));
+        expect("code(PVE_DIV2)", "pve_div2", WowsBattlesType.PVE_DIV2.code());
 
-        var ruTools = new WowsHttpShipTools(HttpCodec.client(), SERVER, ACCOUNT_ID).vortex();
+        var ruTools = new WowsHttpShipTools(TestConfig.client(), SERVER, ACCOUNT_ID).vortex();
         expect("莱服战舰列表 URL",
                 "https://vortex.korabli.su/api/accounts/" + ACCOUNT_ID + "/ships/rating_solo/",
-                ruTools.shipListUri(WowsBattlesTypeRu.RATING_SOLO).toString());
+                ruTools.shipListUri(WowsBattlesType.RATING_SOLO, "").toString());
         try {
-            new WowsHttpShipTools(HttpCodec.client(), WowsServer.ASIA, ACCOUNT_ID).vortex().shipListUri(WowsBattlesTypeRu.BRAWL);
+            new WowsHttpShipTools(TestConfig.client(), WowsServer.ASIA, ACCOUNT_ID).vortex().shipListUri(WowsBattlesType.BRAWL, "");
             expect("非莱服取莱服专属类型应抛异常", "IllegalArgumentException", "没有抛异常");
         } catch (IllegalArgumentException e) {
-            expect("非莱服取莱服专属类型应抛异常", true, e.getMessage().contains("莱服"));
+            expect("非莱服取莱服专属类型应抛异常", true, e.getMessage().contains("RU"));
         }
     }
 
@@ -160,9 +164,9 @@ public class RuVortexCoverageTest {
         expect("basic.last_battle_time", statistics.path("basic").path("last_battle_time").asLong(0), stat.getBasic().last_battle_time());
 
         //八个莱服新数据块
-        WowsBattlesTypeRu[] ruBlocks = {WowsBattlesTypeRu.BRAWL, WowsBattlesTypeRu.CLAN, WowsBattlesTypeRu.OPER_MM, WowsBattlesTypeRu.RANK,
-                WowsBattlesTypeRu.RANK_OLD, WowsBattlesTypeRu.RATING, WowsBattlesTypeRu.RATING_DIV, WowsBattlesTypeRu.RATING_SOLO};
-        for (WowsBattlesTypeRu type : ruBlocks) {
+        WowsBattlesType[] ruBlocks = {WowsBattlesType.BRAWL, WowsBattlesType.CLAN, WowsBattlesType.OPER_MM, WowsBattlesType.RANK,
+                WowsBattlesType.RANK_OLD, WowsBattlesType.RATING, WowsBattlesType.RATING_DIV, WowsBattlesType.RATING_SOLO};
+        for (WowsBattlesType type : ruBlocks) {
             String code = type.code();
             long expected = statistics.path(code).path("battles_count").asLong(0);
             expect("statistics." + code + ".battles_count", expected, stat.block(type).battles_count());
@@ -224,9 +228,8 @@ public class RuVortexCoverageTest {
         }
         expect("单船块字段数", 78, withPvp.getValue().path("pvp").size());
 
-        VortexUserShip userShip = VortexUserShip.parse(WowsBattlesTypeRu.PVP, shipsJson);
+        VortexUserShip userShip = VortexUserShip.parse(WowsBattlesType.PVP, shipsJson);
         expect("type()", WowsBattlesType.PVP, userShip.type());
-        expect("typeRu()", WowsBattlesTypeRu.PVP, userShip.typeRu());
         expect("visibility_settings(莱服缺字段->false)", false, userShip.visibility_settings());
         expect("accountId", ACCOUNT_ID, userShip.accountId());
         expect("战舰数量", ships, userShip.shipMap().size());

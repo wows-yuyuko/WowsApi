@@ -4,9 +4,9 @@ import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.data.ShipInfoSource;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.nio.file.Files;
@@ -33,7 +33,7 @@ import java.util.function.ToLongFunction;
 public class RuShipInfoCrossSourceTest {
 
     private static final Path DUMP_DIR = Path.of("target/ru-dump");
-    private static final long ACCOUNT_ID = 212112137L;
+    private static final long ACCOUNT_ID = TestConfig.ACCOUNT_RU;
 
     /**
      * 两边都应该有且相等的字段。
@@ -83,7 +83,7 @@ public class RuShipInfoCrossSourceTest {
         System.out.println("数据来源: " + DUMP_DIR.toAbsolutePath() + "（离线，莱服账号 " + ACCOUNT_ID + "）");
 
         Map<Long, ShipInfo> vortex = new LinkedHashMap<>();
-        for (ShipInfo info : VortexUserShip.parse(WowsBattlesTypeRu.PVP, JsonUtils.json().parse(DUMP_DIR.resolve("ships-pvp.json").toFile())).toShipInfoList()) {
+        for (ShipInfo info : VortexUserShip.parse(WowsBattlesType.PVP, JsonUtils.json().parse(DUMP_DIR.resolve("ships-pvp.json").toFile())).toShipInfoList()) {
             vortex.put(info.shipId(), info);
         }
         Map<Long, ShipInfo> developers = new LinkedHashMap<>();

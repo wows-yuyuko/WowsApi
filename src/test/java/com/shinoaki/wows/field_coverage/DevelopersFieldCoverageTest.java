@@ -30,6 +30,7 @@ import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -61,8 +62,8 @@ import java.util.stream.Stream;
  * @author Xun
  */
 public class DevelopersFieldCoverageTest {
-    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
-    private static final long account_id = 2022515210;
+    private static final String token = TestConfig.appId(WowsServer.ASIA);
+    private static final long account_id = TestConfig.ACCOUNT_ASIA;
     private static final WowsServer server = WowsServer.ASIA;
 
     private static final Path RAW = Path.of(System.getProperty("raw.dir", "target/schema-raw"));
@@ -72,9 +73,9 @@ public class DevelopersFieldCoverageTest {
     private static final String ACC = "api_asia_wows_account_info_account_id_id_extra_private_grouped_c_c5266c85.json";
     private static final String SHIPS = "api_asia_wows_ships_stats_account_id_id_extra_pvp_div2_pvp_div3__4c0b4c30.json";
     private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_oper_div_oper_div__6a74bb79.json";
-    private static final long CLAN_ID = 2000016057L;
-    private static final String SEARCH_USER = "JustOn";
-    private static final String SEARCH_CLAN = "YU_RI";
+    private static final long CLAN_ID = TestConfig.CLAN_ASIA;
+    private static final String SEARCH_USER = TestConfig.SEARCH_USER_ASIA;
+    private static final String SEARCH_CLAN = TestConfig.SEARCH_CLAN;
 
     /**
      * 本地没有采集时的现场抓取表(文件 -> 调用)。
@@ -487,7 +488,7 @@ public class DevelopersFieldCoverageTest {
      */
     private static void registry() {
         HttpCodec.updateTimeout(25);
-        HttpClient client = HttpCodec.client();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools user = new WowsHttpUserTools(client, server);
         WowsHttpShipTools ship = new WowsHttpShipTools(client, server, account_id);
         WowsHttpClanTools clan = new WowsHttpClanTools(client, server);
