@@ -15,8 +15,11 @@ import java.util.List;
  */
 public record VortexSearchUser(long spa_id, String name, boolean hidden) {
 
-    public static List<VortexSearchUser> parse(  String json) throws BasicException {
-        JsonNode node =  JsonUtils.json().parse(json);
+    public static List<VortexSearchUser> parse(String json) throws BasicException {
+        return parse(JsonUtils.json().parse(json));
+    }
+
+    public static List<VortexSearchUser> parse(JsonNode node) throws BasicException {
         String status = node.path("status").asString();
         if ("ok".equalsIgnoreCase(status)) {
             List<VortexSearchUser> list = new ArrayList<>();

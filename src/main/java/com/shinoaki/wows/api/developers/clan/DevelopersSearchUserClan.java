@@ -11,8 +11,11 @@ import tools.jackson.databind.JsonNode;
  */
 public record DevelopersSearchUserClan(Clan clan, long account_id, long joined_at, long clan_id, String role, String account_name) {
 
-    public static DevelopersSearchUserClan parse(  long accountId, String response) throws BasicException {
-        JsonNode node =  JsonUtils.json().parse(response);
+    public static DevelopersSearchUserClan parse(long accountId, String response) throws BasicException {
+        return parse(accountId, JsonUtils.json().parse(response));
+    }
+
+    public static DevelopersSearchUserClan parse(long accountId, JsonNode node) throws BasicException {
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data.isNull()) {

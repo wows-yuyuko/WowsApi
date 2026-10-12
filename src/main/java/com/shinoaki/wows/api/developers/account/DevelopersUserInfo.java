@@ -44,7 +44,10 @@ public record DevelopersUserInfo(
 ) {
 
     public static DevelopersUserInfo parse(long accountId, String json) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(json);
+        return parse(accountId, JsonUtils.json().parse(json));
+    }
+
+    public static DevelopersUserInfo parse(long accountId, JsonNode node) throws BasicException {
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {

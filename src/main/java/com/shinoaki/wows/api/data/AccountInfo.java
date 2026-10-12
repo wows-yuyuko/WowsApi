@@ -1,5 +1,6 @@
 package com.shinoaki.wows.api.data;
 
+import com.shinoaki.wows.api.developers.account.DevelopersUserInfo;
 import com.shinoaki.wows.api.developers.account.DevelopersUserInfoPrivate;
 import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.error.BasicException;
@@ -50,7 +51,10 @@ public record AccountInfo(
 ) {
 
     public static AccountInfo parse(long accountId, String json, AccountClanInfo clan) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(json);
+        return parse(accountId, JsonUtils.json().parse(json), clan);
+    }
+
+    public static AccountInfo parse(long accountId, JsonNode node, AccountClanInfo clan) throws BasicException {
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
@@ -75,5 +79,27 @@ public record AccountInfo(
                 data.path("updated_at").asLong(),
                 DevelopersUserInfoPrivate.parse(data.path("private")),
                 DevelopersUserInfoStatistics.parse(data.path("statistics")));
+    }
+
+    /**
+     * 由 3.0 新管线的「玩家详情」端点结果（{@code dev.account.info}）构造：
+     * 与 {@link #parse(long, JsonNode, AccountClanInfo)} 同源同形（字段一一对应）。
+     */
+    public static AccountInfo of(DevelopersUserInfo info, AccountClanInfo clan) {
+        return new AccountInfo(
+                info.account_id(),
+                info.nickname(),
+                info.created_at(),
+                false,
+                info.last_battle_time(),
+                info.stats_updated_at(),
+                info.logout_at(),
+                clan,
+                info.karma(),
+                info.leveling_points(),
+                info.leveling_tier(),
+                info.updated_at(),
+                info.userInfoPrivate(),
+                info.statistics());
     }
 }
