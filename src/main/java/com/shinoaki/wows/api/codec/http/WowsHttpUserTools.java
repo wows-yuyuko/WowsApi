@@ -31,6 +31,7 @@ import java.util.List;
  * @author Xun
  * @date 2023/5/22 21:42 星期一
  */
+@Deprecated
 public record WowsHttpUserTools(HttpClient httpClient, WowsServer server) {
 
     public List<VortexSearchUser> searchUserVortexCn(String userName) throws BasicException {

@@ -21,6 +21,7 @@ import java.util.Map;
  * @author Xun
  */
 @Slf4j
+@Deprecated
 public class ClanRankUtils {
 
     /**

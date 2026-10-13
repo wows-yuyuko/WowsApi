@@ -19,6 +19,7 @@ import java.net.http.HttpClient;
  *
  * @author Xun
  */
+@Deprecated
 public record WowsEncyclopediaTools(HttpClient httpClient, WowsServer server) {
 
     public Developers developers(String token) {

@@ -28,6 +28,7 @@ import java.util.Map;
  * @author Xun
  * @date 2023/4/24 23:49 星期一
  */
+@Deprecated
 public record WowsHttpShipTools(HttpClient httpClient, WowsServer server, long accountId) {
     public Vortex vortex() {
         return new Vortex(httpClient, server, accountId);
