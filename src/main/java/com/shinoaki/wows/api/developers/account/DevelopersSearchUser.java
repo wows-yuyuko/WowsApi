@@ -13,7 +13,10 @@ import java.util.List;
  */
 public record DevelopersSearchUser(String nickname, long account_id) {
     public static List<DevelopersSearchUser> parse(String json) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(json);
+        return parse(JsonUtils.json().parse(json));
+    }
+
+    public static List<DevelopersSearchUser> parse(JsonNode node) throws BasicException {
         BasicException.status(node);
         List<DevelopersSearchUser> list = new ArrayList<>();
         for (var data : node.path("data")) {

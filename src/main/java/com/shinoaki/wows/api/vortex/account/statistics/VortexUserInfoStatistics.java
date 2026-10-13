@@ -1,7 +1,7 @@
 package com.shinoaki.wows.api.vortex.account.statistics;
 
 import com.shinoaki.wows.api.error.BasicException;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
+import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import lombok.Data;
 import tools.jackson.databind.JsonNode;
@@ -18,7 +18,7 @@ import java.util.Map;
  * <b>莱服(korabli.su)额外多出</b>：{@code brawl}、{@code clan}、{@code oper_mm}、{@code rank}、{@code rank_old}、
  * {@code rating}、{@code rating_div}、{@code rating_solo} 八个数据块与 {@code rating_info}（评级战进度）；
  * 同时莱服没有 {@code mastery_sign}/{@code mark_of_excellence}（精通点改为 {@link Basic#mastery_rank()}）。
- * 取这些块建议直接用 {@link #block(WowsBattlesTypeRu)}。
+ * 取这些块建议直接用 {@link #block(WowsBattlesType)}。
  * <p>
  * https://vortex.worldofwarships.asia/api/accounts/2022515210/
  *
@@ -150,15 +150,15 @@ public class VortexUserInfoStatistics {
     }
 
     /**
-     * 按战斗类型取数据块——莱服专属类型走这里，省得写一长串 switch。
+     * 按战斗类型取数据块，省得写一长串 switch（含莱服专属类型，如 {@code BRAWL}）。
      * <p>
-     * 注意：莱服没有的块（如 {@code rating_*} 在其它服）返回的是全 0 的默认值，
-     * 不会抛异常，也不会是 null。
+     * 注意：响应里没有的块（如 {@code rating_*} 在其它服、{@code pve_solo} 系在任何服的 vortex）返回的是
+     * 全 0 的默认值，不会抛异常，也不会是 null。
      *
      * @param type 战斗类型
      * @return 该类型的战斗数据块，取不到时返回全 0 的默认值
      */
-    public VortexShipInfo block(WowsBattlesTypeRu type) {
+    public VortexShipInfo block(WowsBattlesType type) {
         return switch (type) {
             case PVP -> pvp;
             case PVP_SOLO -> pvp_solo;

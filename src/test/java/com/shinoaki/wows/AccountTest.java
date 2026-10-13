@@ -9,6 +9,7 @@ import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
+import com.shinoaki.wows.testkit.TestConfig;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -25,14 +26,14 @@ public class AccountTest {
     public void searchUserAsia() {
         try {
             String u1 = "JustOn";
-            HttpClient client = HttpClient.newBuilder().build();
+            HttpClient client = TestConfig.client();
             WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
             System.out.println(asia.searchUserVortex(u1));
             System.out.println("=================");
-            System.out.println(asia.searchUserDevelopers(DevelopersTest.token, u1));
-            System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515210));
-            System.out.println(asia.userInfoDevelopers(DevelopersTest.token, 2022515211));
-            System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers(DevelopersTest.token, 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
+            System.out.println(asia.searchUserDevelopers(TestConfig.appId(WowsServer.ASIA), u1));
+            System.out.println(asia.userInfoDevelopers(TestConfig.appId(WowsServer.ASIA), 2022515210));
+            System.out.println(asia.userInfoDevelopers(TestConfig.appId(WowsServer.ASIA), 2022515211));
+            System.out.println(JsonUtils.json().toJson(asia.userInfoDevelopers(TestConfig.appId(WowsServer.ASIA), 2022515210, "e460fce93ab430baedf283e5f0a7d761c50b7a72")));
         } catch (BasicException e) {
             e.printStackTrace();
         }
@@ -41,9 +42,9 @@ public class AccountTest {
     @Test
     public void searchUserRu()  {
         HttpCodec.updateTimeout(20);
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
-        String token = "c984faa7dc529f4cb0139505d5e8043c";
+        String token = TestConfig.appId(WowsServer.RU);
         try {
             System.out.println("searchUserRu result=" + asia.searchUserDevelopers(token, "yu_yu_ko"));
             // 开发者账号详情(/mk/account/info)同样经过莱服307 
@@ -56,7 +57,7 @@ public class AccountTest {
     @Test
     public void searchUserCn() throws BasicException {
         String u1 = "西行寺雨季";
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
         List<VortexSearchUser> vortex = asia.searchUserVortex(u1);
         List<VortexSearchUser> vortex2 = asia.searchUserVortexCn("西行寺");
@@ -67,8 +68,8 @@ public class AccountTest {
 
     @Test
     public void userInfo() throws BasicException {
-        HttpClient client = HttpClient.newBuilder().build();
-        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+        HttpClient client = TestConfig.client();
+        var data2 = new WowsHttpUserTools(client, WowsServer.ASIA).userInfoDevelopers(TestConfig.appId(WowsServer.ASIA), 2022515210L);
         System.out.println(data2);
         System.out.println("===========");
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.CN);
@@ -83,11 +84,11 @@ public class AccountTest {
 
     @Test
     public void accountInfo()  {
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.ASIA);
         AccountInfo data = null;
         try {
-            data = asia.accountInfoDevelopers("907d9c6bfc0d896a2c156e57194a97cf", 2022515210L);
+            data = asia.accountInfoDevelopers(TestConfig.appId(WowsServer.ASIA), 2022515210L);
         } catch (BasicException e) {
             throw new RuntimeException(e);
         }
@@ -98,7 +99,7 @@ public class AccountTest {
 
     @Test
     public void userInfoVortex()  {
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools asia = new WowsHttpUserTools(client, WowsServer.RU);
         VortexUserInfo data = null;
         try {

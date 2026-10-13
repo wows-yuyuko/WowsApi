@@ -33,7 +33,10 @@ public record DevelopersClanInfo(int members_count,
                                  String description) {
 
     public static DevelopersClanInfo parse(long clanId, String response) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(response);
+        return parse(clanId, JsonUtils.json().parse(response));
+    }
+
+    public static DevelopersClanInfo parse(long clanId, JsonNode node) throws BasicException {
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(clanId));
         if (data == null || data.isNull()) {

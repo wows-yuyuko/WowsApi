@@ -30,6 +30,7 @@ import com.shinoaki.wows.api.vortex.resources.glossary.VortexVehicleTypeIcons;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import com.shinoaki.wows.api.vortex.ship.VortexShipMarkGrade;
 import com.shinoaki.wows.api.vortex.ship.VortexShipMarkInfo;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.Field;
@@ -59,8 +60,8 @@ import java.util.TreeSet;
 public class VortexFieldCoverageTest {
 
     private static final WowsServer SERVER = WowsServer.CN;
-    private static final long ACCOUNT_ID = 7060948811L;
-    private static final long CLAN_ID = 7000009259L;
+    private static final long ACCOUNT_ID = TestConfig.ACCOUNT_CN_DUMP;
+    private static final long CLAN_ID = TestConfig.CLAN_CN;
     private static final Path DUMP_DIR = Path.of("target/cn-dump");
 
     private static int failed = 0;
@@ -438,7 +439,7 @@ public class VortexFieldCoverageTest {
 
     private static void fetch() throws Exception {
         HttpCodec.updateTimeout(25);
-        HttpClient client = HttpCodec.client();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools user = new WowsHttpUserTools(client, SERVER);
         WowsHttpShipTools ship = new WowsHttpShipTools(client, SERVER, ACCOUNT_ID);
         WowsHttpClanTools clan = new WowsHttpClanTools(client, SERVER);

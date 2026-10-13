@@ -7,10 +7,9 @@ import com.shinoaki.wows.api.developers.DevelopersUserShipOper;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
+import com.shinoaki.wows.testkit.TestConfig;
 import org.junit.Test;
 
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
@@ -21,17 +20,14 @@ import java.util.Map;
  */
 public class DevelopersTest {
     private static final long id = 701534238;
-    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
     WowsServer server = WowsServer.EU;
-    HttpClient client = HttpClient.newBuilder()
-//            .proxy(ProxySelector.of(new InetSocketAddress("127.0.0.1", 7890)))
-            .build();
+    HttpClient client = TestConfig.client();
 
     @Test
     public void shipTest() throws BasicException {
         WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-        DevelopersUserShip developers = tools.developers(token).shipList();
-        var developersUserShipOper = tools.developers(token).shipOperList();
+        DevelopersUserShip developers = tools.developers(TestConfig.appId(server)).shipList();
+        var developersUserShipOper = tools.developers(TestConfig.appId(server)).shipOperList();
         System.out.println(developers);
 
 
@@ -60,7 +56,7 @@ public class DevelopersTest {
     public void shipTest3() {
         try {
             WowsHttpShipTools tools = new WowsHttpShipTools(client, server, id);
-            var developers = tools.developers(token).shipBadges();
+            var developers = tools.developers(TestConfig.appId(server)).shipBadges();
             System.out.println(developers);
         } catch (BasicException e) {
             e.printStackTrace();

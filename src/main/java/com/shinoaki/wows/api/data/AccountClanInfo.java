@@ -1,6 +1,7 @@
 package com.shinoaki.wows.api.data;
 
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
+import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
@@ -30,8 +31,11 @@ public record AccountClanInfo(
         long updatedAt
 ) {
 
-    public static AccountClanInfo accountClan(  long accountId, String json) throws BasicException {
-        JsonNode node =  JsonUtils.json().parse(json);
+    public static AccountClanInfo accountClan(long accountId, String json) throws BasicException {
+        return accountClan(accountId, JsonUtils.json().parse(json));
+    }
+
+    public static AccountClanInfo accountClan(long accountId, JsonNode node) throws BasicException {
         BasicException.status(node);
         JsonNode data = node.path("data").get(String.valueOf(accountId));
         if (data == null || data.isNull()) {
@@ -43,6 +47,14 @@ public record AccountClanInfo(
                 data.path("role").asString(),
                 data.path("joined_at").asLong(),
                 0, 0);
+    }
+
+    /**
+     * 由 3.0 新管线的「玩家所属军团」端点结果（{@code dev.clan.account}）构造，
+     * 字段与 {@link #accountClan(long, JsonNode)} 同一来源、同形（未补全公会详情）。
+     */
+    public static AccountClanInfo of(DevelopersSearchUserClan ref) {
+        return new AccountClanInfo(ref.clan_id(), "", "", "", 0, ref.role(), ref.joined_at(), 0, 0);
     }
 
     public static AccountClanInfo of(AccountClanInfo info, DevelopersClanInfo developersInfo) {

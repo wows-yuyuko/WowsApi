@@ -9,6 +9,7 @@ import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.DataCompressXZUtils;
 import com.shinoaki.wows.api.utils.DataCompressZSTDUtils;
+import com.shinoaki.wows.testkit.TestConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,13 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 public class ZstdDemo {
-    private static final String TOKEN = "907d9c6bfc0d896a2c156e57194a97cf";
-    private static final HttpClient client = HttpClient.newBuilder()
-            .build();
+    private static final String TOKEN = TestConfig.appId(WowsServer.ASIA);
+    private static final HttpClient client = TestConfig.client();
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         try {
-            var tools = new WowsHttpShipTools(client, WowsServer.ASIA, 2022515210L);
+            var tools = new WowsHttpShipTools(client, WowsServer.ASIA, TestConfig.ACCOUNT_ASIA);
             var shipInfoMap = tools.developers(TOKEN).shipList().toShipInfoMap();
             xz(shipInfoMap);
             System.out.println("====================================================");

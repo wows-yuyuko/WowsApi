@@ -30,6 +30,7 @@ import com.shinoaki.wows.api.monitor.SchemaRecorder;
 import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -61,8 +62,8 @@ import java.util.stream.Stream;
  * @author Xun
  */
 public class DevelopersFieldCoverageTest {
-    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
-    private static final long account_id = 2022515210;
+    private static final String token = TestConfig.appId(WowsServer.ASIA);
+    private static final long account_id = TestConfig.ACCOUNT_ASIA;
     private static final WowsServer server = WowsServer.ASIA;
 
     private static final Path RAW = Path.of(System.getProperty("raw.dir", "target/schema-raw"));
@@ -71,10 +72,13 @@ public class DevelopersFieldCoverageTest {
      */
     private static final String ACC = "api_asia_wows_account_info_account_id_id_extra_private_grouped_c_c5266c85.json";
     private static final String SHIPS = "api_asia_wows_ships_stats_account_id_id_extra_pvp_div2_pvp_div3__4c0b4c30.json";
-    private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_oper_div_oper_div__6a74bb79.json";
-    private static final long CLAN_ID = 2000016057L;
-    private static final String SEARCH_USER = "JustOn";
-    private static final String SEARCH_CLAN = "YU_RI";
+    /**
+     * 全量战绩的原始响应（2026-10 全量 extra 采集，单船 15 块）；key 哈希后缀变化时按前缀兜底。
+     */
+    private static final String OPER = "api_asia_wows_ships_stats_account_id_id_extra_clan_oper_div_oper_bae61ea0.json";
+    private static final long CLAN_ID = TestConfig.CLAN_ASIA;
+    private static final String SEARCH_USER = TestConfig.SEARCH_USER_ASIA;
+    private static final String SEARCH_CLAN = TestConfig.SEARCH_CLAN;
 
     /**
      * 本地没有采集时的现场抓取表(文件 -> 调用)。
@@ -188,21 +192,39 @@ public class DevelopersFieldCoverageTest {
         if (root == null) {
             return;
         }
-        section("/wows/ships/stats/(oper) 行动模式统计");
+        section("/wows/ships/stats/(全量) 战舰战绩");
         JsonNode items = onlyData(root);
-        Set<String> allowed = Set.of("private", "oper_div", "oper_div_hard", "oper_solo", "pvp");
+        //顶层不限定战斗类型：响应里出现的对象块全部放行，块内字段逐个核对
+        Set<String> allowed = new LinkedHashSet<>(Set.of("private"));
         for (JsonNode item : items) {
-            unknown(item, DevelopersShipOperBattleInfo.class, "data.<accountId>[" + item.path("ship_id").asLong() + "]", allowed);
-            unknown(item.path("oper_solo"), DevelopersOperBattleType.class, "oper_solo");
-            JsonNode pvp = item.path("pvp");
-            if (pvp.isObject() && !pvp.isEmpty()) {
-                unknown(pvp, DevelopersShipBattleType.class, "pvp");
+            for (Map.Entry<String, JsonNode> entry : item.properties()) {
+                if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                    allowed.add(entry.getKey());
+                }
             }
         }
+        int blocks = 0;
+        for (JsonNode item : items) {
+            unknown(item, DevelopersShipOperBattleInfo.class, "data.<accountId>[" + item.path("ship_id").asLong() + "]", allowed);
+            for (Map.Entry<String, JsonNode> entry : item.properties()) {
+                if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                    battleBlock(entry.getValue(), "ship." + item.path("ship_id").asLong() + "." + entry.getKey());
+                    blocks++;
+                }
+            }
+        }
+        System.out.println("   战舰 " + items.size() + " 条, 战斗数据块 " + blocks + " 个");
         List<DevelopersShipOperBattleInfo> parsed = DevelopersShipOperBattleInfo.parse(items);
         expect("解析条数", items.size(), parsed.size());
         JsonNode first = items.path(0);
-        expect("oper_solo.xp", first.path("oper_solo").path("xp").asLong(0), parsed.get(0).shipBattleTypeMap().get("oper_solo").xp());
+        int firstBlocks = 0;
+        for (Map.Entry<String, JsonNode> entry : first.properties()) {
+            if (entry.getValue().isObject() && !"private".equals(entry.getKey())) {
+                firstBlocks++;
+            }
+        }
+        expect("首船解析块数", firstBlocks, parsed.get(0).battleTypeMap().size() + parsed.get(0).operBattleTypeMap().size());
+        expect("oper_solo.xp", first.path("oper_solo").path("xp").asLong(0), parsed.get(0).operBattleTypeMap().get("oper_solo").xp());
         expect("pvp.xp", first.path("pvp").path("xp").asLong(0), parsed.get(0).pvp().xp());
     }
 
@@ -487,7 +509,7 @@ public class DevelopersFieldCoverageTest {
      */
     private static void registry() {
         HttpCodec.updateTimeout(25);
-        HttpClient client = HttpCodec.client();
+        HttpClient client = TestConfig.client();
         WowsHttpUserTools user = new WowsHttpUserTools(client, server);
         WowsHttpShipTools ship = new WowsHttpShipTools(client, server, account_id);
         WowsHttpClanTools clan = new WowsHttpClanTools(client, server);
@@ -497,7 +519,7 @@ public class DevelopersFieldCoverageTest {
                 () -> user.searchUserDevelopers(token, SEARCH_USER));
         register(ACC, "api_asia_wows_account_info", "/wows/account/info/", () -> user.accountInfoDevelopers(token, account_id));
         register(SHIPS, "api_asia_wows_ships_stats_account_id_id_extra_pvp", "/wows/ships/stats/", () -> ship.developers(token).shipList());
-        register(OPER, "api_asia_wows_ships_stats_account_id_id_extra_oper", "/wows/ships/stats/", () -> ship.developers(token).shipOperList());
+        register(OPER, "api_asia_wows_ships_stats_account_id_id_extra_clan_oper", "/wows/ships/stats/", () -> ship.developers(token).shipOperList());
         register("api_asia_wows_ships_badges_account_id_id_.json", "api_asia_wows_ships_badges", "/wows/ships/badges/", () -> ship.developers(token).shipBadges());
         register("api_asia_wows_clans_info_clan_id_id_extra_members.json", "api_asia_wows_clans_info", "/wows/clans/info/", () -> clan.developers(token).clanInfoDevelopers(CLAN_ID));
         register("api_asia_wows_clans_list_search_text_.json", "api_asia_wows_clans_list", "/wows/clans/list/", () -> clan.developers(token).searchClanDevelopers(SEARCH_CLAN));

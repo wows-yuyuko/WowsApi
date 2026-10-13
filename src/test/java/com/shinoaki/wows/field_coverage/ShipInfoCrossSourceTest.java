@@ -1,6 +1,5 @@
 package com.shinoaki.wows.field_coverage;
 
-import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
 import com.shinoaki.wows.api.data.ShipInfo;
@@ -15,6 +14,7 @@ import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import com.shinoaki.wows.api.vortex.ship.VortexShipStatistics;
+import com.shinoaki.wows.testkit.TestConfig;
 import tools.jackson.databind.JsonNode;
 
 import java.net.http.HttpClient;
@@ -42,8 +42,8 @@ import java.util.stream.Stream;
  * @author Xun
  */
 public class ShipInfoCrossSourceTest {
-    public static String token = "907d9c6bfc0d896a2c156e57194a97cf";
-    private static final long ACCOUNT_ID = 2022515210L;
+    private static final String token = TestConfig.appId(WowsServer.ASIA);
+    private static final long ACCOUNT_ID = TestConfig.ACCOUNT_ASIA;
     private static final WowsServer SERVER = WowsServer.ASIA;
     private static final Path RAW = Path.of(System.getProperty("raw.dir", "target/schema-raw"));
     private static final String VORTEX_FILE = "vortex_asia_api_accounts_id_ships_pvp_.json";
@@ -223,7 +223,7 @@ public class ShipInfoCrossSourceTest {
     private static void checkTorpedoRatioRegression() throws Exception {
         section("回归：vortex 鱼雷命中率");
         JsonNode root = load(VORTEX_FILE, "vortex_asia_api_accounts_id_ships_pvp", () -> {
-            HttpClient client = HttpCodec.client();
+            HttpClient client = TestConfig.client();
             new WowsHttpShipTools(client, SERVER, ACCOUNT_ID).vortex().shipList(WowsBattlesType.PVP);
         });
         VortexUserShip ships = VortexUserShip.parse(WowsBattlesType.PVP, root);
@@ -251,7 +251,7 @@ public class ShipInfoCrossSourceTest {
     private static void checkRecordHolder(Map<Long, ShipInfo> dev) throws Exception {
         section("纪录保持战舰（接入 MaxShipInfo.shipId）");
         JsonNode root = load("vortex_asia_api_accounts_id_.json", "vortex_asia_api_accounts_id_.json", () -> {
-            HttpClient client = HttpCodec.client();
+            HttpClient client = TestConfig.client();
             new WowsHttpUserTools(client, SERVER).userVortex(ACCOUNT_ID);
         });
         JsonNode pvp = root.path("data").get(String.valueOf(ACCOUNT_ID)).path("statistics").path("pvp");
@@ -284,7 +284,7 @@ public class ShipInfoCrossSourceTest {
 
     private static Map<Long, ShipInfo> vortexShips() throws Exception {
         JsonNode root = load(VORTEX_FILE, "vortex_asia_api_accounts_id_ships_pvp", () -> {
-            HttpClient client = HttpCodec.client();
+            HttpClient client = TestConfig.client();
             new WowsHttpShipTools(client, SERVER, ACCOUNT_ID).vortex().shipList(WowsBattlesType.PVP);
         });
         Map<Long, ShipInfo> map = new LinkedHashMap<>();
@@ -296,7 +296,7 @@ public class ShipInfoCrossSourceTest {
 
     private static Map<Long, ShipInfo> devShips() throws Exception {
         JsonNode root = load(DEV_FILE, "api_asia_wows_ships_stats_account_id_id_extra_pvp", () -> {
-            HttpClient client = HttpCodec.client();
+            HttpClient client = TestConfig.client();
             new WowsHttpShipTools(client, SERVER, ACCOUNT_ID).developers(token).shipList();
         });
         JsonNode items = root.path("data").get(String.valueOf(ACCOUNT_ID));

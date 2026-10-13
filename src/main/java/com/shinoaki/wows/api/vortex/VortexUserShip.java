@@ -4,7 +4,6 @@ import com.shinoaki.wows.api.data.ShipInfo;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.error.HiddenProfileException;
 import com.shinoaki.wows.api.type.WowsBattlesType;
-import com.shinoaki.wows.api.type.WowsBattlesTypeRu;
 import com.shinoaki.wows.api.utils.DateUtils;
 import com.shinoaki.wows.api.vortex.ship.VortexShipInfo;
 import com.shinoaki.wows.api.vortex.ship.VortexShipMarkOfExcellence;
@@ -24,8 +23,7 @@ import java.util.Map;
  * 莱服(korabli.su)有两点不同：{@code data.<accountId>} 里没有 {@code visibility_settings}（按 false 处理）、
  * 单船条目里没有 {@code mastery_sign}/{@code mark_of_excellence}（按 ""/空处理）。
  *
- * @param type          战斗类型(通用)；莱服独有类型这里为 {@code null}，请看 {@link #typeRu()}
- * @param typeRu        战斗类型(莱服专属，含通用类型；恒不为 null)
+ * @param type          战斗类型（含莱服专属类型，见 {@link WowsBattlesType#servers()}）
  * @param accountId     账号ID
  * @param hiddenProfile 是否隐藏了战绩
  * @param name          用户名
@@ -37,7 +35,7 @@ import java.util.Map;
  * @author Xun
  * @date 2023/4/9 18:43 星期日
  */
-public record VortexUserShip(WowsBattlesType type, WowsBattlesTypeRu typeRu, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipStatistics> shipMap,
+public record VortexUserShip(WowsBattlesType type, long accountId, boolean hiddenProfile, String name, Map<Long, VortexShipStatistics> shipMap,
                              double created_at, double activated_at, long recordTime, boolean visibility_settings) {
 
     public List<ShipInfo> toShipInfoList() {
@@ -46,17 +44,9 @@ public record VortexUserShip(WowsBattlesType type, WowsBattlesTypeRu typeRu, lon
     }
 
     /**
-     * 通用战斗类型入口（其它服/莱服通用类型用它）。
+     * 战斗类型的战舰列表入口（莱服专属类型直接传 {@link WowsBattlesType} 里的对应值，如 {@code RATING_SOLO}）。
      */
     public static VortexUserShip parse(WowsBattlesType type, JsonNode node) throws BasicException {
-        return parse(WowsBattlesTypeRu.of(type), node);
-    }
-
-    /**
-     * 莱服战斗类型入口：{@code brawl}/{@code clan}/{@code rating*} 等莱服独有类型走这里，
-     * 这时 {@link #type()} 为 {@code null}、{@link #typeRu()} 有值。
-     */
-    public static VortexUserShip parse(WowsBattlesTypeRu type, JsonNode node) throws BasicException {
         //判断status
         BasicException.status(node);
         for (var map : node.path("data").properties()) {
@@ -65,7 +55,7 @@ public record VortexUserShip(WowsBattlesType type, WowsBattlesTypeRu typeRu, lon
         return null;
     }
 
-    private static VortexUserShip parse(WowsBattlesTypeRu type, long accountId, JsonNode node) throws BasicException {
+    private static VortexUserShip parse(WowsBattlesType type, long accountId, JsonNode node) throws BasicException {
         String name = node.path("name").asString();
         var hidden = node.path("hidden_profile");
         if (!hidden.isMissingNode() && hidden.asBoolean()) {
@@ -78,7 +68,7 @@ public record VortexUserShip(WowsBattlesType type, WowsBattlesTypeRu typeRu, lon
             var markOfExcellence = VortexShipMarkOfExcellence.parse(map.getValue().path("mark_of_excellence"));
             shipMap.put(Long.parseLong(map.getKey()), new VortexShipStatistics(info, masterySign, markOfExcellence));
         }
-        return new VortexUserShip(type.toWowsBattlesType(), type, accountId, false, name, shipMap, node.path("created_at").asDouble(0),
+        return new VortexUserShip(type, accountId, false, name, shipMap, node.path("created_at").asDouble(0),
                 node.path("activated_at").asDouble(),
                 DateUtils.toEpochMilli(),
                 node.path("visibility_settings").asBoolean(false));

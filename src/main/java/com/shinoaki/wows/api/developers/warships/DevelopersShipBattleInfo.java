@@ -19,8 +19,8 @@ public record DevelopersShipBattleInfo(Map<WowsBattlesType, DevelopersShipBattle
         List<DevelopersShipBattleInfo> list = new ArrayList<>();
         for (var data : node) {
             Map<WowsBattlesType, DevelopersShipBattleType> shipBattleTypeMap = new EnumMap<>(WowsBattlesType.class);
-            for (var type : WowsBattlesType.values()) {
-                JsonNode jsonNode = data.get(type.name().toLowerCase(Locale.ROOT));
+            for (var type : WowsBattlesType.DEVELOPERS_STATS_TYPES) {
+                JsonNode jsonNode = data.get(type.code());
                 shipBattleTypeMap.put(type, DevelopersShipBattleType.parse(jsonNode));
             }
             list.add(new DevelopersShipBattleInfo(shipBattleTypeMap, data.path("last_battle_time").asLong(), data.path("account_id").asLong(), data.get(

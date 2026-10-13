@@ -2,10 +2,12 @@ package com.shinoaki.wows.api.vortex.resources;
 
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.ResponseParseException;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import lombok.Data;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -57,7 +59,11 @@ public class WowsResources {
                 .POST(HttpRequest.BodyPublishers.ofString(json)).build();
         var resp = HttpCodec.client().send(req, HttpResponse.BodyHandlers.ofByteArray());
         var data = HttpCodec.response(resp);
-        return WowsResources.parse(JsonUtils.json().parse(data));
+        try {
+            return WowsResources.parse(JsonUtils.json().parseResponse(data));
+        } catch (JacksonException e) {
+            throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
+        }
     }
 
     private static List<WowsResources> parse(JsonNode jsonNode) {
