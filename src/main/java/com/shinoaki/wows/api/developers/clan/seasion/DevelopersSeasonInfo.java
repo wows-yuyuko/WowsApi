@@ -6,7 +6,6 @@ import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,16 +22,15 @@ public record DevelopersSeasonInfo(
         int division_points,
         int season_id
 ) {
-    public static List<DevelopersSeasonInfo> parse(  String jsonData) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(jsonData);
+    public static List<DevelopersSeasonInfo> parse(String jsonData) throws BasicException {
+        return parse(JsonUtils.json().parse(jsonData));
+    }
+
+    public static List<DevelopersSeasonInfo> parse(JsonNode node) throws BasicException {
         BasicException.status(node);
         List<DevelopersSeasonInfo> infos = new ArrayList<>();
         for (var data : node.path("data")) {
-            infos.add(JsonUtils.json().parse(data.toString(), new TypeReference<DevelopersSeasonInfo>() {
-                @Override
-                public Type getType() {
-                    return super.getType();
-                }
+            infos.add(JsonUtils.json().parse(data, new TypeReference<DevelopersSeasonInfo>() {
             }));
         }
         return infos;

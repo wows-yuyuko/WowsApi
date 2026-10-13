@@ -4,8 +4,8 @@ package com.shinoaki.wows.api.vortex.clan;
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -14,12 +14,12 @@ import java.util.List;
  */
 public record VortexSearchClan(long id, String tag, String hex_color, String name) {
 
-    public static List<VortexSearchClan> parse(  String response) throws BasicException {
-        return  JsonUtils.json().parse( JsonUtils.json().parse(response).path("search_autocomplete_result").toString(), new TypeReference<List<VortexSearchClan>>() {
-            @Override
-            public Type getType() {
-                return super.getType();
-            }
+    public static List<VortexSearchClan> parse(String response) throws BasicException {
+        return parse(JsonUtils.json().parse(response));
+    }
+
+    public static List<VortexSearchClan> parse(JsonNode node) throws BasicException {
+        return JsonUtils.json().parse(node.path("search_autocomplete_result"), new TypeReference<List<VortexSearchClan>>() {
         });
     }
 }

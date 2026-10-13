@@ -14,9 +14,12 @@ import java.util.List;
  */
 public record DevelopersSearchClan(int members_count, long created_at, long clan_id, String tag, String name) {
     public static List<DevelopersSearchClan> parse(String response) throws BasicException {
-        JsonNode node = JsonUtils.json().parse(response);
+        return parse(JsonUtils.json().parse(response));
+    }
+
+    public static List<DevelopersSearchClan> parse(JsonNode node) throws BasicException {
         BasicException.status(node);
-        return JsonUtils.json().parse(node.path("data").toString(), new TypeReference<List<DevelopersSearchClan>>() {
+        return JsonUtils.json().parse(node.path("data"), new TypeReference<List<DevelopersSearchClan>>() {
         });
     }
 }

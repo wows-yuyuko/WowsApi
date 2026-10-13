@@ -42,16 +42,7 @@ public class WowsResources {
     }
 
     public static List<WowsResources> request(boolean isPtServer, WowsServer server, VortexResourcesLanguage language) throws IOException, InterruptedException, BasicException {
-        final String json = """
-                [
-                    {
-                        "query": "query Items($languageCode: String, $id: String) {\\n  items(lang: $languageCode, itemId: $id) {\\n    title\\n    description\\n    id\\n    titleShort\\n    tags\\n    typeName\\n    slot\\n    prices {\\n      credit\\n      gold\\n      xp\\n    }\\n    icons {\\n      default\\n    }\\n    type {\\n      name\\n      title\\n    }\\n    ttc {\\n      name\\n      value\\n      title\\n    }\\n    restrictions {\\n      levels\\n    }\\n  }\\n}",
-                        "variables": {
-                            "languageCode": "${language}"
-                        }
-                    }
-                ]
-                """.replace("${language}", language.getLanguage());
+        final String json = requestBody(language.getLanguage());
         var url = isPtServer ? server.ptVortexServer() : server.vortex();
         var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                 .header("Content-Type", "application/json")
@@ -66,7 +57,25 @@ public class WowsResources {
         }
     }
 
-    private static List<WowsResources> parse(JsonNode jsonNode) {
+    /**
+     * graphql（Items schema）请求体（3.0 管线复用）。
+     *
+     * @param language 内容语言代码，如 {@code zh-sg}
+     */
+    public static String requestBody(String language) {
+        return """
+                [
+                    {
+                        "query": "query Items($languageCode: String, $id: String) {\\n  items(lang: $languageCode, itemId: $id) {\\n    title\\n    description\\n    id\\n    titleShort\\n    tags\\n    typeName\\n    slot\\n    prices {\\n      credit\\n      gold\\n      xp\\n    }\\n    icons {\\n      default\\n    }\\n    type {\\n      name\\n      title\\n    }\\n    ttc {\\n      name\\n      value\\n      title\\n    }\\n    restrictions {\\n      levels\\n    }\\n  }\\n}",
+                        "variables": {
+                            "languageCode": "${language}"
+                        }
+                    }
+                ]
+                """.replace("${language}", language);
+    }
+
+    public static List<WowsResources> parse(JsonNode jsonNode) {
         List<WowsResources> list = new ArrayList<>();
         for (var nodeList : jsonNode) {
             var data = nodeList.path("data");

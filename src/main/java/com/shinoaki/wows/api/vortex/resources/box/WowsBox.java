@@ -37,16 +37,7 @@ public class WowsBox {
     }
 
     public static List<WowsBox> request(boolean isPtServer, WowsServer server, VortexResourcesLanguage languageCode) throws IOException, InterruptedException, BasicException {
-        final String json = """
-                [
-                	{
-                		"query": "query Lootbox($id: String, $languageCode: String) {\\n  lootbox(lootboxId: $id, lang: $languageCode) {\\n    id\\n    title\\n    shortTitle\\n    isPremium\\n    icons {\\n      default\\n    }\\n  }\\n}",
-                		"variables": {
-                			"languageCode": "{languageCode}"
-                		}
-                	}
-                ]
-                """.replace("{languageCode}", languageCode.getLanguage());
+        final String json = requestBody(languageCode.getLanguage());
         var url = isPtServer ? server.ptVortexServer() : server.vortex();
         var req = HttpRequest.newBuilder(URI.create(url + "/api/graphql/glossary/"))
                 .header("Content-Type", "application/json")
@@ -61,7 +52,25 @@ public class WowsBox {
         }
     }
 
-    private static List<WowsBox> parse(JsonNode jsonNode) {
+    /**
+     * graphql（Lootbox schema）请求体（3.0 管线复用）。
+     *
+     * @param languageCode 内容语言代码，如 {@code zh-sg}
+     */
+    public static String requestBody(String languageCode) {
+        return """
+                [
+                	{
+                		"query": "query Lootbox($id: String, $languageCode: String) {\\n  lootbox(lootboxId: $id, lang: $languageCode) {\\n    id\\n    title\\n    shortTitle\\n    isPremium\\n    icons {\\n      default\\n    }\\n  }\\n}",
+                		"variables": {
+                			"languageCode": "{languageCode}"
+                		}
+                	}
+                ]
+                """.replace("{languageCode}", languageCode);
+    }
+
+    public static List<WowsBox> parse(JsonNode jsonNode) {
         List<WowsBox> list = new ArrayList<>();
         for (var nodeList : jsonNode) {
             var data = nodeList.path("data");
