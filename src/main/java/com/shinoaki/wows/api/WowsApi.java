@@ -2,7 +2,9 @@ package com.shinoaki.wows.api;
 
 import com.shinoaki.wows.api.auth.CredentialStore;
 import com.shinoaki.wows.api.auth.CredentialsBuilder;
+import com.shinoaki.wows.api.client.ClansClient;
 import com.shinoaki.wows.api.client.DevelopersClient;
+import com.shinoaki.wows.api.client.ResourcesClient;
 import com.shinoaki.wows.api.client.VortexClient;
 import com.shinoaki.wows.api.server.ServerProfile;
 import com.shinoaki.wows.api.transport.HttpClientProvider;
@@ -42,6 +44,8 @@ public final class WowsApi {
     private final CredentialStore credentials;
     private final VortexClient vortex;
     private final DevelopersClient developers;
+    private final ClansClient clans;
+    private final ResourcesClient resources;
 
     private WowsApi(ServerProfile profile, CredentialStore credentials) {
         this.profile = profile;
@@ -49,6 +53,8 @@ public final class WowsApi {
         HttpPipeline pipeline = new HttpPipeline(profile, credentials);
         this.vortex = new VortexClient(pipeline);
         this.developers = new DevelopersClient(pipeline);
+        this.clans = new ClansClient(pipeline);
+        this.resources = new ResourcesClient(pipeline);
     }
 
     /**
@@ -92,6 +98,15 @@ public final class WowsApi {
         return this;
     }
 
+    /**
+     * 测试服（PT）变体：vortex 主机替换为 PT 主机（其余服务器事实不变），返回新实例。
+     * <p>
+     * 与旧 {@code isPtServer} 参数语义一致——仅影响走 vortex 主机的端点（箱子/资源类）；clans / dev 不变。
+     */
+    public WowsApi pt() {
+        return new WowsApi(profile.withPtServer(), credentials);
+    }
+
     public WowsServer server() {
         return profile.server();
     }
@@ -112,5 +127,19 @@ public final class WowsApi {
      */
     public DevelopersClient developers() {
         return developers;
+    }
+
+    /**
+     * clans 军团视图（详情、成员、搜索、排行；1 调用 = 1 请求）。
+     */
+    public ClansClient clans() {
+        return clans;
+    }
+
+    /**
+     * 资源/箱子视图（箱子详情/列表、资源列表、资源索引；1 调用 = 1 请求）。
+     */
+    public ResourcesClient resources() {
+        return resources;
     }
 }

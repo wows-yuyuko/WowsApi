@@ -77,17 +77,21 @@ public final class HttpPipeline {
         checkServer(endpoint);
         List<Credential> resolved = CredentialResolver.resolve(credentials, endpoint.id(), endpoint.auth(),
                 request.accountId(), request.overrides());
-        HttpRequest httpRequest = buildRequest(buildUri(endpoint, request, resolved), resolved);
+        HttpRequest httpRequest = buildRequest(endpoint, buildUri(endpoint, request, resolved), request, resolved);
         String json;
         try {
             HttpResponse<byte[]> response = HostPolicy.send(HttpClientProvider.client(), httpRequest);
             json = ResponseCodec.decode(response);
         } catch (HttpStatusException e) {
+            //CN 等非 API 服务器：查无数据返回 404，按端点声明返回空值（旧语义保留，见对照表 §4）
+            if (e.getStatusCode() == 404 && endpoint.notFoundEmpty() != null && !profile.devApiSupported()) {
+                return endpoint.notFoundEmpty().get();
+            }
             if (request.policy() == RateLimitPolicy.TOLERANT
                     && THROTTLE_STATUS.contains(e.getStatusCode())
-                    && endpoint.emptyValue() != null) {
+                    && endpoint.throttleEmpty() != null) {
                 log.warn("端点 {} 命中限流（HTTP {}），按 TOLERANT 策略返回空值", endpoint.id(), e.getStatusCode());
-                return endpoint.emptyValue().get();
+                return endpoint.throttleEmpty().get();
             }
             throw e;
         }
@@ -99,11 +103,15 @@ public final class HttpPipeline {
     }
 
     /**
-     * 服务器兼容性检查：CN 不提供官方开发者API（发送前 fast-fail，不查凭证、不发请求）。
+     * 服务器兼容性检查（发送前 fast-fail，不查凭证、不发请求）：
+     * CN 不提供官方开发者API；端点可额外声明支持的服务器集合（如 RU 无战舰徽章）。
      */
     private void checkServer(Endpoint<?> endpoint) throws UnsupportedOnServerException {
         if (endpoint.channel() == Channel.DEV && !profile.devApiSupported()) {
             throw new UnsupportedOnServerException("端点 " + endpoint.id(), profile.server(), "该服务器没有官方开发者API");
+        }
+        if (!endpoint.servers().isEmpty() && !endpoint.servers().contains(profile.server())) {
+            throw new UnsupportedOnServerException("端点 " + endpoint.id(), profile.server(), "该端点仅支持: " + endpoint.servers());
         }
     }
 
@@ -122,11 +130,12 @@ public final class HttpPipeline {
             credential.queryParams().forEach((key, value) -> query.add(key + "=" + value));
         }
         for (QueryParam param : endpoint.query()) {
-            String value = param.render(request.params());
+            String value = param.render(request.params(), credentials);
             if (value == null) {
                 continue;
             }
-            query.add(value.isEmpty() ? param.key() : param.key() + "=" + value);
+            //统一 key=value（空值也带 =，如军团排行的 season= ——与旧实现一致）
+            query.add(param.key() + "=" + value);
         }
         if (!query.isEmpty()) {
             url.append('?').append(String.join("&", query));
@@ -163,9 +172,9 @@ public final class HttpPipeline {
     }
 
     /**
-     * 构造 HTTP 请求：通道头（三个通道目前一致）+ 凭证头 + 请求级超时。
+     * 构造 HTTP 请求：通道头（三个通道目前一致）+ 凭证头 + 请求级超时；端点声明了请求体即 POST。
      */
-    private static HttpRequest buildRequest(URI uri, List<Credential> credentials) {
+    private static HttpRequest buildRequest(Endpoint<?> endpoint, URI uri, EndpointRequest request, List<Credential> credentials) {
         //只声明 gzip/deflate，不声明 br（brotli）——本库未实现 br 解压，声明后服务端可能返回 br 导致解析失败
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri)
                 .setHeader("Accept-Encoding", "gzip, deflate")
@@ -179,6 +188,10 @@ public final class HttpPipeline {
                 .setHeader("Sec-Fetch-Site", "none")
                 .timeout(Duration.ofSeconds(HttpClientProvider.requestTimeout()))
                 .GET();
+        if (endpoint.body() != null) {
+            builder.header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(endpoint.body().apply(request.params())));
+        }
         for (Credential credential : credentials) {
             credential.headers().forEach(builder::setHeader);
         }
@@ -188,10 +201,10 @@ public final class HttpPipeline {
     /**
      * 响应解析：字符串 → JsonNode（失败带响应摘要）→ 端点解析器；解析器内 Jackson 异常统一包装。
      */
-    private static <T> T parse(Endpoint<T> endpoint, EndpointRequest request, String json) throws BasicException {
+    private <T> T parse(Endpoint<T> endpoint, EndpointRequest request, String json) throws BasicException {
         JsonNode node = JsonUtils.json().parseResponse(json);
         try {
-            return endpoint.parser().parse(node, request);
+            return endpoint.parser().parse(node, request, profile);
         } catch (JacksonException e) {
             throw new ResponseParseException("响应解析失败: " + e.getMessage(), e);
         }

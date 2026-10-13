@@ -1,5 +1,8 @@
 package com.shinoaki.wows.api.endpoint;
 
+import com.shinoaki.wows.api.auth.Credential;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -18,7 +21,7 @@ public record LiteralParam(String key, String value) implements QueryParam {
     }
 
     @Override
-    public String render(Map<String, String> params) {
+    public String render(Map<String, String> params, List<Credential> credentials) {
         return value;
     }
 }

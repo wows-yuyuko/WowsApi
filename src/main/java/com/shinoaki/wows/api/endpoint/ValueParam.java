@@ -1,7 +1,9 @@
 package com.shinoaki.wows.api.endpoint;
 
+import com.shinoaki.wows.api.auth.Credential;
 import com.shinoaki.wows.api.util.UrlCodec;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -22,7 +24,7 @@ public record ValueParam(String key, String param, boolean encoded) implements Q
     }
 
     @Override
-    public String render(Map<String, String> params) {
+    public String render(Map<String, String> params, List<Credential> credentials) {
         String value = params.get(param);
         if (value == null) {
             return null;

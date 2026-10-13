@@ -30,6 +30,7 @@ import java.util.Objects;
  * @param devApiSupported 是否提供官方开发者API（CN=false）
  * @param devPrefixes     dev 路径前缀（按域）
  * @param accountInfoExtra account/info 端点的 extra 串（按服不同）
+ * @param ladderRealm     军团排行（clans /api/ladder/）的 realm 参数（CN/RU=global、ASIA=sg、EU=eu、NA=us）
  * @author Xun
  */
 public record ServerProfile(
@@ -40,7 +41,8 @@ public record ServerProfile(
         String apiHost,
         boolean devApiSupported,
         Map<DevNamespace, String> devPrefixes,
-        String accountInfoExtra
+        String accountInfoExtra,
+        String ladderRealm
 ) {
 
     /**
@@ -81,7 +83,15 @@ public record ServerProfile(
      * @param apiHost    官方开发者API 主机
      */
     public ServerProfile withHosts(String vortexHost, String clansHost, String apiHost) {
-        return new ServerProfile(server, vortexHost, vortexPtHost, clansHost, apiHost, devApiSupported, devPrefixes, accountInfoExtra);
+        return new ServerProfile(server, vortexHost, vortexPtHost, clansHost, apiHost, devApiSupported, devPrefixes, accountInfoExtra, ladderRealm);
+    }
+
+    /**
+     * 测试服（PT）变体：vortex 主机替换为 PT 主机（其余服务器事实不变）——
+     * 与旧 {@code isPtServer} 参数的语义一致（仅影响走 vortex 主机的端点；clans / dev 不变）。
+     */
+    public ServerProfile withPtServer() {
+        return new ServerProfile(server, vortexPtHost, vortexPtHost, clansHost, apiHost, devApiSupported, devPrefixes, accountInfoExtra, ladderRealm);
     }
 
     /**
@@ -128,6 +138,18 @@ public record ServerProfile(
             extra = ACCOUNT_INFO_EXTRA_RU;
         }
         return new ServerProfile(server, server.vortex(), server.ptVortexServer(), server.clans(), server.api(),
-                server.isApi(), prefixes, extra);
+                server.isApi(), prefixes, extra, ladderRealm(server));
+    }
+
+    /**
+     * 军团排行 realm（旧 ClanRankUtils.baseUrl 的事实来源）：CN/RU=global、ASIA=sg、EU=eu、NA=us。
+     */
+    private static String ladderRealm(WowsServer server) {
+        return switch (server) {
+            case CN, RU -> "global";
+            case ASIA -> "sg";
+            case EU -> "eu";
+            case NA -> "us";
+        };
     }
 }

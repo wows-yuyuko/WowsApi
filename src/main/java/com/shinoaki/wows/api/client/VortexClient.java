@@ -5,7 +5,10 @@ import com.shinoaki.wows.api.endpoint.EndpointRequest;
 import com.shinoaki.wows.api.endpoint.RateLimitPolicy;
 import com.shinoaki.wows.api.endpoint.VortexEndpoints;
 import com.shinoaki.wows.api.error.BasicException;
+import com.shinoaki.wows.api.error.UnsupportedOnServerException;
 import com.shinoaki.wows.api.transport.HttpPipeline;
+import com.shinoaki.wows.api.type.WowsBattlesType;
+import com.shinoaki.wows.api.vortex.VortexUserShip;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
 
@@ -56,5 +59,30 @@ public final class VortexClient {
     public VortexUserInfo user(long accountId, ShareToken shareToken) throws BasicException {
         return pipeline.execute(VortexEndpoints.ACCOUNT_INFO,
                 EndpointRequest.account(accountId).credentials(shareToken));
+    }
+
+    /**
+     * 玩家战舰战绩列表（1 请求）。
+     * <p>
+     * 战斗类型受服务器限制：莱服专属类型（brawl / clan / rating* 等）仅 RU 可用，
+     * 其余服务器调用抛 {@link UnsupportedOnServerException}（发送前，零网络请求）。
+     */
+    public VortexUserShip ships(long accountId, WowsBattlesType type) throws BasicException {
+        return ships(accountId, type, null);
+    }
+
+    /**
+     * 玩家战舰战绩列表，调用级覆盖 share token（null = 用实例配置）。
+     */
+    public VortexUserShip ships(long accountId, WowsBattlesType type, ShareToken shareToken) throws BasicException {
+        if (!type.supportedOn(pipeline.profile().server())) {
+            throw new UnsupportedOnServerException("战斗类型 " + type, pipeline.profile().server(),
+                    "该类型仅支持: " + type.servers());
+        }
+        EndpointRequest request = EndpointRequest.account(accountId, Map.of("battleType", type.code()));
+        if (shareToken != null) {
+            request = request.credentials(shareToken);
+        }
+        return pipeline.execute(VortexEndpoints.SHIP_LIST, request);
     }
 }
