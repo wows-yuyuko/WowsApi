@@ -71,16 +71,25 @@
 
 ## 6. 验收执行记录（Phase 1 + Phase 2）
 
+> 测试按业务域拆分为 4 个独立测试类（不集中）：**账号信息 / 账号战舰 / 公会相关 / 资源类查询**，
+> 每个类默认跑「离线段」（假上游，不联网），加 `--online` 追加「在线段」（真实服务新旧对比，建议带 `-Dwows.proxy=127.0.0.1:7890`）；
+> 公会类另有 `--full`（整季排行全量对比）。
+
 | 项 | 工具 | 结果 |
 |---|---|---|
-| 离线等价 · account 域（假上游 + raw 回放，不打真实服务） | `RewriteAccountEquivalenceTest` | **49/49 通过**：URL/参数/编码/认证注入/聚合新旧等价/失败分支/限流容错/gzip/监控键 |
-| 离线等价 · 战舰/军团/资源/排行 | `RewriteDomainEquivalenceTest` | **66/66 通过**：三主机假上游（打错主机=404 即暴露）/ graphql POST 体逐字节 / 分页游标与空页终止 / CN 404→空 / RU 徽章拒绝 / in_garage 跟随凭证 / 监控键 |
-| 在线新旧对比 · account 域 | `RewriteAccountSmokeTest` | **16/16 通过**：ASIA/RU/CN 逐端点序列化一致（含 RU 3.4MB 账号详情、CN 私有凭证、3 请求聚合） |
-| 在线新旧对比 · 域端点 | `RewriteDomainSmokeTest` | **ASIA 17 / RU 18（含 `--full` 整季排行全量对比 360 条）/ CN 5，全绿**（规范化对比：对象键序无关 + 数组多重集语义） |
+| 离线等价 · 账号信息 | `RewriteAccountInfoTest` | **43/43**：URL/编码/凭证注入/聚合新旧等价/失败分支/限流容错/gzip/监控键 |
+| 离线等价 · 账号战舰 | `RewriteAccountShipTest` | **20/20**：战斗类型支持面 / extra 与 in_garage / 徽章拒绝 / 监控键 |
+| 离线等价 · 公会相关 | `RewriteClanTest` | **36/36**：三主机路由（打错主机=404）/ 404→空 / mk_ladder / 分页游标与空页终止 / 监控键 |
+| 离线等价 · 资源类查询 | `RewriteResourceTest` | **16/16**：graphql POST 体逐字节 / 莱服语言固定 ru / PT 切换 / 监控键 |
+| 在线新旧对比 · 账号信息 | `RewriteAccountInfoTest --online` | **12/12**（ASIA/RU/CN：玩家详情/搜索、dev 详情/搜索、聚合、CN 拒绝） |
+| 在线新旧对比 · 账号战舰 | `RewriteAccountShipTest --online` | **9/9**（含 RU rating_solo、CN 带凭证、徽章） |
+| 在线新旧对比 · 公会相关 | `RewriteClanTest --online [--full]` | **25/25**（含三服排行单页/游标页；`--full` 整季 360 条全量一致） |
+| 在线新旧对比 · 资源类查询 | `RewriteResourceTest --online` | **8/8**（箱子详情/列表、资源列表、资源索引 ×2 服） |
 | 既有离线自检回归 | ExceptionHierarchy / ShipInfoSerializationCompat / 三个 field_coverage / SchemaMonitor --selftest | 全绿（exit=0） |
 
 > 在线对比的两条口径说明（均经实测确认）：
 > 1. **代理**：本机直连 WG 主机不稳定（vortex 单次直连实测 13s+，逼近超时）；走本地代理 `127.0.0.1:7890` 后稳定 &lt;2s。
 >    在线测试建议 `-Dwows.proxy=127.0.0.1:7890`（TestConfig 支持按服覆盖）。
 > 2. **服务端非确定性**：同一资源两次响应可能键序互换（`stats`）或数组重排（getGlossData 的 `achievements`），
->    对比采用规范化口径（`testkit.CanonicalJson`）；逐字节保序对比由离线固定字节回放承担。
+>    对比采用规范化口径（`testkit.CanonicalJson`，对象键序无关 + 数组多重集；失败自动重试一次）；
+>    逐字节保序对比由离线固定字节回放承担。旧排行实现「吞异常静默截断」的偶发行为见 `RewriteClanTest --full` 的重试说明。
