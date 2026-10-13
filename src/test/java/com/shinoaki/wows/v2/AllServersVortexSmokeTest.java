@@ -1,8 +1,9 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.v2;
 
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
+import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.testkit.TestConfig;
 
@@ -10,19 +11,19 @@ import java.net.http.HttpClient;
 import java.util.concurrent.Callable;
 
 /**
- * 多服务器 <b>官方开发者API</b> 请求冒烟（与 vortex 分开、各自独立）：按 {@link TestConfig} 对每个配置了账号
- * 且支持官方API 的服务器跑一遍——玩家详情 / 战舰统计 / 军团详情（莱服自动走 {@code /mk/} 路径，国服无官方API 自动跳过）。
+ * 多服务器 <b>vortex</b> 请求冒烟（与官方开发者API 分开、各自独立）：按 {@link TestConfig} 对每个配置了账号的服务器
+ * 跑一遍 vortex 核心接口面——玩家详情 / 玩家搜索 / 战舰列表 / 军团详情；配了私有 token 的账号（国服）走带 token 版本。
  * <p>
  * 用法（仓库根目录）：
  * <pre>
- *   java -cp ... com.shinoaki.wows.AllServersDevelopersSmokeTest          # 在线执行（会打真实接口）
- *   java -cp ... com.shinoaki.wows.AllServersDevelopersSmokeTest --dry    # 只打印计划与代理路由，不发请求
+ *   java -cp ... com.shinoaki.wows.v2.AllServersVortexSmokeTest          # 在线执行（会打真实接口）
+ *   java -cp ... com.shinoaki.wows.v2.AllServersVortexSmokeTest --dry    # 只打印计划与代理路由，不发请求
  * </pre>
- * 令牌由 {@link TestConfig} 内置（公开测试 key，env/-D 可覆盖）；代理按服务器配置见 TestConfig。退出码：0 = 全部通过；1 = 有失败项。
+ * 代理按服务器配置见 {@link TestConfig}；未配置测试账号的服务器（EU/NA）自动跳过。退出码：0 = 全部通过；1 = 有失败项。
  *
  * @author Xun
  */
-public class AllServersDevelopersSmokeTest {
+public class AllServersVortexSmokeTest {
 
     private static int failed = 0;
 
@@ -50,21 +51,23 @@ public class AllServersDevelopersSmokeTest {
     private static void run(HttpClient client, WowsServer server, boolean dry) {
         System.out.println();
         System.out.println("── " + server + "（" + server.getName() + "，代理=" + TestConfig.proxyOf(server) + "） ──");
-        if (!server.isApi()) {
-            System.out.println("  [skip] 该服务器不支持官方API（无 api 域名）");
-            return;
-        }
         Long accountId = TestConfig.accountIdOrNull(server);
         if (accountId == null) {
             System.out.println("  [skip] 未配置测试账号（可在 TestConfig 里补）");
             return;
         }
         Long clanId = TestConfig.clanIdOrNull(server);
-        String appId = TestConfig.appId(server);
-        System.out.println("  账号=" + accountId + "，军团=" + (clanId == null ? "无" : clanId) + "，官方API令牌=已配置");
+        String vortexToken = TestConfig.vortexToken(accountId);
+        System.out.println("  账号=" + accountId + "，军团=" + (clanId == null ? "无" : clanId)
+                + "，vortexToken=" + (vortexToken == null ? "无" : "已配置"));
 
         if (dry) {
-            System.out.println("  [plan] 玩家详情 / 战舰统计" + (clanId == null ? "" : " / 军团详情"));
+            System.out.println("  [plan] 玩家详情" + (vortexToken == null ? "" : "（带token）"));
+            System.out.println("  [plan] 玩家搜索(" + TestConfig.searchUser(server) + ")" + (server == WowsServer.CN ? " + 国服专用搜索" : ""));
+            System.out.println("  [plan] 战舰列表 PVP" + (vortexToken == null ? "" : "（带token）"));
+            if (clanId != null) {
+                System.out.println("  [plan] 军团详情(" + clanId + ")");
+            }
             return;
         }
 
@@ -72,10 +75,19 @@ public class AllServersDevelopersSmokeTest {
         WowsHttpShipTools ship = new WowsHttpShipTools(client, server, accountId);
         WowsHttpClanTools clan = new WowsHttpClanTools(client, server);
 
-        check("玩家详情", () -> user.accountInfoDevelopers(appId, accountId));
-        check("战舰统计", () -> ship.developers(appId).shipList());
+        if (vortexToken == null) {
+            check("玩家详情", () -> user.userVortex(accountId));
+            check("战舰列表(PVP)", () -> ship.vortex().shipList(WowsBattlesType.PVP));
+        } else {
+            check("玩家详情(带token)", () -> user.userVortex(accountId, vortexToken));
+            check("战舰列表(PVP, 带token)", () -> ship.vortex().shipList(WowsBattlesType.PVP, vortexToken));
+        }
+        check("玩家搜索(" + TestConfig.searchUser(server) + ")", () -> user.searchUserVortex(TestConfig.searchUser(server)));
+        if (server == WowsServer.CN) {
+            check("玩家搜索(国服专用)", () -> user.searchUserVortexCn(TestConfig.SEARCH_USER_CN));
+        }
         if (clanId != null) {
-            check("军团详情", () -> clan.developers(appId).clanInfoDevelopers(clanId));
+            check("军团详情", () -> clan.vortex().clanInfoVortex(clanId));
         }
     }
 

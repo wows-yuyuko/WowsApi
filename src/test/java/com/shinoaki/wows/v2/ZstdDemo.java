@@ -1,4 +1,4 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.v2;
 
 import com.github.luben.zstd.ZstdDictCompress;
 import com.github.luben.zstd.ZstdDictDecompress;

@@ -1,4 +1,4 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.v2;
 
 import com.shinoaki.wows.api.error.BasicException;
 import com.shinoaki.wows.api.type.WowsServer;

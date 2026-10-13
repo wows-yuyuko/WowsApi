@@ -1,4 +1,4 @@
-package com.shinoaki.wows;
+package com.shinoaki.wows.v2;
 
 import com.shinoaki.wows.api.codec.http.WowsHttpShipTools;
 import com.shinoaki.wows.api.developers.DevelopersUserShip;
