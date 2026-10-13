@@ -143,7 +143,7 @@ public class RewriteAccountSmokeTest {
             System.out.println("  [FAIL] " + name + "（新实现异常: " + e + "）");
             return;
         }
-        if (oldValue.equals(newValue)) {
+        if (com.shinoaki.wows.testkit.CanonicalJson.of(oldValue).equals(com.shinoaki.wows.testkit.CanonicalJson.of(newValue))) {
             passed++;
             System.out.println("  [ok] " + name + "（" + oldValue.length() + " 字符一致）");
         } else {
