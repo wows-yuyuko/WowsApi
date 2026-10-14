@@ -1,5 +1,6 @@
 package com.shinoaki.wows.v2;
 
+import com.shinoaki.wows.api.WowsApi;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsEncyclopediaTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
@@ -367,6 +368,30 @@ public class SchemaMonitorTest {
             probes.add(new Probe("官方-军团搜索", null, appId, () -> clan.developers(appId).searchClanDevelopers(TestConfig.SEARCH_CLAN)));
             probes.add(new Probe("官方-军团赛季", null, appId, () -> clan.developers(appId).season()));
             probes.add(new Probe("官方-词典", null, appId, () -> encyclopedia.developers(appId).glossary()));
+        }
+
+        //---- 官方开发者API(亚服)·新增端点：走 3.0 视图，监控键 = endpoint id（dev.*）----
+        if (appId != null) {
+            WowsApi api = WowsApi.of(SERVER).credentials(c -> c.applicationId(appId));
+            probes.add(new Probe("官方-玩家成就", null, appId, () -> api.developers().userAchievements(ACCOUNT_ID)));
+            probes.add(new Probe("官方-百科信息", null, appId, () -> api.developers().encyclopediaInfo()));
+            probes.add(new Probe("官方-舰船字典", null, appId, () -> api.developers().encyclopediaShips(null, null, null, null)));
+            probes.add(new Probe("官方-舰船参数", null, appId, () -> api.developers().shipProfile(TestConfig.SHIP_YAMATO_ASIA)));
+            probes.add(new Probe("官方-模块字典", null, appId, () -> api.developers().encyclopediaModules(null, null, null)));
+            probes.add(new Probe("官方-服役等级", null, appId, () -> api.developers().encyclopediaAccountLevels()));
+            probes.add(new Probe("官方-指挥官字典", null, appId, () -> api.developers().encyclopediaCommanders()));
+            probes.add(new Probe("官方-指挥官技能", null, appId, () -> api.developers().encyclopediaCommanderSkills()));
+            probes.add(new Probe("官方-指挥官军衔", null, appId, () -> api.developers().encyclopediaCommanderRanks()));
+            probes.add(new Probe("官方-战斗类型字典", null, appId, () -> api.developers().encyclopediaBattleTypes()));
+            probes.add(new Probe("官方-消耗品字典", null, appId, () -> api.developers().encyclopediaConsumables(null, null, null)));
+            probes.add(new Probe("官方-收藏字典", null, appId, () -> api.developers().encyclopediaCollections()));
+            probes.add(new Probe("官方-收藏卡牌", null, appId, () -> api.developers().encyclopediaCollectionCards()));
+            probes.add(new Probe("官方-地图字典", null, appId, () -> api.developers().encyclopediaBattleArenas()));
+            probes.add(new Probe("官方-成就字典", null, appId, () -> api.developers().encyclopediaAchievements()));
+            probes.add(new Probe("官方-排位赛季", null, appId, () -> api.developers().rankedSeasons()));
+            probes.add(new Probe("官方-排位单船战绩", null, appId, () -> api.developers().rankedShipStats(ACCOUNT_ID)));
+            probes.add(new Probe("官方-排位玩家战绩", null, appId, () -> api.developers().rankedAccountStats(ACCOUNT_ID)));
+            probes.add(new Probe("官方-军团战赛季", null, appId, () -> api.developers().clanSeasonStats(ACCOUNT_ID)));
         }
 
         //---- 莱服官方开发者API：api.korabli.su + /mk/ 路径，需要莱服自己的 application_id ----

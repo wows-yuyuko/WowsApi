@@ -56,6 +56,9 @@ public final class TestConfig {
     /** 亚服军团成员接口用（SchemaMonitorTest） */
     public static final long CLAN_MEMBERS_ASIA = 2000025691L;
 
+    /** 亚服测试舰船（大和；百科舰船/舰船参数接口通用） */
+    public static final long SHIP_YAMATO_ASIA = 4276041424L;
+
     /** 亚服测试箱子 ID */
     public static final long LOOTBOX_ASIA = 4288861104L;
     /** 莱服测试箱子 ID（莱服专属字段多） */

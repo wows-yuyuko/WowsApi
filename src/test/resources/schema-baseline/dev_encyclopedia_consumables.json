@@ -1,0 +1,23 @@
+{
+  "schemaKey" : "dev.encyclopedia.consumables",
+  "capturedAt" : "2026-10-14T16:26:50.766331900Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.consumable_id" : "number",
+    "data.*.description" : "null",
+    "data.*.image" : "string",
+    "data.*.name" : "string",
+    "data.*.price_credit" : "number",
+    "data.*.price_gold" : "number",
+    "data.*.profile" : "object",
+    "data.*.type" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "meta.limit" : "number",
+    "meta.page" : "number",
+    "meta.page_total" : "number",
+    "meta.total" : "number",
+    "status" : "string"
+  }
+}

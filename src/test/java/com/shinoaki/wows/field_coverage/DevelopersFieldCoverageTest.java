@@ -1,5 +1,6 @@
 package com.shinoaki.wows.field_coverage;
 
+import com.shinoaki.wows.api.WowsApi;
 import com.shinoaki.wows.api.codec.HttpCodec;
 import com.shinoaki.wows.api.codec.http.WowsEncyclopediaTools;
 import com.shinoaki.wows.api.codec.http.WowsHttpClanTools;
@@ -8,17 +9,84 @@ import com.shinoaki.wows.api.codec.http.WowsHttpUserTools;
 import com.shinoaki.wows.api.data.AccountInfo;
 import com.shinoaki.wows.api.data.ship.ShipExpansion;
 import com.shinoaki.wows.api.developers.account.DevelopersSearchUser;
+import com.shinoaki.wows.api.developers.account.DevelopersUserAchievements;
 import com.shinoaki.wows.api.developers.account.DevelopersUserInfoPrivate;
 import com.shinoaki.wows.api.developers.account.statistics.DevelopersUserInfoStatistics;
 import com.shinoaki.wows.api.developers.clan.DevelopersClanInfo;
+import com.shinoaki.wows.api.developers.clan.DevelopersClanSeasonPlayer;
+import com.shinoaki.wows.api.developers.clan.DevelopersClanSeasonStats;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchClan;
 import com.shinoaki.wows.api.developers.clan.DevelopersSearchUserClan;
 import com.shinoaki.wows.api.developers.clan.seasion.DevelopersSeasonInfo;
 import com.shinoaki.wows.api.developers.clan.seasion.DevelopersSeasonLeaguesInfo;
+import com.shinoaki.wows.api.developers.encyclopedia.accountlevels.DevelopersAccountLevel;
+import com.shinoaki.wows.api.developers.encyclopedia.achievements.DevelopersEncyclopediaAchievement;
+import com.shinoaki.wows.api.developers.encyclopedia.achievements.DevelopersEncyclopediaAchievements;
+import com.shinoaki.wows.api.developers.encyclopedia.battlearenas.DevelopersBattleArena;
+import com.shinoaki.wows.api.developers.encyclopedia.battletypes.DevelopersBattleType;
+import com.shinoaki.wows.api.developers.encyclopedia.collections.DevelopersCollection;
+import com.shinoaki.wows.api.developers.encyclopedia.collections.DevelopersCollectionCard;
+import com.shinoaki.wows.api.developers.encyclopedia.collections.DevelopersCollectionCardImages;
+import com.shinoaki.wows.api.developers.encyclopedia.consumables.DevelopersConsumableEffect;
+import com.shinoaki.wows.api.developers.encyclopedia.consumables.DevelopersEncyclopediaConsumable;
+import com.shinoaki.wows.api.developers.encyclopedia.consumables.DevelopersEncyclopediaConsumables;
+import com.shinoaki.wows.api.developers.encyclopedia.crewranks.DevelopersCommanderRank;
+import com.shinoaki.wows.api.developers.encyclopedia.crews.DevelopersEncyclopediaCommander;
+import com.shinoaki.wows.api.developers.encyclopedia.crewskills.DevelopersEncyclopediaSkill;
+import com.shinoaki.wows.api.developers.encyclopedia.crewskills.DevelopersSkillCustomization;
+import com.shinoaki.wows.api.developers.encyclopedia.crewskills.DevelopersSkillPerk;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossary;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossaryBuilding;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossaryBuildingType;
 import com.shinoaki.wows.api.developers.encyclopedia.glossary.DevelopersGlossarySettings;
+import com.shinoaki.wows.api.developers.encyclopedia.info.DevelopersEncyclopediaInfo;
+import com.shinoaki.wows.api.developers.encyclopedia.info.DevelopersShipTypeImages;
+import com.shinoaki.wows.api.developers.encyclopedia.modules.DevelopersEncyclopediaModule;
+import com.shinoaki.wows.api.developers.encyclopedia.modules.DevelopersEncyclopediaModules;
+import com.shinoaki.wows.api.developers.encyclopedia.modules.DevelopersModuleArtillery;
+import com.shinoaki.wows.api.developers.encyclopedia.modules.DevelopersModuleProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.modules.DevelopersModuleTorpedoes;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipAASlot;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipAntiAircraftProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipArmourProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipArtilleryProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipArtillerySlot;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipAtbaProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipAtbaSlot;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipConcealment;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipDepthCharge;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipDiveBomber;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipEngineProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipFighters;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipFireControl;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipFlightControl;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipHullProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipIntRange;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipMobility;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipShell;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipSonarProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipSubmarineBattery;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipSubmarineMobility;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipTorpedoBomber;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipTorpedoProfile;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipTorpedoSlot;
+import com.shinoaki.wows.api.developers.encyclopedia.shipprofile.DevelopersShipWeaponry;
+import com.shinoaki.wows.api.developers.encyclopedia.ships.DevelopersEncyclopediaShip;
+import com.shinoaki.wows.api.developers.encyclopedia.ships.DevelopersEncyclopediaShips;
+import com.shinoaki.wows.api.developers.encyclopedia.ships.DevelopersShipImages;
+import com.shinoaki.wows.api.developers.encyclopedia.ships.DevelopersShipModuleTree;
+import com.shinoaki.wows.api.developers.encyclopedia.ships.DevelopersShipModules;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedAccount;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedLeague;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedLeagueImages;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedRank;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedRankImages;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedRankInfo;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedSeason;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedShipSeason;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedShipSeasonBlock;
+import com.shinoaki.wows.api.developers.seasons.DevelopersRankedShipStats;
 import com.shinoaki.wows.api.developers.warships.DevelopersDataBattery;
 import com.shinoaki.wows.api.developers.warships.DevelopersDataBatteryV2;
 import com.shinoaki.wows.api.developers.warships.DevelopersMeta;
@@ -106,6 +174,26 @@ public class DevelopersFieldCoverageTest {
         checkClanAccountInfo();
         checkSeason();
         checkGlossary();
+        //3.0 新增端点（官方 5 分区其余接口）
+        checkUserAchievements();
+        checkEncyclopediaInfo();
+        checkEncyclopediaShips();
+        checkShipProfile();
+        checkEncyclopediaModules();
+        checkEncyclopediaConsumables();
+        checkEncyclopediaAccountLevels();
+        checkEncyclopediaCommanders();
+        checkEncyclopediaCommanderSkills();
+        checkEncyclopediaCommanderRanks();
+        checkEncyclopediaBattleTypes();
+        checkEncyclopediaCollections();
+        checkEncyclopediaCollectionCards();
+        checkEncyclopediaBattleArenas();
+        checkEncyclopediaAchievements();
+        checkRankedSeasons();
+        checkRankedShipStats();
+        checkRankedAccountStats();
+        checkClanSeasonStats();
 
         System.out.println();
         System.out.println(failed == 0 ? "结果: 已检查 " + checked + " 处节点，全部响应字段都有对应结构体"
@@ -325,26 +413,521 @@ public class DevelopersFieldCoverageTest {
         expect("settings.max_members_count", data.path("settings").path("max_members_count").asInt(0), glossary.settings().max_members_count());
     }
 
+    //----------------------------------------------------------------- 3.0 新增端点
+
+    private static void checkUserAchievements() throws Exception {
+        JsonNode root = load("dev_account_achievements.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/account/achievements/ 玩家成就");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = onlyData(root);
+        DevelopersUserAchievements parsed = DevelopersUserAchievements.parse(root);
+        expect("account_id", firstKey(root.path("data")), parsed.accountId());
+        expect("battle 数量", data.path("battle").size(), parsed.battle().size());
+        expect("progress 数量", data.path("progress").size(), parsed.progress().size());
+        for (var entry : data.path("battle").properties()) {
+            expect("battle[" + entry.getKey() + "]", entry.getValue().asLong(0), parsed.battle().get(entry.getKey()));
+            break;
+        }
+    }
+
+    private static void checkEncyclopediaInfo() throws Exception {
+        JsonNode root = load("dev_encyclopedia_info.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/info/ 百科信息");
+        JsonNode data = root.path("data");
+        unknown(data, DevelopersEncyclopediaInfo.class, "data");
+        sampleValue(data.path("ship_type_images"), DevelopersShipTypeImages.class, "data.ship_type_images.<type>");
+        DevelopersEncyclopediaInfo parsed = DevelopersEncyclopediaInfo.parse(root);
+        expect("languages 数量", data.path("languages").size(), parsed.languages().size());
+        expect("ship_modifications 数量", data.path("ship_modifications").size(), parsed.ship_modifications().size());
+        expect("ship_nations 数量", data.path("ship_nations").size(), parsed.ship_nations().size());
+        expect("game_version", data.path("game_version").asString(""), parsed.game_version());
+        expect("ships_updated_at", data.path("ships_updated_at").asLong(0), parsed.ships_updated_at());
+    }
+
+    private static void checkEncyclopediaShips() throws Exception {
+        JsonNode root = load("dev_encyclopedia_ships.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/ships/ 舰船字典（分页）");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = root.path("data");
+        int count = 0;
+        for (var entry : data.properties()) {
+            JsonNode ship = entry.getValue();
+            String label = "data.<shipId>[" + entry.getKey() + "]";
+            unknown(ship, DevelopersEncyclopediaShip.class, label);
+            unknown(ship.path("images"), DevelopersShipImages.class, label + ".images");
+            unknown(ship.path("modules"), DevelopersShipModules.class, label + ".modules");
+            count++;
+        }
+        //default_profile 全量结构抽查第一艘（其余舰船同构；完整参数可看 shipprofile 段）
+        JsonNode first = firstValue(data);
+        if (first != null) {
+            profileBlock(first.path("default_profile"), "data.<shipId>.default_profile");
+            unknown(firstValue(first.path("modules_tree")), DevelopersShipModuleTree.class, "data.<shipId>.modules_tree.<moduleId>");
+        }
+        DevelopersEncyclopediaShips parsed = DevelopersEncyclopediaShips.parse(root);
+        expect("解析条数", data.size(), parsed.ships().size());
+        expect("meta.page_total", root.path("meta").path("page_total").asInt(0), parsed.meta().page_total());
+        expect("meta.total", root.path("meta").path("total").asInt(0), parsed.meta().total());
+        JsonNode firstShip = first;
+        if (firstShip != null) {
+            long id = firstShip.path("ship_id").asLong(0);
+            expect("首船名称", firstShip.path("name").asString(""), parsed.ships().get(id).name());
+            expect("首船 default_profile.hull.health", firstShip.path("default_profile").path("hull").path("health").asInt(0),
+                    parsed.ships().get(id).default_profile().hull().health());
+        }
+        System.out.println("   舰船 " + count + " 条");
+    }
+
+    private static void checkShipProfile() throws Exception {
+        JsonNode root = load("dev_encyclopedia_shipprofile.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/shipprofile/ 舰船参数明细");
+        JsonNode data = onlyData(root);
+        profileBlock(data, "data.<shipId>");
+        DevelopersShipProfile parsed = DevelopersShipProfile.parse(root);
+        expect("ship_id", data.path("ship_id").asLong(0), parsed.ship_id());
+        expect("hull.health", data.path("hull").path("health").asInt(0), parsed.hull().health());
+        expect("armour.health", data.path("armour").path("health").asInt(0), parsed.armour().health());
+        expect("artillery.shells 数量", data.path("artillery").path("shells").size(), parsed.artillery().shells().size());
+        expect("mobility 数量一致", data.path("mobility").path("total").asInt(0), parsed.mobility().total());
+    }
+
+    private static void checkEncyclopediaModules() throws Exception {
+        JsonNode root = load("dev_encyclopedia_modules.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/modules/ 模块字典（分页）");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            JsonNode module = entry.getValue();
+            String label = "data.<moduleId>[" + entry.getKey() + "]";
+            unknown(module, DevelopersEncyclopediaModule.class, label);
+            JsonNode profile = module.path("profile");
+            unknown(profile, DevelopersModuleProfile.class, label + ".profile");
+            for (var block : profile.properties()) {
+                Class<?> type = moduleProfileType(block.getKey());
+                if (type != null) {
+                    unknown(block.getValue(), type, label + ".profile." + block.getKey());
+                }
+            }
+        }
+        DevelopersEncyclopediaModules parsed = DevelopersEncyclopediaModules.parse(root);
+        expect("解析条数", data.size(), parsed.modules().size());
+        expect("meta.page_total", root.path("meta").path("page_total").asInt(0), parsed.meta().page_total());
+        JsonNode firstModule = firstValue(data);
+        if (firstModule != null) {
+            long id = firstModule.path("module_id").asLong(0);
+            expect("首模块名称", firstModule.path("name").asString(""), parsed.modules().get(id).name());
+        }
+    }
+
+    private static void checkEncyclopediaConsumables() throws Exception {
+        JsonNode root = load("dev_encyclopedia_consumables.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/consumables/ 消耗品字典（分页）");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            JsonNode consumable = entry.getValue();
+            String label = "data.<consumableId>[" + entry.getKey() + "]";
+            unknown(consumable, DevelopersEncyclopediaConsumable.class, label);
+            sampleValue(consumable.path("profile"), DevelopersConsumableEffect.class, label + ".profile.<code>");
+        }
+        DevelopersEncyclopediaConsumables parsed = DevelopersEncyclopediaConsumables.parse(root);
+        expect("解析条数", data.size(), parsed.consumables().size());
+        expect("meta.total", root.path("meta").path("total").asInt(0), parsed.meta().total());
+        for (var entry : data.properties()) {
+            long id = entry.getValue().path("consumable_id").asLong(0);
+            expect("consumable[" + id + "].name", entry.getValue().path("name").asString(""),
+                    parsed.consumables().get(id).name());
+            break;
+        }
+    }
+
+    private static void checkEncyclopediaAccountLevels() throws Exception {
+        JsonNode root = load("dev_encyclopedia_accountlevels.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/accountlevels/ 服役等级");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersAccountLevel.class, "data.<level>[" + entry.getKey() + "]");
+        }
+        Map<Long, DevelopersAccountLevel> parsed = DevelopersAccountLevel.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaCommanders() throws Exception {
+        JsonNode root = load("dev_encyclopedia_crews.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/crews/ 指挥官字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersEncyclopediaCommander.class, "data.<commanderId>[" + entry.getKey() + "]");
+        }
+        Map<Long, DevelopersEncyclopediaCommander> parsed = DevelopersEncyclopediaCommander.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaCommanderSkills() throws Exception {
+        JsonNode root = load("dev_encyclopedia_crewskills.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/crewskills/ 指挥官技能字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersEncyclopediaSkill.class, "data.<skillId>[" + entry.getKey() + "]");
+        }
+        JsonNode first = firstValue(data);
+        if (first != null) {
+            unknown(firstValue(first.path("customization")), DevelopersSkillCustomization.class, "data.<skillId>.customization.<type>");
+            JsonNode customization = firstValue(first.path("customization"));
+            if (customization != null) {
+                unknown(customization.path("perks").path(0), DevelopersSkillPerk.class, "data.<skillId>.customization.<type>.perks[0]");
+            }
+        }
+        Map<Long, DevelopersEncyclopediaSkill> parsed = DevelopersEncyclopediaSkill.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaCommanderRanks() throws Exception {
+        JsonNode root = load("dev_encyclopedia_crewranks.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/crewranks/ 指挥官军衔");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue().path(0), DevelopersCommanderRank.class, "data.<nation>[0]");
+        }
+        Map<String, List<DevelopersCommanderRank>> parsed = DevelopersCommanderRank.parse(root);
+        expect("国家数量", data.size(), parsed.size());
+        for (var entry : data.properties()) {
+            expect("data." + entry.getKey() + " 军衔数", entry.getValue().size(), parsed.get(entry.getKey()).size());
+            break;
+        }
+    }
+
+    private static void checkEncyclopediaBattleTypes() throws Exception {
+        JsonNode root = load("dev_encyclopedia_battletypes.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/battletypes/ 战斗类型字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersBattleType.class, "data.<tag>[" + entry.getKey() + "]");
+        }
+        Map<String, DevelopersBattleType> parsed = DevelopersBattleType.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaCollections() throws Exception {
+        JsonNode root = load("dev_encyclopedia_collections.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/collections/ 收藏字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersCollection.class, "data.<collectionId>[" + entry.getKey() + "]");
+        }
+        Map<Long, DevelopersCollection> parsed = DevelopersCollection.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaCollectionCards() throws Exception {
+        JsonNode root = load("dev_encyclopedia_collectioncards.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/collectioncards/ 收藏卡牌字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersCollectionCard.class, "data.<cardId>[" + entry.getKey() + "]");
+            unknown(entry.getValue().path("images"), DevelopersCollectionCardImages.class, "data.<cardId>.images");
+        }
+        Map<Long, DevelopersCollectionCard> parsed = DevelopersCollectionCard.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaBattleArenas() throws Exception {
+        JsonNode root = load("dev_encyclopedia_battlearenas.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/battlearenas/ 地图字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersBattleArena.class, "data.<arenaId>[" + entry.getKey() + "]");
+        }
+        Map<Long, DevelopersBattleArena> parsed = DevelopersBattleArena.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+    }
+
+    private static void checkEncyclopediaAchievements() throws Exception {
+        JsonNode root = load("dev_encyclopedia_achievements.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/encyclopedia/achievements/ 成就字典");
+        JsonNode data = root.path("data");
+        for (var entry : data.path("battle").properties()) {
+            unknown(entry.getValue(), DevelopersEncyclopediaAchievement.class, "data.battle.<achievementId>");
+            break;
+        }
+        int battle = data.path("battle").size();
+        int progress = data.path("progress").size();
+        System.out.println("   battle=" + battle + " progress=" + progress);
+        DevelopersEncyclopediaAchievements parsed = DevelopersEncyclopediaAchievements.parse(root);
+        expect("battle 数量", battle, parsed.battle().size());
+        expect("progress 数量", progress, parsed.progress().size());
+    }
+
+    private static void checkRankedSeasons() throws Exception {
+        JsonNode root = load("dev_seasons_info.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/seasons/info/ 排位赛季");
+        JsonNode data = root.path("data");
+        for (var entry : data.properties()) {
+            unknown(entry.getValue(), DevelopersRankedSeason.class, "data.<seasonId>[" + entry.getKey() + "]");
+        }
+        JsonNode first = firstValue(data);
+        if (first != null) {
+            JsonNode league = firstValue(first.path("leagues"));
+            if (league != null) {
+                unknown(league.path("images"), DevelopersRankedLeagueImages.class, "data.<seasonId>.leagues.<id>.images");
+                JsonNode rank = firstValue(league.path("ranks"));
+                if (rank != null) {
+                    unknown(rank, DevelopersRankedRank.class, "data.<seasonId>.leagues.<id>.ranks.<rank>");
+                    unknown(rank.path("images"), DevelopersRankedRankImages.class,
+                            "data.<seasonId>.leagues.<id>.ranks.<rank>.images", Set.of("default"));
+                }
+            }
+        }
+        Map<Long, DevelopersRankedSeason> parsed = DevelopersRankedSeason.parse(root);
+        expect("解析条数", data.size(), parsed.size());
+        long latest = 0;
+        for (var entry : data.properties()) {
+            latest = Math.max(latest, Long.parseLong(entry.getKey()));
+        }
+        expect("最新赛季名称", data.path(String.valueOf(latest)).path("season_name").asString(""), parsed.get(latest).season_name());
+    }
+
+    private static void checkRankedShipStats() throws Exception {
+        JsonNode root = load("dev_seasons_shipstats.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/seasons/shipstats/ 排位单船战绩");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = onlyData(root);
+        int blocks = 0;
+        for (JsonNode item : data) {
+            unknown(item, DevelopersRankedShipSeason.class,
+                    "data.<accountId>[shipId=" + item.path("ship_id").asLong(0) + "]");
+            blocks += rankedBlocks(item.path("seasons"), "data.<accountId>[shipId=" + item.path("ship_id").asLong(0) + "].seasons");
+        }
+        DevelopersRankedShipStats parsed = DevelopersRankedShipStats.parse(root);
+        expect("解析条数", data.size(), parsed.ships().size());
+        expect("数据块数量", blocks, parsed.ships().stream()
+                .mapToInt(ship -> ship.seasons().values().stream().mapToInt(Map::size).sum()).sum());
+        System.out.println("   舰船 " + data.size() + " 条, 战斗数据块 " + blocks + " 个");
+    }
+
+    private static void checkRankedAccountStats() throws Exception {
+        JsonNode root = load("dev_seasons_accountinfo.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/seasons/accountinfo/ 排位玩家战绩");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = onlyData(root);
+        int leaves = 0;
+        for (var season : data.path("rank_info").properties()) {
+            for (var league : season.getValue().properties()) {
+                for (var sprint : league.getValue().properties()) {
+                    unknown(sprint.getValue(), DevelopersRankedRankInfo.class,
+                            "data.<accountId>.rank_info." + season.getKey() + "." + league.getKey() + "." + sprint.getKey());
+                    leaves++;
+                }
+            }
+        }
+        int blocks = rankedBlocks(data.path("seasons"), "data.<accountId>.seasons");
+        DevelopersRankedAccount parsed = DevelopersRankedAccount.parse(root);
+        expect("rank_info 赛季数", data.path("rank_info").size(), parsed.rank_info().size());
+        expect("rank_info 叶子数", leaves, parsed.rank_info().values().stream()
+                .mapToInt(league -> league.values().stream().mapToInt(Map::size).sum()).sum());
+        expect("seasons 赛季数", data.path("seasons").size(), parsed.seasons().size());
+        expect("seasons 数据块数", blocks, parsed.seasons().values().stream().mapToInt(Map::size).sum());
+        System.out.println("   rank_info 叶子 " + leaves + " 个, seasons 数据块 " + blocks + " 个");
+    }
+
+    private static void checkClanSeasonStats() throws Exception {
+        JsonNode root = load("dev_clan_seasonstats.json");
+        if (root == null) {
+            return;
+        }
+        section("/wows/clans/seasonstats/ 军团战赛季战绩");
+        unknown(root.path("meta"), DevelopersMeta.class, "meta");
+        JsonNode data = root.path("data");
+        int blocks = 0;
+        for (var entry : data.properties()) {
+            String label = "data.<accountId>[" + entry.getKey() + "]";
+            unknown(entry.getValue(), DevelopersClanSeasonPlayer.class, label);
+            for (JsonNode block : entry.getValue().path("seasons")) {
+                battleBlock(block, label + ".seasons[" + block.path("season_id").asLong(0) + "]", Set.of("season_id"));
+                blocks++;
+            }
+        }
+        DevelopersClanSeasonStats parsed = DevelopersClanSeasonStats.parse(root);
+        expect("玩家账号数", data.size(), parsed.players().size());
+        expect("数据块数量", blocks, parsed.players().values().stream().mapToInt(player -> player.seasons().size()).sum());
+        System.out.println("   玩家 " + data.size() + " 个, 赛季数据块 " + blocks + " 个");
+    }
+
     //----------------------------------------------------------------- 工具
 
     /**
      * 战斗数据块：主体 + 5 个武器子块。
      */
     private static void battleBlock(JsonNode block, String label) {
+        battleBlock(block, label, Set.of());
+    }
+
+    /**
+     * 战斗数据块（allowed 放行少量额外字段，如军团赛季块的 season_id）。
+     */
+    private static void battleBlock(JsonNode block, String label, Set<String> allowed) {
         if (block == null || !block.isObject() || block.isEmpty() || !block.has("battles")) {
             return;
         }
         if (block.has("wins_by_tasks")) {
             //行动模式(oper_*)的数据块，字段与随机战不同
-            unknown(block, DevelopersOperBattleType.class, label);
+            unknown(block, DevelopersOperBattleType.class, label, allowed);
             return;
         }
-        unknown(block, DevelopersShipBattleType.class, label);
+        unknown(block, DevelopersShipBattleType.class, label, allowed);
         unknown(block.path("main_battery"), DevelopersDataBattery.class, label + ".main_battery");
         unknown(block.path("second_battery"), DevelopersDataBattery.class, label + ".second_battery");
         unknown(block.path("torpedoes"), DevelopersDataBattery.class, label + ".torpedoes");
         unknown(block.path("aircraft"), DevelopersDataBatteryV2.class, label + ".aircraft");
         unknown(block.path("ramming"), DevelopersDataBatteryV2.class, label + ".ramming");
+    }
+
+    /**
+     * 取对象第一个属性的值；非对象 / 没有属性返回 null。
+     */
+    private static JsonNode firstValue(JsonNode node) {
+        if (node != null && node.isObject()) {
+            for (var entry : node.properties()) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 抽查对象第一个值是否有结构体（值类型一致的映射只验一个样本）。
+     */
+    private static void sampleValue(JsonNode node, Class<?> type, String label) {
+        unknown(firstValue(node), type, label);
+    }
+
+    /**
+     * 舰船参数块：顶部 + 各武器/系统子块与示例槽位（不适用的块为 null，自动跳过）。
+     */
+    private static void profileBlock(JsonNode node, String label) {
+        if (node == null || node.isNull() || !node.isObject() || node.isEmpty()) {
+            return;
+        }
+        unknown(node, DevelopersShipProfile.class, label);
+        unknown(node.path("hull"), DevelopersShipHullProfile.class, label + ".hull");
+        unknown(node.path("hull").path("range"), DevelopersShipIntRange.class, label + ".hull.range");
+        unknown(node.path("engine"), DevelopersShipEngineProfile.class, label + ".engine");
+        unknown(node.path("artillery"), DevelopersShipArtilleryProfile.class, label + ".artillery");
+        sampleValue(node.path("artillery").path("slots"), DevelopersShipArtillerySlot.class, label + ".artillery.slots.<i>");
+        sampleValue(node.path("artillery").path("shells"), DevelopersShipShell.class, label + ".artillery.shells.<code>");
+        unknown(node.path("torpedoes"), DevelopersShipTorpedoProfile.class, label + ".torpedoes");
+        sampleValue(node.path("torpedoes").path("slots"), DevelopersShipTorpedoSlot.class, label + ".torpedoes.slots.<i>");
+        unknown(node.path("fire_control"), DevelopersShipFireControl.class, label + ".fire_control");
+        unknown(node.path("flight_control"), DevelopersShipFlightControl.class, label + ".flight_control");
+        unknown(node.path("fighters"), DevelopersShipFighters.class, label + ".fighters");
+        unknown(node.path("torpedo_bomber"), DevelopersShipTorpedoBomber.class, label + ".torpedo_bomber");
+        unknown(node.path("dive_bomber"), DevelopersShipDiveBomber.class, label + ".dive_bomber");
+        unknown(node.path("submarine_sonar"), DevelopersShipSonarProfile.class, label + ".submarine_sonar");
+        unknown(node.path("atbas"), DevelopersShipAtbaProfile.class, label + ".atbas");
+        sampleValue(node.path("atbas").path("slots"), DevelopersShipAtbaSlot.class, label + ".atbas.slots.<i>");
+        unknown(node.path("anti_aircraft"), DevelopersShipAntiAircraftProfile.class, label + ".anti_aircraft");
+        sampleValue(node.path("anti_aircraft").path("slots"), DevelopersShipAASlot.class, label + ".anti_aircraft.slots.<i>");
+        unknown(node.path("armour"), DevelopersShipArmourProfile.class, label + ".armour");
+        unknown(node.path("armour").path("citadel"), DevelopersShipIntRange.class, label + ".armour.citadel");
+        unknown(node.path("mobility"), DevelopersShipMobility.class, label + ".mobility");
+        unknown(node.path("concealment"), DevelopersShipConcealment.class, label + ".concealment");
+        unknown(node.path("weaponry"), DevelopersShipWeaponry.class, label + ".weaponry");
+        unknown(node.path("submarine_battery"), DevelopersShipSubmarineBattery.class, label + ".submarine_battery");
+        unknown(node.path("submarine_mobility"), DevelopersShipSubmarineMobility.class, label + ".submarine_mobility");
+        unknown(node.path("depth_charge"), DevelopersShipDepthCharge.class, label + ".depth_charge");
+    }
+
+    /**
+     * 模块属性块 -> 结构体（与 shipprofile 同构的块复用其结构体）。
+     */
+    private static Class<?> moduleProfileType(String key) {
+        return switch (key) {
+            case "artillery" -> DevelopersModuleArtillery.class;
+            case "dive_bomber" -> DevelopersShipDiveBomber.class;
+            case "engine" -> DevelopersShipEngineProfile.class;
+            case "fighter" -> DevelopersShipFighters.class;
+            case "fire_control" -> DevelopersShipFireControl.class;
+            case "flight_control" -> DevelopersShipFlightControl.class;
+            case "hull" -> DevelopersShipHullProfile.class;
+            case "submarine_sonar" -> DevelopersShipSonarProfile.class;
+            case "torpedo_bomber" -> DevelopersShipTorpedoBomber.class;
+            case "torpedoes" -> DevelopersModuleTorpedoes.class;
+            default -> null;
+        };
+    }
+
+    /**
+     * 排位战斗块（赛季 -&gt; 分组 -&gt; 三种模式）；返回分组数量。
+     */
+    private static int rankedBlocks(JsonNode seasons, String label) {
+        int blocks = 0;
+        for (var season : seasons.properties()) {
+            for (var group : season.getValue().properties()) {
+                String groupLabel = label + "." + season.getKey() + "." + group.getKey();
+                unknown(group.getValue(), DevelopersRankedShipSeasonBlock.class, groupLabel);
+                for (var type : group.getValue().properties()) {
+                    if (type.getValue() != null && type.getValue().isObject() && !type.getValue().isEmpty()) {
+                        battleBlock(type.getValue(), groupLabel + "." + type.getKey());
+                    }
+                }
+                blocks++;
+            }
+        }
+        return blocks;
     }
 
     private static void unknown(JsonNode node, Class<?> type, String label) {
@@ -527,6 +1110,47 @@ public class DevelopersFieldCoverageTest {
                 () -> clan.developers(token).userSearchClanDevelopers(account_id));
         register("api_asia_wows_clans_season_.json", "api_asia_wows_clans_season", "/wows/clans/season/", () -> clan.developers(token).season());
         register("api_asia_wows_clans_glossary_.json", "api_asia_wows_clans_glossary", "/wows/clans/glossary/", () -> encyclopedia.developers(token).glossary());
+
+        //3.0 新增端点：走 WowsApi 视图，监控键 = endpoint id（与 SchemaMonitorTest 的 dev_* 原始响应同名）
+        WowsApi api = WowsApi.of(server).credentials(c -> c.applicationId(token));
+        register("dev_account_achievements.json", "dev_account_achievements", "dev.account.achievements",
+                () -> api.developers().userAchievements(account_id));
+        register("dev_encyclopedia_info.json", "dev_encyclopedia_info", "dev.encyclopedia.info",
+                () -> api.developers().encyclopediaInfo());
+        register("dev_encyclopedia_ships.json", "dev_encyclopedia_ships", "dev.encyclopedia.ships",
+                () -> api.developers().encyclopediaShips(null, null, null, null));
+        register("dev_encyclopedia_shipprofile.json", "dev_encyclopedia_shipprofile", "dev.encyclopedia.shipprofile",
+                () -> api.developers().shipProfile(TestConfig.SHIP_YAMATO_ASIA));
+        register("dev_encyclopedia_modules.json", "dev_encyclopedia_modules", "dev.encyclopedia.modules",
+                () -> api.developers().encyclopediaModules(null, null, null));
+        register("dev_encyclopedia_accountlevels.json", "dev_encyclopedia_accountlevels", "dev.encyclopedia.accountlevels",
+                () -> api.developers().encyclopediaAccountLevels());
+        register("dev_encyclopedia_crews.json", "dev_encyclopedia_crews", "dev.encyclopedia.crews",
+                () -> api.developers().encyclopediaCommanders());
+        register("dev_encyclopedia_crewskills.json", "dev_encyclopedia_crewskills", "dev.encyclopedia.crewskills",
+                () -> api.developers().encyclopediaCommanderSkills());
+        register("dev_encyclopedia_crewranks.json", "dev_encyclopedia_crewranks", "dev.encyclopedia.crewranks",
+                () -> api.developers().encyclopediaCommanderRanks());
+        register("dev_encyclopedia_battletypes.json", "dev_encyclopedia_battletypes", "dev.encyclopedia.battletypes",
+                () -> api.developers().encyclopediaBattleTypes());
+        register("dev_encyclopedia_consumables.json", "dev_encyclopedia_consumables", "dev.encyclopedia.consumables",
+                () -> api.developers().encyclopediaConsumables(null, null, null));
+        register("dev_encyclopedia_collections.json", "dev_encyclopedia_collections", "dev.encyclopedia.collections",
+                () -> api.developers().encyclopediaCollections());
+        register("dev_encyclopedia_collectioncards.json", "dev_encyclopedia_collectioncards", "dev.encyclopedia.collectioncards",
+                () -> api.developers().encyclopediaCollectionCards());
+        register("dev_encyclopedia_battlearenas.json", "dev_encyclopedia_battlearenas", "dev.encyclopedia.battlearenas",
+                () -> api.developers().encyclopediaBattleArenas());
+        register("dev_encyclopedia_achievements.json", "dev_encyclopedia_achievements", "dev.encyclopedia.achievements",
+                () -> api.developers().encyclopediaAchievements());
+        register("dev_seasons_info.json", "dev_seasons_info", "dev.seasons.info",
+                () -> api.developers().rankedSeasons());
+        register("dev_seasons_shipstats.json", "dev_seasons_shipstats", "dev.seasons.shipstats",
+                () -> api.developers().rankedShipStats(account_id));
+        register("dev_seasons_accountinfo.json", "dev_seasons_accountinfo", "dev.seasons.accountinfo",
+                () -> api.developers().rankedAccountStats(account_id));
+        register("dev_clan_seasonstats.json", "dev_clan_seasonstats", "dev.clan.seasonstats",
+                () -> api.developers().clanSeasonStats(account_id));
     }
 
     private static void register(String file, String prefix, String keyHint, Call call) {

@@ -1,0 +1,17 @@
+{
+  "schemaKey" : "dev.encyclopedia.collections",
+  "capturedAt" : "2026-10-14T16:26:51.228753900Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.card_cost" : "number",
+    "data.*.collection_id" : "number",
+    "data.*.description" : "string",
+    "data.*.image" : "string",
+    "data.*.name" : "string",
+    "data.*.tag" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

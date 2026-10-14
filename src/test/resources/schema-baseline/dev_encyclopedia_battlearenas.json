@@ -1,0 +1,15 @@
+{
+  "schemaKey" : "dev.encyclopedia.battlearenas",
+  "capturedAt" : "2026-10-14T16:26:54.544176300Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.battle_arena_id" : "number",
+    "data.*.description" : "string",
+    "data.*.icon" : "string",
+    "data.*.name" : "string",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

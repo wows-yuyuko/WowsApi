@@ -1,0 +1,26 @@
+{
+  "schemaKey" : "dev.encyclopedia.crews",
+  "capturedAt" : "2026-10-14T16:26:49.908320Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.base_training_hire_price" : "number",
+    "data.*.base_training_level" : "number",
+    "data.*.first_names[]" : "string",
+    "data.*.gold_retraining_price" : "number",
+    "data.*.gold_training_hire_price" : "number",
+    "data.*.gold_training_level" : "number",
+    "data.*.icons[]" : "object",
+    "data.*.icons[].*" : "string",
+    "data.*.is_retrainable" : "boolean",
+    "data.*.last_names[]" : "array",
+    "data.*.money_retraining_price" : "null",
+    "data.*.money_training_hire_price" : "number",
+    "data.*.money_training_level" : "number",
+    "data.*.nation" : "string",
+    "data.*.subnation_index" : "number",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}

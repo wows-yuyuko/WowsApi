@@ -1,0 +1,14 @@
+{
+  "schemaKey" : "dev.encyclopedia.accountlevels",
+  "capturedAt" : "2026-10-14T16:26:49.205165600Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.image" : "string",
+    "data.*.points" : "number",
+    "data.*.tier" : "number",
+    "meta" : "object",
+    "meta.count" : "number",
+    "status" : "string"
+  }
+}
