@@ -1,0 +1,19 @@
+{
+  "schemaKey" : "vortex.account.achievements",
+  "capturedAt" : "2026-10-14T17:57:57.643157Z",
+  "fields" : {
+    "data" : "object",
+    "data.*" : "object",
+    "data.*.activated_at" : "number",
+    "data.*.created_at" : "number",
+    "data.*.name" : "string",
+    "data.*.statistics" : "object",
+    "data.*.statistics.achievements" : "object",
+    "data.*.statistics.achievements.*" : "object",
+    "data.*.statistics.achievements.*.count" : "number",
+    "data.*.statistics.achievements.*.counter_a" : "number",
+    "data.*.statistics.achievements.*.last_time" : "number",
+    "data.*.statistics.achievements.*.ship_id" : "number",
+    "status" : "string"
+  }
+}

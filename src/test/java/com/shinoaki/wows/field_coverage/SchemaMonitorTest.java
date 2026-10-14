@@ -21,6 +21,7 @@ import com.shinoaki.wows.api.type.WowsServer;
 import com.shinoaki.wows.api.utils.JsonUtils;
 import com.shinoaki.wows.api.vortex.VortexResourcesLanguage;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
+import com.shinoaki.wows.api.vortex.account.achievements.VortexUserAchievements;
 import com.shinoaki.wows.api.vortex.resources.RequestVortexResourcesInfo;
 import com.shinoaki.wows.api.vortex.resources.WowsResources;
 import com.shinoaki.wows.api.vortex.resources.box.WowsBox;
@@ -111,7 +112,9 @@ public class SchemaMonitorTest {
             KEY_ACCOUNT, node -> VortexUserInfo.parse(node, ACCOUNT_ID),
             KEY_SHIPS, VortexShipInfo::parse,
             KEY_ACCOUNT_RU, node -> VortexUserInfo.parse(node, ACCOUNT_ID_RU),
-            KEY_SHIPS_RU, VortexShipInfo::parse
+            KEY_SHIPS_RU, VortexShipInfo::parse,
+            //3.0 端点（监控键 = endpoint id）
+            "vortex.account.achievements", node -> VortexUserAchievements.parse(node, ACCOUNT_ID)
     );
 
     public static void main(String[] args) {
@@ -400,11 +403,14 @@ public class SchemaMonitorTest {
     }
 
     /**
-     * 3.0 视图探测（新端点，走 {@code api.developers()}）：监控键 = endpoint id（dev.*），基线 dev_*.json；
+     * 3.0 视图探测（新端点，走 {@code api.developers()} / {@code api.vortex()}）：
+     * 监控键 = endpoint id（dev.* / vortex.*），基线 dev_*.json / vortex_*.json；
      * 与旧 API 无依赖，断代清理时原样保留（届时整体迁出本文件/包）。
      */
     private static List<Probe> currentProbes(String appId) {
         List<Probe> probes = new ArrayList<>();
+        //vortex 通道端点不依赖开发者令牌
+        probes.add(new Probe("vortex-玩家成就", null, null, () -> WowsApi.of(SERVER).vortex().achievements(ACCOUNT_ID)));
         if (appId == null) {
             return probes;
         }
