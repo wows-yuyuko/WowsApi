@@ -24,9 +24,9 @@
 
 ```powershell
 # 在线探测 + 与基线比对（只读，发现 removed/typeChanged 时退出码 1）
-& .workbuddy/build.ps1 -SkipMain -SkipTest -Run com.shinoaki.wows.v2.SchemaMonitorTest
+& .workbuddy/build.ps1 -SkipMain -SkipTest -Run com.shinoaki.wows.field_coverage.SchemaMonitorTest
 # 确认变化符合预期后写回基线（同时清理改名后的过期基线）
-& .workbuddy/build.ps1 -SkipMain -SkipTest -Run com.shinoaki.wows.v2.SchemaMonitorTest -RunArgs @('--update')
+& .workbuddy/build.ps1 -SkipMain -SkipTest -Run com.shinoaki.wows.field_coverage.SchemaMonitorTest -RunArgs @('--update')
 ```
 
 开发者API（官方接口）探测需要令牌：设置环境变量 `WOWS_APP_ID`，未设置时自动跳过，vortex 接口不受影响。

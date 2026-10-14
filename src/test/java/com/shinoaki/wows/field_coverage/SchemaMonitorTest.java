@@ -1,4 +1,4 @@
-package com.shinoaki.wows.v2;
+package com.shinoaki.wows.field_coverage;
 
 import com.shinoaki.wows.api.WowsApi;
 import com.shinoaki.wows.api.codec.HttpCodec;
@@ -51,10 +51,10 @@ import java.util.stream.Stream;
  *
  * <pre>
  * 用法（仓库根目录执行）：
- *   java -cp ... com.shinoaki.wows.v2.SchemaMonitorTest                 # 在线探测 + 与基线比对（只读）
- *   java -cp ... com.shinoaki.wows.v2.SchemaMonitorTest --update        # 顺带写回基线（供 git review）
- *   java -cp ... com.shinoaki.wows.v2.SchemaMonitorTest --precise       # 追加"解析器实际读取/未消费"报告
- *   java -cp ... com.shinoaki.wows.v2.SchemaMonitorTest --replay        # 离线回放上次采集的原始响应（不打网络）
+ *   java -cp ... com.shinoaki.wows.field_coverage.SchemaMonitorTest                 # 在线探测 + 与基线比对（只读）
+ *   java -cp ... com.shinoaki.wows.field_coverage.SchemaMonitorTest --update        # 顺带写回基线（供 git review）
+ *   java -cp ... com.shinoaki.wows.field_coverage.SchemaMonitorTest --precise       # 追加"解析器实际读取/未消费"报告
+ *   java -cp ... com.shinoaki.wows.field_coverage.SchemaMonitorTest --replay        # 离线回放上次采集的原始响应（不打网络）
  *
  * 可选参数：--baseline=&lt;目录&gt;（默认 src/test/resources/schema-baseline）
  *           --raw=&lt;目录&gt;（默认 target/schema-raw）
