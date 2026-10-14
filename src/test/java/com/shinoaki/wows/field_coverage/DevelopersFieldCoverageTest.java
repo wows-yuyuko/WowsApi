@@ -1088,11 +1088,21 @@ public class DevelopersFieldCoverageTest {
     }
 
     /**
-     * 注册现场抓取用的调用（token/account_id 见类常量）。
+     * 注册现场抓取用的调用（token/account_id 见类常量）：
+     * 旧 API 段（{@link #legacyRegistry}）+ 3.0 视图段（{@link #currentRegistry}）。
      */
     private static void registry() {
         HttpCodec.updateTimeout(25);
         HttpClient client = TestConfig.client();
+        legacyRegistry(client);
+        currentRegistry();
+    }
+
+    /**
+     * 旧 API 现场抓取回退：**断代清理时整体删除本方法与顶部旧工具 import**；
+     * 届时下面对应端点检查段的「缺采集回退」改用 3.0 视图重写。
+     */
+    private static void legacyRegistry(HttpClient client) {
         WowsHttpUserTools user = new WowsHttpUserTools(client, server);
         WowsHttpShipTools ship = new WowsHttpShipTools(client, server, account_id);
         WowsHttpClanTools clan = new WowsHttpClanTools(client, server);
@@ -1110,8 +1120,12 @@ public class DevelopersFieldCoverageTest {
                 () -> clan.developers(token).userSearchClanDevelopers(account_id));
         register("api_asia_wows_clans_season_.json", "api_asia_wows_clans_season", "/wows/clans/season/", () -> clan.developers(token).season());
         register("api_asia_wows_clans_glossary_.json", "api_asia_wows_clans_glossary", "/wows/clans/glossary/", () -> encyclopedia.developers(token).glossary());
+    }
 
-        //3.0 新增端点：走 WowsApi 视图，监控键 = endpoint id（与 SchemaMonitorTest 的 dev_* 原始响应同名）
+    /**
+     * 3.0 视图现场抓取回退（新端点；监控键 = endpoint id，与 SchemaMonitorTest 的 dev_* 原始响应同名）。
+     */
+    private static void currentRegistry() {
         WowsApi api = WowsApi.of(server).credentials(c -> c.applicationId(token));
         register("dev_account_achievements.json", "dev_account_achievements", "dev.account.achievements",
                 () -> api.developers().userAchievements(account_id));
