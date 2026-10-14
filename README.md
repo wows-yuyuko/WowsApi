@@ -1,4 +1,4 @@
-# WowsApi — 战舰世界 public / vortex-api 接口开发包
+# WowsApi — 战舰世界 public 接口开发包
 
 > **JDK 21+** · **Jackson 3** · 零 HTTP 第三方依赖（纯 JDK `HttpClient`）
 >
@@ -13,7 +13,7 @@
   URL / 参数 / 认证槽位 / 解析器 / 监控键全部来自 `Endpoint` 定义，无散落的 `URI.create`；
 - **凭证**：`ApplicationId`（服务器级）/ `AccessToken`、`ShareToken`（账号级，按 accountId 精确匹配）/ 预留 `CookieCredential`；
   缺失必填凭证**发送前 fast-fail**（`MissingCredentialException`）；
-- **视图按通道分区**：`api.vortex()` / `api.clans()` / `api.developers()` / `api.resources()`——**1 调用 = 1 请求**；
+- **视图按通道分区**：`api.clans()` / `api.developers()`——**1 调用 = 1 请求**；
   多请求编排显式走 `aggregate` 层（`AccountAssembler`）与显式标注的方法（`ladder` 内部分页）；
 
 ## Maven 坐标
@@ -36,7 +36,7 @@
 import com.shinoaki.wows.api.error.*;
 
 try {
-    api.vortex().user(accountId);
+    api.developers().user(accountId);
 } catch (HttpStatusException e) {          // 非 200 / 重定向超限；带 statusCode
     System.out.println(e.getStatusCode());
 } catch (MissingCredentialException e) {   // 必填凭证缺失（发送前 fast-fail）
@@ -85,9 +85,9 @@ WowsApi api = WowsApi.of(WowsServer.RU)
 ```java
 // 线程池
 ExecutorService executor = Executors.newFixedThreadPool(8);
-CompletableFuture<VortexUserInfo> future = CompletableFuture.supplyAsync(() -> {
+CompletableFuture<DevelopersUserInfo> future = CompletableFuture.supplyAsync(() -> {
     try {
-        return api.vortex().user(accountId);
+        return api.developers().user(accountId);
     } catch (BasicException e) {
         throw new RuntimeException(e);
     }
@@ -95,18 +95,10 @@ CompletableFuture<VortexUserInfo> future = CompletableFuture.supplyAsync(() -> {
 
 // 虚拟线程（JDK21+）
 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    var task = executor.submit(() -> api.vortex().user(accountId));
+    var task = executor.submit(() -> api.developers().user(accountId));
     var data = task.get();
 }
 ```
-
-## 版本与迁移
-
-- **3.0.0（开发中）**：全新请求架构（`WowsApi` 入口 / 端点注册表 / 唯一管线 / 凭证一等公民 / `ServerProfile` 数据化）；
-  **全部 22 个端点已迁入**；错误语义强化（缺凭证 fast-fail、不支持显式拒绝、限流显式策略、排行失败不再静默吞）；
-  旧入口（5 个 Tools 类）标记 `@Deprecated`，将在断代清理时删除。
-- **2.x 版本变更历史**（2.0.3 同步方法 / 2.3.0 Jackson3 / 2.6.0 字段补齐 / 2.7.0 莱服分家 / 2.7.1 箱子字段）
-  与旧版用法见 [`docs/3.0之前-用法说明.md`](docs/3.0之前-用法说明.md)。
 
 ## 基于此SDK开发的平台接口
 
