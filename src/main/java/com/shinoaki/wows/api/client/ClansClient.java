@@ -17,16 +17,14 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * clans 通道视图（3.0 重写）：<b>1 调用 = 1 请求</b>（{@link #ladder(int)} 除外，见方法说明）。
- * <p>
- * 实例由 {@code WowsApi.clans()} 创建；主机为 {@code https://clans.*}（ServerProfile 注入）。
+ * clans 军团视图：1 调用 = 1 请求（{@link #ladder(int)} 除外，内部分页）；由 {@code WowsApi.clans()} 创建。
  *
  * @author Xun
  */
 public final class ClansClient {
 
     /**
-     * 排行分页拉取的最大页数上限（防服务端数据异常导致死循环）。
+     * 排行分页上限（防死循环）。
      */
     private static final int MAX_RANK_PAGE = 10_000;
 
@@ -37,35 +35,35 @@ public final class ClansClient {
     }
 
     /**
-     * 玩家所属军团（1 请求）。非官方API服务器（CN）查无公会返回 404 → 空对象（旧语义保留）。
+     * 玩家所属军团；非 API 服务器（CN）查无公会返回 404 → 空对象（旧语义）。
      */
     public VortexSearchClanUser accountClan(long accountId) throws BasicException {
         return pipeline.execute(ClansEndpoints.ACCOUNT_CLAN, EndpointRequest.account(accountId));
     }
 
     /**
-     * 军团详情（1 请求；莱服 ladder 字段自动按服务器区分）。
+     * 军团详情（莱服 ladder 字段自动按服务器区分）。
      */
     public VortexClanInfo clanInfo(long clanId) throws BasicException {
         return pipeline.execute(ClansEndpoints.INFO, EndpointRequest.of(Map.of("clanId", String.valueOf(clanId))));
     }
 
     /**
-     * 军团成员战绩（1 请求；默认 pvp）。
+     * 军团成员战绩（默认 pvp）。
      */
     public VortexClanStatisticsInfo members(long clanId) throws BasicException {
         return members(clanId, "pvp");
     }
 
     /**
-     * 军团成员战绩（1 请求；指定战斗类型，如 {@code cvc}）。
+     * 军团成员战绩（指定战斗类型，如 cvc）。
      */
     public VortexClanStatisticsInfo members(long clanId, String battleType) throws BasicException {
         return members(clanId, battleType, null);
     }
 
     /**
-     * 军团成员战绩（1 请求；{@code cvc} 支持 season）。
+     * 军团成员战绩（{@code cvc} 支持 season）。
      */
     public VortexClanStatisticsInfo members(long clanId, String battleType, Integer season) throws BasicException {
         Map<String, String> params = new LinkedHashMap<>();
@@ -78,17 +76,14 @@ public final class ClansClient {
     }
 
     /**
-     * 军团搜索（1 请求）。
+     * 军团搜索。
      */
     public List<VortexSearchClan> search(String clanTag) throws BasicException {
         return pipeline.execute(ClansEndpoints.SEARCH, EndpointRequest.of(Map.of("search", clanTag)));
     }
 
     /**
-     * 军团排行完整拉取（clan_id 游标分页，<b>内部多个请求</b>——等价旧 {@code ClanRankUtils.getRanks}）。
-     * <p>
-     * 分页上限 {@value #MAX_RANK_PAGE} 页；失败语义与 2.x 不同：不再静默吞异常返回空表，
-     * 任一页失败直接抛 {@code BasicException}。
+     * 军团排行完整拉取（clan_id 游标分页，内部多个请求）；任一页失败直接抛异常（不吞）。
      *
      * @param season 赛季；{@code <=0} 表示最新赛季
      */
@@ -115,10 +110,7 @@ public final class ClansClient {
     }
 
     /**
-     * 军团排行单页（1 请求）。
-     * <p>
-     * 实测（2026-10）：{@code season<=0} 时<b>不传 season 参数</b>（服务端对空值返回 422，
-     * 旧实现 {@code &season=} 因此静默失败——3.0 修正为省略参数 = 最新赛季）。
+     * 军团排行单页。{@code season<=0} 不传 season 参数（服务端对空值返回 422 → 省略 = 最新赛季）。
      *
      * @param season 赛季；{@code <=0} 表示最新赛季
      * @param clanId 游标（上一页最后一条的 id）；null = 第一页

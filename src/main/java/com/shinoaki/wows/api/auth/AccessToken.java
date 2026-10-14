@@ -3,8 +3,7 @@ package com.shinoaki.wows.api.auth;
 import java.util.Map;
 
 /**
- * 官方开发者API 用户态令牌（查询参数 {@code access_token}），账号级作用域；
- * 配置后 {@code private.*} 私有数据才会返回。
+ * 官方开发者API 用户态令牌（查询参数 {@code access_token}，账号级）：配置后 {@code private.*} 私有数据才会返回。
  *
  * @param accountId 凭证绑定的账号（仅对该账号的请求注入）
  * @param value     令牌值（日志中掩码显示）

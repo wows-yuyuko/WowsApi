@@ -1,10 +1,7 @@
 package com.shinoaki.wows.api.auth;
 
 /**
- * 端点声明的认证槽位（3.0 重写）：种类 + 是否必填。
- * <p>
- * 必填槽位未命中 → 发送前抛 {@code MissingCredentialException}（fast-fail）；
- * 可选槽位未命中 → 匿名请求（vortex 公开数据、dev 不带 access_token 即此路径）。
+ * 端点认证槽位：种类 + 是否必填。必填未命中 → 发送前抛 {@code MissingCredentialException}；可选未命中 → 匿名。
  *
  * @author Xun
  */

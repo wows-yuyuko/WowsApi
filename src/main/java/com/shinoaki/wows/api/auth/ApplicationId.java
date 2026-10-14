@@ -3,9 +3,7 @@ package com.shinoaki.wows.api.auth;
 import java.util.Map;
 
 /**
- * 官方开发者API 令牌（查询参数 {@code application_id}），服务器级作用域。
- * <p>
- * 实例即服务器：莱服实例必须配莱服自己签发的 key（WG key 无效，已验证）。
+ * 官方开发者API 令牌（查询参数 {@code application_id}，服务器级）。莱服须用莱服自己的 key（WG key 无效）。
  *
  * @param value 令牌值（日志中掩码显示）
  * @author Xun

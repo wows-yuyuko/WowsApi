@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 官方开发者API 端点表（3.0 重写）。
- * <p>
- * 主机为 {@code https://api.*}（由 ServerProfile 注入），路径为命名空间内路径
- * （前缀 {@code /wows/} 或 {@code /mk/} 按服务器注入）；CN 不提供该通道（发送前拒绝）。
+ * 官方开发者API 端点表：主机由 ServerProfile 注入，路径为命名空间内路径（前缀 /wows/ 或 /mk/ 按服务器）；
+ * CN 无该通道（发送前拒绝）。
  *
  * @author Xun
  */
@@ -44,7 +42,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersSearchUser.parse(node));
 
     /**
-     * 玩家详情（extra 串由 ServerProfile 按服提供；access_token 可选，解锁 private.*）。
+     * 玩家详情（extra 按服由 ServerProfile 提供；access_token 可选）。
      */
     public static final Endpoint<DevelopersUserInfo> ACCOUNT_INFO = Endpoint.dev(
             "dev.account.info",
@@ -55,7 +53,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersUserInfo.parse(request.accountId(), node));
 
     /**
-     * 玩家所属军团（clan 命名空间：莱服本接口仍在 /wows/ 下，见 {@link DevNamespace#CLAN}）。
+     * 玩家所属军团（clan 命名空间：莱服仍在 /wows/ 下）。
      */
     public static final Endpoint<DevelopersSearchUserClan> CLAN_ACCOUNT = Endpoint.dev(
             "dev.clan.account",
@@ -88,7 +86,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersSearchClan.parse(node));
 
     /**
-     * 军团赛季/联赛（language 为参数；旧实现硬编码 zh-cn，默认值保持一致）。
+     * 军团赛季/联赛（language 参数，默认 zh-cn）。
      */
     public static final Endpoint<List<DevelopersSeasonInfo>> CLAN_SEASON = Endpoint.dev(
             "dev.clan.season",
@@ -110,7 +108,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersGlossary.parse(node));
 
     /**
-     * 战舰统计（extra 为历史集合 {@link #statsExtra()}；access_token 可选，出现时附带 in_garage=1）。
+     * 战舰统计（extra 见 {@link #statsExtra()}；带 access_token 时附带 in_garage=1）。
      */
     public static final Endpoint<DevelopersUserShip> SHIP_STATS = Endpoint.dev(
             "dev.ship.stats",
@@ -122,7 +120,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersUserShip.parse(node));
 
     /**
-     * 战舰全量战绩（与 stats 同路径、extra 为全量 14 类，端点 id 区分监控基线）。
+     * 战舰全量战绩（与 stats 同路径，extra 为全量 14 类；端点 id 区分监控基线）。
      */
     public static final Endpoint<DevelopersUserShipOper> SHIP_OPER = Endpoint.dev(
             "dev.ship.oper",
@@ -134,7 +132,7 @@ public final class DevelopersEndpoints {
             (node, request, profile) -> DevelopersUserShipOper.parse(node));
 
     /**
-     * 战舰徽章（莱服不提供该接口——端点声明支持面，调用即显式拒绝）。
+     * 战舰徽章（莱服不提供——端点声明支持面，调用即拒绝）。
      */
     public static final Endpoint<Map<Long, ShipExpansion>> SHIP_BADGES = Endpoint.dev(
                     "dev.ship.badges",
@@ -146,19 +144,14 @@ public final class DevelopersEndpoints {
             .withServers(WowsServer.ASIA, WowsServer.EU, WowsServer.NA);
 
     /**
-     * {@code dev.ship.stats} 的 extra 串：{@link WowsBattlesType#DEVELOPERS_STATS_TYPES} 去掉顶层默认块 pvp。
-     * <p>
-     * 这是<b>历史集合</b>（pvp_solo,pvp_div2,pvp_div3,rank_solo），与 {@code dev.ship.oper} 的全量 14 类不同，
-     * 勿随手扩充（与基线/监控契约绑定）。
+     * {@code dev.ship.stats} 的 extra 串（历史集合，pvp 除外；勿扩充，与监控基线契约绑定）。
      */
+    private static final String STATS_EXTRA = String.join(",", WowsBattlesType.DEVELOPERS_STATS_TYPES.stream()
+            .filter(type -> type != WowsBattlesType.PVP)
+            .map(WowsBattlesType::code)
+            .toList());
+
     public static String statsExtra() {
-        StringBuilder builder = new StringBuilder();
-        for (WowsBattlesType type : WowsBattlesType.DEVELOPERS_STATS_TYPES) {
-            if (WowsBattlesType.PVP != type) {
-                builder.append(type.code()).append(',');
-            }
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        return builder.toString();
+        return STATS_EXTRA;
     }
 }

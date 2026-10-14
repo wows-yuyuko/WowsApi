@@ -8,12 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 值查询参数（3.0 重写）：值来自 {@link EndpointRequest#params()}，如
- * {@code account_id={accountId}}、{@code search={search}}。
+ * 值查询参数：值来自请求参数，encoded = 是否按 encodeURIComponent 编码（自由文本 true；数字 ID / extra false）。
  *
  * @param key     参数名
  * @param param   取值参数名
- * @param encoded 是否按 encodeURIComponent 语义编码（自由文本如搜索词 = true；数字 ID、extra 串 = false）
+ * @param encoded 是否编码
  * @author Xun
  */
 public record ValueParam(String key, String param, boolean encoded) implements QueryParam {

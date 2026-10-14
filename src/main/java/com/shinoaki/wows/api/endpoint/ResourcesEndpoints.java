@@ -8,10 +8,8 @@ import com.shinoaki.wows.api.vortex.resources.box.WowsBox;
 import java.util.List;
 
 /**
- * 资源/箱子端点表（3.0 重写）——vortex 主机上的 graphql 接口（POST）。
- * <p>
- * 三个端点共用 {@code /api/graphql/glossary/}，以 endpoint id 区分 schema 与监控基线
- * （不再需要手写 {@code SchemaRecorder.key}）。
+ * 资源/箱子端点表：vortex 主机上的 graphql 接口（POST），三个端点共用 {@code /api/graphql/glossary/}，
+ * 以 endpoint id 区分 schema 与监控基线。
  *
  * @author Xun
  */
@@ -43,7 +41,7 @@ public final class ResourcesEndpoints {
             .post(params -> WowsResources.requestBody(params.get("language")));
 
     /**
-     * 资源索引/词典（getGlossData schema）：词典 + 船 + 成就一次拉取；语言同时进入请求体与解析（vehicles.language）。
+     * 资源索引/词典（getGlossData schema）：语言同时进入请求体与解析。
      */
     public static final Endpoint<RequestVortexResourcesInfo> GLOSSARY = Endpoint.of(
                     "vortex.resources.glossary",

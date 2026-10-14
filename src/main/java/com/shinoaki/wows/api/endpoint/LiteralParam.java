@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 字面量查询参数（3.0 重写）：值固定，如 {@code extra=clan}、{@code type=clans}。
+ * 字面量查询参数（如 {@code extra=clan}；值固定、原样拼接不编码）。
  *
  * @param key   参数名
- * @param value 参数值（原样拼接，不编码）
+ * @param value 参数值
  * @author Xun
  */
 public record LiteralParam(String key, String value) implements QueryParam {

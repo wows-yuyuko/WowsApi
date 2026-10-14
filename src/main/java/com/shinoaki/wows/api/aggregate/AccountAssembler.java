@@ -12,15 +12,8 @@ import com.shinoaki.wows.api.error.BasicException;
 import java.util.Objects;
 
 /**
- * 玩家综合档案编排（3.0 重写，aggregate 层——多请求编排必须显式 opt-in）。
- * <p>
- * 视图层保持"1 调用 = 1 请求"，本类把旧 {@code accountInfoDevelopers} 的编排语义固化：
- * <ol>
- *     <li>玩家详情（{@code dev.account.info}）；</li>
- *     <li>玩家所属军团（{@code dev.clan.account}）；</li>
- *     <li>若在军团中（clanId&gt;0），补拉军团详情（{@code dev.clan.info}）补全名称/tag/简介/人数。</li>
- * </ol>
- * 失败语义：任一步失败即整体失败（不吞异常、不降级）；与旧实现一致。
+ * 玩家综合档案编排（aggregate 层，多请求必须显式 opt-in）：
+ * 玩家详情 + 所属军团 + （在军团时）军团详情，共 3 请求（无军团时 2 个）；任一步失败即整体失败。
  *
  * @author Xun
  */
@@ -33,7 +26,7 @@ public final class AccountAssembler {
     }
 
     /**
-     * 由 api 实例创建（沿用其实例凭证表与服务器档案）。
+     * 由 api 实例创建（沿用其凭证与服务器档案）。
      */
     public static AccountAssembler of(WowsApi api) {
         Objects.requireNonNull(api, "api");
@@ -41,7 +34,7 @@ public final class AccountAssembler {
     }
 
     /**
-     * 玩家综合档案：3 个请求（详情 + 所属军团 + 军团详情；无军团时 2 个）。
+     * 玩家综合档案。
      */
     public AccountInfo info(long accountId) throws BasicException {
         DevelopersUserInfo user = developers.user(accountId);

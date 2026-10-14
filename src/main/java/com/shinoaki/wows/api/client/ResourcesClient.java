@@ -17,11 +17,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 资源/箱子视图（3.0 重写）：<b>1 调用 = 1 请求</b>。
- * <p>
- * 实例由 {@code WowsApi.resources()} 创建；箱子详情走 GET，三个 graphql 端点走 POST
- * （请求体由模型类的 {@code requestBody(...)} 提供，与旧实现逐字节一致）。
- * PT 测试服：{@code WowsApi.pt().resources()}（vortex 主机切到 PT）。
+ * 资源/箱子视图：1 调用 = 1 请求；由 {@code WowsApi.resources()} 创建。
+ * 箱子详情走 GET，三个 graphql 端点走 POST（请求体来自模型类的 {@code requestBody(...)}）；PT 用 {@code WowsApi.pt()}。
  *
  * @author Xun
  */
@@ -34,14 +31,14 @@ public final class ResourcesClient {
     }
 
     /**
-     * 箱子详情（1 请求）；默认语言：莱服固定 ru，其余服 zh-sg（与旧实现一致）。
+     * 箱子详情；默认语言：莱服固定 ru，其余服 zh-sg。
      */
     public WowsLootBox lootbox(long lootboxId) throws BasicException {
         return lootbox(lootboxId, VortexResourcesLanguage.SG);
     }
 
     /**
-     * 箱子详情（1 请求）。莱服内容只有 RU 版本：语言在莱服被固定为 {@code ru}（沿用旧行为，传入的语言不生效）。
+     * 箱子详情；莱服语言固定为 {@code ru}（传入不生效，旧行为）。
      */
     public WowsLootBox lootbox(long lootboxId, VortexResourcesLanguage language) throws BasicException {
         VortexResourcesLanguage use = pipeline.profile().server() == WowsServer.RU
@@ -53,7 +50,7 @@ public final class ResourcesClient {
     }
 
     /**
-     * 箱子列表（graphql Lootbox schema，POST；1 请求）。
+     * 箱子列表（graphql Lootbox，POST）。
      */
     public List<WowsBox> lootboxes(VortexResourcesLanguage language) throws BasicException {
         return pipeline.execute(ResourcesEndpoints.LOOTBOX_LIST,
@@ -61,7 +58,7 @@ public final class ResourcesClient {
     }
 
     /**
-     * 资源列表（graphql Items schema，POST；1 请求）。
+     * 资源列表（graphql Items，POST）。
      */
     public List<WowsResources> items(VortexResourcesLanguage language) throws BasicException {
         return pipeline.execute(ResourcesEndpoints.ITEMS,
@@ -69,7 +66,7 @@ public final class ResourcesClient {
     }
 
     /**
-     * 资源索引/词典（graphql getGlossData schema，POST；1 请求）：词典 + 船 + 成就一次拉取。
+     * 资源索引/词典（graphql getGlossData，POST）：词典 + 船 + 成就一次拉取。
      */
     public RequestVortexResourcesInfo glossary(VortexResourcesLanguage language) throws BasicException {
         return pipeline.execute(ResourcesEndpoints.GLOSSARY,

@@ -8,14 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 一次端点请求的参数载体（3.0 重写）。
- * <p>
- * {@link #accountId()} 有两个用途：路径/查询参数里的账号取值来源，
- * 以及<b>账号级凭证的匹配依据</b>（仅当与凭证绑定账号一致才注入）。
- * 非账号端点（搜索、军团详情等）为 null，账号级凭证一律不注入。
+ * 一次端点请求的参数载体。
+ * accountId：账号取值来源 + 账号级凭证的匹配依据（null = 非账号请求，账号级凭证不注入）。
  *
  * @param accountId 本次请求的账号（可为 null）
- * @param params    路径占位符与查询参数取值（键名与端点声明一一对应）
+ * @param params    路径占位符与查询参数取值
  * @param overrides 调用级覆盖凭证（优先于实例配置）
  * @param policy    限流容错策略
  * @author Xun
@@ -36,14 +33,14 @@ public record EndpointRequest(
     }
 
     /**
-     * 账号请求（自动带 {@code accountId} 参数）。
+     * 账号请求（自动带 accountId 参数）。
      */
     public static EndpointRequest account(long accountId) {
         return account(accountId, Map.of());
     }
 
     /**
-     * 账号请求，附带额外参数（如 {@code extra}）。
+     * 账号请求 + 额外参数（如 extra）。
      */
     public static EndpointRequest account(long accountId, Map<String, String> params) {
         Map<String, String> merged = new LinkedHashMap<>(params);
@@ -59,7 +56,7 @@ public record EndpointRequest(
     }
 
     /**
-     * 调用级凭证覆盖（逃生门），优先于实例配置；账号级覆盖需账号一致才生效。
+     * 调用级凭证覆盖（逃生门，优先于实例配置；账号级需账号一致）。
      */
     public EndpointRequest credentials(Credential... credentials) {
         return new EndpointRequest(accountId, params, List.of(credentials), policy);
@@ -73,14 +70,14 @@ public record EndpointRequest(
     }
 
     /**
-     * 取参数值；缺失返回 null（可选参数）。
+     * 取参数值；缺失返回 null。
      */
     public String param(String name) {
         return params.get(name);
     }
 
     /**
-     * 取数值型参数（如 {@code clanId}）；缺失或非数字属编程错误，直接抛异常。
+     * 取数值型参数；缺失 / 非数字属编程错误，直接抛异常。
      */
     public long longParam(String name) {
         String value = params.get(name);

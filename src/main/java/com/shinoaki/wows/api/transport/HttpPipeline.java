@@ -30,20 +30,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 唯一请求管线（3.0 重写）：所有端点的唯一出口，结构上不可绕过。
- * <p>
- * 一次调用生命周期：
- * <pre>
- * 视图方法 → EndpointRequest
- *          → 服务器兼容性检查（发送前 fast-fail）
- *          → 凭证解析（发送前 fast-fail）
- *          → URL 组装（ServerProfile 注入主机与 dev 前缀；凭证与端点参数注入查询串）
- *          → 通道头 + 凭证头 → 发送（HostPolicy：cookie/重定向/429 按主机）
- *          → 解码（ResponseCodec）→ 监控挂钩（endpoint id 键）
- *          → parser → T
- * </pre>
- * 失败语义：网络/状态码/解析异常分层不变；限流（429/503）在 {@link RateLimitPolicy#TOLERANT}
- * 且端点声明了容错空值时返回空值，否则抛出。
+ * 唯一请求管线：全部端点的唯一出口。
+ * 流程：兼容性检查 → 凭证解析（均发送前 fast-fail）→ URL 组装 → 发送（HostPolicy）→ 解码 → 监控挂钩 → parser。
+ * 限流：429/503 在 {@link RateLimitPolicy#TOLERANT} 且端点声明空值时返回空值，否则抛出。
  *
  * @author Xun
  */
@@ -51,7 +40,7 @@ import java.util.Set;
 public final class HttpPipeline {
 
     /**
-     * 视为"限流"的状态码：429 与 503（国服搜索接口即 503 高频限流）。
+     * 限流状态码（国服搜索接口即 503 高频限流）。
      */
     private static final Set<Integer> THROTTLE_STATUS = Set.of(429, 503);
 
@@ -64,7 +53,7 @@ public final class HttpPipeline {
     }
 
     /**
-     * 当前实例的服务器档案（供视图方法读取服务器事实，如 account/info 的 extra 串）。
+     * 当前实例的服务器档案（视图方法读取服务器事实用）。
      */
     public ServerProfile profile() {
         return profile;
@@ -83,7 +72,7 @@ public final class HttpPipeline {
             HttpResponse<byte[]> response = HostPolicy.send(HttpClientProvider.client(), httpRequest);
             json = ResponseCodec.decode(response);
         } catch (HttpStatusException e) {
-            //CN 等非 API 服务器：查无数据返回 404，按端点声明返回空值（旧语义保留，见对照表 §4）
+            //非 API 服务器（CN）查无数据返回 404 → 按端点声明返回空值（旧语义）
             if (e.getStatusCode() == 404 && endpoint.notFoundEmpty() != null && !profile.devApiSupported()) {
                 return endpoint.notFoundEmpty().get();
             }
@@ -95,7 +84,7 @@ public final class HttpPipeline {
             }
             throw e;
         }
-        //字段漂移监视的采集挂钩：新管线按 endpoint id 记录（默认关闭，未开启时只有一次 ThreadLocal 读取）
+        //字段漂移监视挂钩：按 endpoint id 记录（默认关闭）
         if (SchemaRecorder.enabled()) {
             SchemaRecorder.record(endpoint.id(), json);
         }
@@ -103,8 +92,7 @@ public final class HttpPipeline {
     }
 
     /**
-     * 服务器兼容性检查（发送前 fast-fail，不查凭证、不发请求）：
-     * CN 不提供官方开发者API；端点可额外声明支持的服务器集合（如 RU 无战舰徽章）。
+     * 服务器兼容性检查（发送前 fast-fail）：CN 无 dev API；端点可声明服务器支持面（如 RU 无战舰徽章）。
      */
     private void checkServer(Endpoint<?> endpoint) throws UnsupportedOnServerException {
         if (endpoint.channel() == Channel.DEV && !profile.devApiSupported()) {
@@ -116,7 +104,7 @@ public final class HttpPipeline {
     }
 
     /**
-     * URL 组装：主机（ServerProfile）→ 路径（dev 前缀 + 模板渲染）→ 查询串（凭证参数在前，端点参数随后）。
+     * URL 组装：主机 + 路径（dev 前缀 + 模板渲染）+ 查询串（凭证先、端点参数随后）。
      */
     private URI buildUri(Endpoint<?> endpoint, EndpointRequest request, List<Credential> credentials) {
         StringBuilder url = new StringBuilder(profile.host(endpoint.channel()));
@@ -144,7 +132,7 @@ public final class HttpPipeline {
     }
 
     /**
-     * 路径模板渲染：{@code {name}} 占位符以 URI 组件语义编码后替换；缺失参数属编程错误，直接抛异常。
+     * 路径模板渲染：{@code {name}} 按 URI 组件编码替换；缺参数属编程错误，抛异常。
      */
     private static String renderPath(String path, Map<String, String> params) {
         StringBuilder result = new StringBuilder(path.length() + 16);
@@ -172,10 +160,10 @@ public final class HttpPipeline {
     }
 
     /**
-     * 构造 HTTP 请求：通道头（三个通道目前一致）+ 凭证头 + 请求级超时；端点声明了请求体即 POST。
+     * 构造 HTTP 请求：通道头 + 凭证头 + 请求级超时；声明了 body 即 POST。
      */
     private static HttpRequest buildRequest(Endpoint<?> endpoint, URI uri, EndpointRequest request, List<Credential> credentials) {
-        //只声明 gzip/deflate，不声明 br（brotli）——本库未实现 br 解压，声明后服务端可能返回 br 导致解析失败
+        //只声明 gzip/deflate：本库未实现 br 解压，声明 br 可能导致解析失败
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri)
                 .setHeader("Accept-Encoding", "gzip, deflate")
                 .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
@@ -199,7 +187,7 @@ public final class HttpPipeline {
     }
 
     /**
-     * 响应解析：字符串 → JsonNode（失败带响应摘要）→ 端点解析器；解析器内 Jackson 异常统一包装。
+     * 响应解析：字符串 → JsonNode → 端点解析器（Jackson 异常统一包装）。
      */
     private <T> T parse(Endpoint<T> endpoint, EndpointRequest request, String json) throws BasicException {
         JsonNode node = JsonUtils.json().parseResponse(json);

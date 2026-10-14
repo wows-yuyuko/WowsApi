@@ -16,25 +16,14 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * WowsApi 入口（3.0 重写）：实例即服务器边界，凭证表随实例走（跨服串用结构上不可能）。
- * <p>
- * <b>视图按通道分区</b>，1 调用 = 1 请求；多请求编排显式走 aggregate 层。用法：
+ * WowsApi 入口：实例即服务器边界，凭证表随实例走。视图按通道分区，1 调用 = 1 请求；多请求编排走 aggregate 层。
  * <pre>{@code
  * WowsApi api = WowsApi.of(WowsServer.RU)
- *         .credentials(c -> c
- *                 .applicationId("...")          // dev · 服务器级
- *                 .accessToken(accountId, "...") // dev · 账号级（可选）
- *                 .shareToken(accountId, "..."));// vortex · 账号级（可选）
- *
- * api.vortex().user(accountId);                 // 1 请求
- * api.developers().user(accountId);             // 1 请求
- * AccountAssembler.of(api).info(accountId);     // 3 请求（显式编排）
+ *         .credentials(c -> c.applicationId("...").shareToken(accountId, "..."));
+ * api.vortex().user(accountId);
+ * AccountAssembler.of(api).info(accountId); // 3 请求（显式编排）
  * }</pre>
- * 不可变性：{@link #credentials(Consumer)} 返回<b>新实例</b>（原实例不受影响）；
- * {@link #timeout(int)} / {@link #proxy(ProxySelector)} 作用于进程级的共享传输配置
- * （见 {@link HttpClientProvider} 的说明），对全部实例生效。
- * <p>
- * 同步 API：需要异步时由调用方用线程池或 JDK21 虚拟线程包装。
+ * {@link #credentials(Consumer)} 返回新实例；{@link #timeout(int)}/{@link #proxy(ProxySelector)} 为进程级共享配置。同步 API。
  *
  * @author Xun
  */
@@ -58,7 +47,7 @@ public final class WowsApi {
     }
 
     /**
-     * 按服务器创建（内置服务器档案）。
+     * 按内置服务器档案创建。
      */
     public static WowsApi of(WowsServer server) {
         Objects.requireNonNull(server, "server");
@@ -66,7 +55,7 @@ public final class WowsApi {
     }
 
     /**
-     * 按自定义服务器档案创建（测试假上游 / 自建镜像等高级用法；常规使用 {@link #of(WowsServer)}）。
+     * 自定义服务器档案（测试 / 自建镜像等高级用法；常规使用 {@link #of(WowsServer)}）。
      */
     public static WowsApi of(ServerProfile profile) {
         Objects.requireNonNull(profile, "profile");
@@ -74,7 +63,7 @@ public final class WowsApi {
     }
 
     /**
-     * 配置凭证（不可变：返回新实例，原实例不受影响；重复配置同 kind + 同账号 = 覆盖）。
+     * 配置凭证（返回新实例；同 kind 同账号 = 覆盖）。
      */
     public WowsApi credentials(Consumer<CredentialsBuilder> config) {
         CredentialsBuilder builder = CredentialsBuilder.from(credentials);
@@ -83,7 +72,7 @@ public final class WowsApi {
     }
 
     /**
-     * 设置请求超时（秒，进程级共享——影响共享 HttpClient 与后续全部请求）。
+     * 设置请求超时（秒，进程级共享）。
      */
     public WowsApi timeout(int seconds) {
         HttpClientProvider.updateTimeout(seconds);
@@ -91,7 +80,7 @@ public final class WowsApi {
     }
 
     /**
-     * 设置全局代理选择器（进程级共享；null = 直连）。变更后共享客户端在下次取用时自动重建。
+     * 设置全局代理选择器（进程级共享；null = 直连）。
      */
     public WowsApi proxy(ProxySelector selector) {
         HttpClientProvider.updateProxySelector(selector);
@@ -99,18 +88,22 @@ public final class WowsApi {
     }
 
     /**
-     * 测试服（PT）变体：vortex 主机替换为 PT 主机（其余服务器事实不变），返回新实例。
-     * <p>
-     * 与旧 {@code isPtServer} 参数语义一致——仅影响走 vortex 主机的端点（箱子/资源类）；clans / dev 不变。
+     * 测试服（PT）变体：仅 vortex 主机切换，返回新实例（clans / dev 不变）。
      */
     public WowsApi pt() {
         return new WowsApi(profile.withPtServer(), credentials);
     }
 
+    /**
+     * 当前服务器。
+     */
     public WowsServer server() {
         return profile.server();
     }
 
+    /**
+     * 当前服务器档案。
+     */
     public ServerProfile profile() {
         return profile;
     }
@@ -137,7 +130,7 @@ public final class WowsApi {
     }
 
     /**
-     * 资源/箱子视图（箱子详情/列表、资源列表、资源索引；1 调用 = 1 请求）。
+     * 资源/箱子视图（箱子、资源列表、索引；1 调用 = 1 请求）。
      */
     public ResourcesClient resources() {
         return resources;

@@ -9,18 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 服务器档案（3.0 重写：通道/服务器差异数据化）——把原先散落的
- * {@code if (server == RU)} / URI 多分支手拼，收敛为一张"服务器事实表"。
- * <p>
- * 事实来源（全部经实测确认）：
- * <ul>
- *     <li>主机：vortex / clans / api / pt-vortex 四套域名；</li>
- *     <li>官方开发者API 前缀：按 {@link DevNamespace} 分域给出（莱服 /mk/ 只覆盖部分域，见该枚举说明）；</li>
- *     <li>CN 无官方开发者API（{@code devApiSupported=false}），调用 dev 端点在发送前拒绝；</li>
- *     <li>account/info 的 extra 串：莱服没有 {@code statistics.clan}，其余服一致。</li>
- * </ul>
- * 常规使用 {@link #of(WowsServer)} 取内置档案；测试假上游/自建镜像可用 {@link #withHosts(String, String, String)}
- * 替换主机而保留其余事实。后续差异（如军团排行 realm、徽章支持面）按需加字段，端点侧零分支。
+ * 服务器档案：主机 + dev 前缀（按域）+ extra（按服）+ 排行 realm + CN dev 拒绝的数据化「服务器事实表」。
+ * 测试 / 自建镜像用 {@link #withHosts(String, String, String)} 替换主机；端点侧零分支。
  *
  * @param server          服务器
  * @param vortexHost      vortex 主机（https://vortex.*）
@@ -28,9 +18,9 @@ import java.util.Objects;
  * @param clansHost       clans 主机（https://clans.*）
  * @param apiHost         官方开发者API 主机（https://api.*）
  * @param devApiSupported 是否提供官方开发者API（CN=false）
- * @param devPrefixes     dev 路径前缀（按域）
- * @param accountInfoExtra account/info 端点的 extra 串（按服不同）
- * @param ladderRealm     军团排行（clans /api/ladder/）的 realm 参数（CN/RU=global、ASIA=sg、EU=eu、NA=us）
+ * @param devPrefixes     dev 路径前缀（按域，莱服 /mk/ 只覆盖 account/ships/glossary）
+ * @param accountInfoExtra account/info 的 extra 串（莱服无 statistics.clan）
+ * @param ladderRealm     军团排行 realm（CN/RU=global、ASIA=sg、EU=eu、NA=us）
  * @author Xun
  */
 public record ServerProfile(
@@ -54,7 +44,7 @@ public record ServerProfile(
                     + "statistics.pvp_div2,statistics.pvp_div3,statistics.pvp_solo,statistics.rank_div2,statistics.rank_div3,statistics.rank_solo";
 
     /**
-     * 莱服的 account/info extra：没有 statistics.clan（莱服该块不存在）。
+     * 莱服的 account/info extra：无 statistics.clan（该块不存在）。
      */
     private static final String ACCOUNT_INFO_EXTRA_RU =
             "private.grouped_contacts,private.port,statistics.club,statistics.oper_div,statistics.oper_div_hard,"
@@ -76,19 +66,14 @@ public record ServerProfile(
     }
 
     /**
-     * 替换三个业务主机（测试假上游 / 自建镜像）；其余服务器事实保持不变。
-     *
-     * @param vortexHost vortex 主机，如 {@code http://127.0.0.1:8080}
-     * @param clansHost  clans 主机
-     * @param apiHost    官方开发者API 主机
+     * 替换三个业务主机（测试 / 自建镜像）；其余事实不变。
      */
     public ServerProfile withHosts(String vortexHost, String clansHost, String apiHost) {
         return new ServerProfile(server, vortexHost, vortexPtHost, clansHost, apiHost, devApiSupported, devPrefixes, accountInfoExtra, ladderRealm);
     }
 
     /**
-     * 测试服（PT）变体：vortex 主机替换为 PT 主机（其余服务器事实不变）——
-     * 与旧 {@code isPtServer} 参数的语义一致（仅影响走 vortex 主机的端点；clans / dev 不变）。
+     * 测试服（PT）变体：仅 vortex 主机替换为 PT（clans / dev 不变）。
      */
     public ServerProfile withPtServer() {
         return new ServerProfile(server, vortexPtHost, vortexPtHost, clansHost, apiHost, devApiSupported, devPrefixes, accountInfoExtra, ladderRealm);
@@ -106,7 +91,7 @@ public record ServerProfile(
     }
 
     /**
-     * dev 端点的路径前缀（含首尾斜杠），如 {@code /wows/} 或 {@code /mk/}。
+     * dev 端点路径前缀（含首尾斜杠），如 /wows/ 或 /mk/。
      */
     public String devPrefix(DevNamespace namespace) {
         String prefix = devPrefixes.get(namespace);
@@ -142,7 +127,7 @@ public record ServerProfile(
     }
 
     /**
-     * 军团排行 realm（旧 ClanRankUtils.baseUrl 的事实来源）：CN/RU=global、ASIA=sg、EU=eu、NA=us。
+     * 军团排行 realm：CN/RU=global、ASIA=sg、EU=eu、NA=us。
      */
     private static String ladderRealm(WowsServer server) {
         return switch (server) {

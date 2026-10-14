@@ -13,9 +13,7 @@ import tools.jackson.core.type.TypeReference;
 import java.util.List;
 
 /**
- * clans 通道端点表（3.0 重写）。
- * <p>
- * 主机为 {@code https://clans.*}（由 ServerProfile 注入），端点定义不含域名。
+ * clans 通道端点表：主机由 ServerProfile 注入，端点定义不含域名。
  *
  * @author Xun
  */
@@ -25,8 +23,7 @@ public final class ClansEndpoints {
     }
 
     /**
-     * 玩家所属军团（注意：本接口在 <b>vortex 主机</b> 上，不是 clans 主机）。
-     * 非官方API服务器（CN）查无公会返回 404 → 按空对象处理（旧语义保留）。
+     * 玩家所属军团（在 vortex 主机上，不是 clans 主机）；非 API 服务器（CN）404 → 空对象（旧语义）。
      */
     public static final Endpoint<VortexSearchClanUser> ACCOUNT_CLAN = Endpoint.of(
                     "clans.account.clan",
@@ -69,9 +66,7 @@ public final class ClansEndpoints {
             (node, request, profile) -> VortexSearchClan.parse(node));
 
     /**
-     * 军团排行（clan_id 为游标分页；realm 由 ServerProfile 按服提供；季节空串 = 最新赛季）。
-     * <p>
-     * 响应体是<b>裸数组</b>（直接是排行列表），没有 status/data 包裹。
+     * 军团排行（clan_id 游标分页；realm 由 ServerProfile 提供）。响应体是裸数组，无 status/data 包裹。
      */
     public static final Endpoint<List<ClanRankInfo>> LADDER = Endpoint.of(
             "clans.ladder",

@@ -4,10 +4,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * URL 组件编码（3.0 重写）：{@code encodeURIComponent} 语义，与旧 {@code HttpCodec.encodeURIComponent} 逐字一致。
- * <p>
- * 用途：路径占位符（如搜索词）与标记为"需编码"的查询参数值。
- * 未标记的参数值（extra 串、语言、数字 ID 等）原样拼接，不做编码——与旧实现行为一致。
+ * URL 组件编码：{@code encodeURIComponent} 语义（与旧 {@code HttpCodec.encodeURIComponent} 逐字一致）。
+ * 仅用于路径占位符与标记需编码的查询参数值；其它参数值原样拼接。
  *
  * @author Xun
  */

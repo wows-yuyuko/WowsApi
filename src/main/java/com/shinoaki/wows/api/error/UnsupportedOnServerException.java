@@ -3,10 +3,8 @@ package com.shinoaki.wows.api.error;
 import com.shinoaki.wows.api.type.WowsServer;
 
 /**
- * 端点/参数在当前服务器不支持（3.0 重写新增语义）。
- * <p>
- * 统一替代旧实现的两种行为：{@code IllegalArgumentException}（战斗类型不支持）与
- * "静默空表"（如莱服查战舰徽章返回空 Map）。CN 调用官方开发者API 端点也走本异常（发送前 fast-fail）。
+ * 端点/参数在当前服务器不支持：统一替代旧实现的 {@code IllegalArgumentException} 与"静默空表"；
+ * CN 调用 dev 端点也走本异常（发送前 fast-fail）。
  *
  * @author Xun
  */

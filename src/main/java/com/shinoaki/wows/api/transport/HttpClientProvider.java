@@ -5,17 +5,9 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 
 /**
- * 共享 {@link HttpClient} 与传输级配置（超时 / 代理）的唯一持有者（3.0 重写底座）。
- * <p>
- * 本类合并自原 {@code HttpCodec} 的客户端管理逻辑，行为与原实现一致：
- * <ul>
- *     <li>全局共享同一个 client（JDK HttpClient 线程安全且自带连接池，避免重建 selector/executor 与连接）；</li>
- *     <li>连接超时取自{@link #requestTimeout()}，{@link #updateTimeout(int)} 后下次取用时自动重建；</li>
- *     <li>代理选择器 {@link #updateProxySelector(ProxySelector)} 变更后同样在下次取用时重建；</li>
- *     <li>该实例不跟随重定向、不挂 CookieHandler——重定向与会话 Cookie 由 {@link HostPolicy} 按主机处理。</li>
- * </ul>
- * 迁移期旧入口 {@code HttpCodec.client()/updateTimeout/updateProxySelector} 已委托到本类，
- * 新旧代码共用同一实例与同一份配置。
+ * 共享 HttpClient 与传输级配置（超时 / 代理）的唯一持有者：全局单例（线程安全、自带连接池），
+ * 超时或代理变更后下次取用时自动重建。不跟随重定向、不挂 CookieHandler（HostPolicy 按主机处理）。
+ * 旧入口 {@code HttpCodec} 已委托到本类。
  *
  * @author Xun
  */
@@ -47,9 +39,12 @@ public final class HttpClientProvider {
     private static volatile ProxySelector clientProxy;
 
     /**
-     * 更新请求超时（秒）。影响后续请求（请求级 timeout 与 client 连接超时），进行中的请求不受影响。
+     * 更新请求超时（秒，须为正数）。影响后续请求，进行中的请求不受影响。
      */
     public static void updateTimeout(int timeoutSeconds) {
+        if (timeoutSeconds <= 0) {
+            throw new IllegalArgumentException("timeout 必须为正数: " + timeoutSeconds);
+        }
         requestTimeout = timeoutSeconds;
     }
 

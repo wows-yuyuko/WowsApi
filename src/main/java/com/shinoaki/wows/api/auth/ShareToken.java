@@ -3,9 +3,7 @@ package com.shinoaki.wows.api.auth;
 import java.util.Map;
 
 /**
- * vortex 分享凭证（查询参数 {@code ac}），账号级作用域。
- * <p>
- * 私有分享凭证：只对该账号本身有效，换账号必须换 token（按 accountId 精确匹配，配错号不会生效）。
+ * vortex 分享凭证（查询参数 {@code ac}，账号级）：只对该账号有效，换账号必须换 token。
  *
  * @param accountId 凭证绑定的账号
  * @param value     凭证值（日志中掩码显示）

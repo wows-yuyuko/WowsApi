@@ -22,10 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 官方开发者API 视图（3.0 重写）：<b>1 调用 = 1 请求</b>，方法名不带通道后缀。
- * <p>
- * 实例由 {@code WowsApi.developers()} 创建；application_id 来自实例凭证表（必填），
- * access_token 可选（按账号匹配）。CN 不支持该通道（调用即抛 {@code UnsupportedOnServerException}）。
+ * 官方开发者API 视图：1 调用 = 1 请求。application_id 必填、access_token 可选（按账号匹配）；
+ * CN 无该通道（发送前抛 {@code UnsupportedOnServerException}）。
  *
  * @author Xun
  */
@@ -45,15 +43,14 @@ public final class DevelopersClient {
     }
 
     /**
-     * 玩家详情（1 请求）；实例配置了该账号的 access_token 时返回 private.* 私有数据。
+     * 玩家详情；实例配置了该账号 access_token 时返回 private.* 私有数据。
      */
     public DevelopersUserInfo user(long accountId) throws BasicException {
         return user(accountId, null);
     }
 
     /**
-     * 玩家详情，调用级覆盖 access_token（逃生门：优先于实例配置；账号须与凭证绑定账号一致）；
-     * 传 null 表示使用实例配置。
+     * 玩家详情，调用级覆盖 access_token（优先于实例配置；null = 用实例配置）。
      */
     public DevelopersUserInfo user(long accountId, AccessToken accessToken) throws BasicException {
         EndpointRequest request = EndpointRequest.account(accountId,
@@ -87,7 +84,7 @@ public final class DevelopersClient {
     }
 
     /**
-     * 军团赛季/联赛（1 请求）；语言默认 {@code zh-cn}（与旧实现一致）。
+     * 军团赛季/联赛；语言默认 zh-cn。
      */
     public List<DevelopersSeasonInfo> clanSeason() throws BasicException {
         return clanSeason("zh-cn");
@@ -108,14 +105,14 @@ public final class DevelopersClient {
     }
 
     /**
-     * 战舰统计（1 请求；extra 为历史集合）。
+     * 战舰统计（extra 为历史集合）。
      */
     public DevelopersUserShip ships(long accountId) throws BasicException {
         return ships(accountId, null);
     }
 
     /**
-     * 战舰统计（1 请求）；带 access_token 时附带 {@code in_garage=1}（与旧实现一致）。
+     * 战舰统计；带 access_token 时附带 {@code in_garage=1}。
      */
     public DevelopersUserShip ships(long accountId, AccessToken accessToken) throws BasicException {
         return pipeline.execute(DevelopersEndpoints.SHIP_STATS,
@@ -123,14 +120,14 @@ public final class DevelopersClient {
     }
 
     /**
-     * 战舰全量战绩（1 请求；extra 为全量 14 类，含 oper 块）。
+     * 战舰全量战绩（extra 为全量 14 类）。
      */
     public DevelopersUserShipOper shipsOper(long accountId) throws BasicException {
         return shipsOper(accountId, null);
     }
 
     /**
-     * 战舰全量战绩（1 请求）；带 access_token 时附带 {@code in_garage=1}。
+     * 战舰全量战绩；带 access_token 时附带 {@code in_garage=1}。
      */
     public DevelopersUserShipOper shipsOper(long accountId, AccessToken accessToken) throws BasicException {
         return pipeline.execute(DevelopersEndpoints.SHIP_OPER,
@@ -138,7 +135,7 @@ public final class DevelopersClient {
     }
 
     /**
-     * 战舰徽章（1 请求）。莱服不提供该接口：调用抛 {@code UnsupportedOnServerException}（发送前，零网络请求）。
+     * 战舰徽章；莱服不提供（发送前抛 {@code UnsupportedOnServerException}）。
      */
     public Map<Long, ShipExpansion> shipBadges(long accountId) throws BasicException {
         return pipeline.execute(DevelopersEndpoints.SHIP_BADGES, EndpointRequest.account(accountId));

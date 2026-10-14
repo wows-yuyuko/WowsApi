@@ -12,9 +12,7 @@ import com.shinoaki.wows.api.vortex.resources.box.WowsLootBox;
 import java.util.List;
 
 /**
- * vortex 通道端点表（3.0 重写）。
- * <p>
- * 主机为 {@code https://vortex.*}（由 ServerProfile 注入），端点定义不含域名。
+ * vortex 通道端点表：主机由 ServerProfile 注入，端点定义不含域名。
  *
  * @author Xun
  */
@@ -46,8 +44,7 @@ public final class VortexEndpoints {
             (node, request, profile) -> VortexUserInfo.parse(node, request.accountId()));
 
     /**
-     * 玩家战舰战绩列表。战斗类型受服务器限制（莱服专属类型仅 RU，由调用方在发送前检查）；
-     * 配置 share token（?ac=）时返回含私有数据的完整列表。
+     * 玩家战舰战绩列表；战斗类型支持面由调用方发送前检查。配置 share token（?ac=）时含私有数据。
      */
     public static final Endpoint<VortexUserShip> SHIP_LIST = Endpoint.of(
             "vortex.ship.list",
@@ -57,7 +54,7 @@ public final class VortexEndpoints {
             (node, request, profile) -> VortexUserShip.parse(WowsBattlesType.findCode(request.param("battleType")), node));
 
     /**
-     * 箱子详情：单个箱子的完整掉落配置；语言与箱子 ID 都在路径里（语言由调用方选择，莱服固定 ru）。
+     * 箱子详情；语言与箱子 ID 都在路径里（莱服固定 ru）。
      */
     public static final Endpoint<WowsLootBox> LOOTBOX_DETAIL = Endpoint.of(
             "vortex.lootbox.detail",

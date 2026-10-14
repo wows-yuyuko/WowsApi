@@ -15,11 +15,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
- * 响应解码（3.0 重写底座）：状态码校验 + 按 {@code Content-Encoding} 解压 + UTF-8 文本。
- * <p>
- * 与旧 {@code HttpCodec.response} 的行为一致：非 200 抛 {@link HttpStatusException}；
- * 解压/读取失败抛 {@link HttpNetworkException}。本类<b>不做</b>字段漂移采集——
- * 采集挂钩由调用方（旧 {@code HttpCodec} 按 URI、新管线按 endpoint id）在解码成功后触发。
+ * 响应解码：非 200 抛 {@link HttpStatusException}；gzip/deflate 解压 + UTF-8。
+ * 不做字段漂移采集——采集挂钩由调用方在解码成功后触发。
  *
  * @author Xun
  */
@@ -32,10 +29,8 @@ public final class ResponseCodec {
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
     /**
-     * 校验状态码并解码响应体为字符串。
+     * 校验状态码并解码响应体。
      *
-     * @param response 响应（字节体）
-     * @return 已解压并解码的响应文本
      * @throws HttpStatusException  非 200
      * @throws HttpNetworkException 解压/读取失败
      */

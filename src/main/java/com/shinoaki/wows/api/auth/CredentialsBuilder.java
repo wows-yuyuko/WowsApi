@@ -4,9 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 凭证配置构建器（3.0 重写）：{@code WowsApi.credentials(c -> c.applicationId(...).shareToken(...))} 的载体。
- * <p>
- * 从现有凭证表播种（{@link #from(CredentialStore)}），重复配置同 kind + 同账号 = 覆盖。
+ * 凭证配置构建器：{@code WowsApi.credentials(c -> c.applicationId(...).shareToken(...))} 的载体。
+ * 从现有凭证表播种；重复配置同 kind + 同账号 = 覆盖。
  *
  * @author Xun
  */
@@ -30,7 +29,7 @@ public final class CredentialsBuilder {
     }
 
     /**
-     * 配置官方开发者API 令牌（服务器级；莱服实例必须用莱服自己的 key）。
+     * 官方开发者API 令牌（服务器级；莱服必须用莱服自己的 key）。
      */
     public CredentialsBuilder applicationId(String value) {
         this.applicationId = new ApplicationId(value);
@@ -38,7 +37,7 @@ public final class CredentialsBuilder {
     }
 
     /**
-     * 配置官方开发者API 用户态令牌（账号级，解锁 private.*）。
+     * 官方开发者API 用户态令牌（账号级，解锁 private.*）。
      */
     public CredentialsBuilder accessToken(long accountId, String value) {
         accessTokens.put(accountId, new AccessToken(accountId, value));
@@ -46,7 +45,7 @@ public final class CredentialsBuilder {
     }
 
     /**
-     * 配置 vortex 分享凭证（账号级，只对该账号有效）。
+     * vortex 分享凭证（账号级，只对该账号有效）。
      */
     public CredentialsBuilder shareToken(long accountId, String value) {
         shareTokens.put(accountId, new ShareToken(accountId, value));
@@ -54,7 +53,7 @@ public final class CredentialsBuilder {
     }
 
     /**
-     * 配置 cookie 类凭证（账号级，预留——当前无端点声明 COOKIE 槽位）。
+     * cookie 类凭证（账号级，预留——当前无端点声明 COOKIE 槽位）。
      */
     public CredentialsBuilder cookie(long accountId, String value) {
         cookies.put(accountId, new CookieCredential(accountId, value));

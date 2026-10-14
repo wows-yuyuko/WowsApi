@@ -24,20 +24,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 按主机生效的 HTTP 交付策略（3.0 重写底座）：cookie 管理 + 重定向跟随 + 429 限流退避。
- * <p>
- * <b>Cookie 管理 + 重定向跟随按主机开关,默认仅对注册主机生效</b>,避免让暂不需要的服务器付出额外开销:
- * <ul>
- *     <li>注册主机(默认仅 {@code api.korabli.su},莱服官方API)——存在 {@code 307 + Set-Cookie: bp_chl=...}
- *     反爬握手:无 cookie 首次请求自动带上下发的 cookie 重放(最多{@value #MAX_REDIRECTS}次),
- *     进程内共享Cookie容器按域名隔离、线程安全;重放复用原请求头(仅去掉旧cookie),保证服务器指纹校验前后一致。
- *     并发安全:冷启动(无有效cookie)时同主机只允许一个线程发起 握手,其余线程等待后复用其cookie,避免并发307风暴;</li>
- *     <li>该WAF对并发突发返回429限流:自动按 Retry-After / 指数退避等待后重试,最多{@value #MAX_RATE_LIMIT_RETRIES}次;</li>
- *     <li>其它主机——普通快速通道,单次 {@code client.send} 直接返回,不做 cookie 存取、头拷贝或重定向处理。</li>
- * </ul>
- * 本类由原 {@code HttpTransport} 迁移而来（行为逐字保留），旧类已改为委托本类；
- * 未来若其它服务器出现同样防护,调用 {@link #enableCookieRedirect(String)} 一行开启即可;
- * 不需要默认的莱服处理时可用 {@link #disableCookieRedirect(String)} 关闭。
+ * 按主机生效的 HTTP 交付策略：cookie 管理 + 重定向跟随 + 429 退避，默认仅 {@code api.korabli.su}
+ * （307 + Set-Cookie 反爬握手；无 cookie 时同主机单飞，避免并发 307 风暴；429 按 Retry-After / 退避重试）。
+ * 其它主机直发、零开销；其它服务器出现同样防护时 {@link #enableCookieRedirect(String)} 开启。
  *
  * @author Xun
  */
@@ -53,7 +42,7 @@ public final class HostPolicy {
     private static final int MAX_REDIRECTS = 2;
 
     /**
-     * 需要cookie管理+重定向跟随的主机集合(小写、不含端口与末尾点)。默认仅注册 api.korabli.su。
+     * 需要 cookie + 重定向处理的主机（小写、不含末尾点）。默认仅 api.korabli.su。
      */
     private static final Set<String> CHALLENGE_HOSTS = ConcurrentHashMap.newKeySet();
 
@@ -74,8 +63,7 @@ public final class HostPolicy {
     private static final long MAX_RATE_LIMIT_SLEEP_MS = 5_000L;
 
     /**
-     * 冷启动单飞用的每主机锁:同一主机没有有效cookie时,并发请求只让一个线程执行 握手,
-     * 其余线程在锁上等待后复用其写入的cookie,避免并发307风暴触发限流。
+     * 冷启动单飞锁：无有效 cookie 时只放一个线程执行握手，其余线程等待复用其 cookie。
      */
     private static final Map<String, Object> HOST_LOCKS = new ConcurrentHashMap<>();
 
@@ -96,15 +84,8 @@ public final class HostPolicy {
     }
 
     /**
-     * 同步发送请求并返回最终响应。
-     * <p>
-     * 注册主机:自动附带该主机已保存的cookie -> 发送 -> 保存响应下发的cookie ->
-     * 若为可跟随的重定向(301/302/303/307/308)则按规则重新请求(307/308保持方法,其余转GET),最多{@value #MAX_REDIRECTS}次;
-     * 其它主机:普通发送直接返回。
+     * 发送请求并返回最终响应（注册主机自动 cookie / 重定向 / 429 处理；其它主机直发）。
      *
-     * @param client  执行请求的HttpClient(无需自行配置cookie handler或跟随重定向)
-     * @param request 请求
-     * @return 最终响应
      * @throws BasicException 网络异常或重定向次数超限
      */
     public static HttpResponse<byte[]> send(HttpClient client, HttpRequest request) throws BasicException {
@@ -150,10 +131,7 @@ public final class HostPolicy {
     }
 
     /**
-     * 带cookie管理+重定向跟随的发送入口(仅注册主机)。
-     * <p>
-     * 冷启动单飞:该主机还没有有效cookie时,并发请求先在主机锁上排队,
-     * 只有拿到锁的线程真正执行 握手;成功后其余线程直接复用cookie单跳返回。
+     * 带 cookie + 重定向的发送入口（注册主机）；冷启动时同主机单飞。
      */
     private static HttpResponse<byte[]> sendWithCookieRedirect(HttpClient client, HttpRequest request) throws BasicException {
         String host = normalizeHost(request.uri().getHost());
@@ -168,8 +146,7 @@ public final class HostPolicy {
     }
 
     /**
-     * 带cookie管理+重定向跟随的发送循环(仅注册主机)。
-     * 附加429限流处理:遇429按 Retry-After/退避等待后重发,最多{@value #MAX_RATE_LIMIT_RETRIES}次。
+     * cookie / 重定向 / 429 处理循环（注册主机）。
      */
     private static HttpResponse<byte[]> sendWithCookieRedirectLoop(HttpClient client, HttpRequest request) throws BasicException {
         try {
@@ -238,8 +215,8 @@ public final class HostPolicy {
     }
 
     /**
-     * 计算429重试等待时长(毫秒)。有 Retry-After 秒数时以其为准(上限{@value #MAX_RATE_LIMIT_SLEEP_MS}ms);
-     * 否则按 200ms 起步翻倍(上限1s)并附加随机抖动,避免重试再次撞在同一时间点。
+     * 429 等待时长（毫秒）：优先 Retry-After 秒数（上限 {@value #MAX_RATE_LIMIT_SLEEP_MS}ms），
+     * 否则 200ms 起步翻倍（上限 1s）+ 随机抖动。
      */
     private static long rateLimitDelayMillis(int attempt, String retryAfter) {
         long millis = 0;
