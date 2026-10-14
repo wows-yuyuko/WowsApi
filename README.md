@@ -15,6 +15,17 @@
   缺失必填凭证**发送前 fast-fail**（`MissingCredentialException`）；
 - **视图按通道分区**：`api.clans()` / `api.developers()`——**1 调用 = 1 请求**；
   多请求编排显式走 `aggregate` 层（`AccountAssembler`）与显式标注的方法（`ladder` 内部分页）；
+- **官方开发者API 全量覆盖（29 个接口）**：`api.developers()` 覆盖官方 5 个分区 ——
+  Account（详情/成就）、Encyclopedia（舰船/参数/模块/指挥官/成就/收藏/地图等 14 个）、Warships（统计/徽章）、Seasons（排位赛季/单船/玩家）、Clans（军团/军团战赛季）。
+  带文本的接口默认 `language=zh-cn`，均有显式语言重载：
+
+```java
+var dev = api.developers();
+var yamato = dev.encyclopediaShip(4276041424L);   // 舰船字典条目（含 default_profile 全参数）
+var profile = dev.shipProfile(4276041424L);       // 舰船参数明细（装甲/主炮/机动/隐蔽…）
+var seasons = dev.rankedSeasons();                // 排位赛季（含联赛/段位）
+var ranked = dev.rankedAccountStats(accountId);   // 排位战绩（段位进度 + 各赛季统计）
+```
 
 ## Maven 坐标
 
