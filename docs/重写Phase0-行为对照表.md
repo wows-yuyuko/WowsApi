@@ -65,15 +65,15 @@
 ## 5. URL 规范化说明
 
 - 查询参数顺序：新实现统一为 **凭证参数在前（槽位声明顺序），端点参数随后**；旧实现各方法手拼顺序不一（如 `/clans/info/?extra=members&application_id=..&clan_id=..`）。
-  服务端语义不受顺序影响；离线测试按参数集合断言，在线烟测按**解析结果逐字节**断言（已全绿）。
+  服务端语义不受顺序影响；烟测按**解析结果对比**（规范化口径）断言（已全绿）。
 - 路径占位符（搜索词等）统一按 encodeURIComponent 语义编码（与旧 `HttpCodec.encodeURIComponent` 逐字一致，有交叉断言）。
 - `application_id` / `access_token` / `ac` 等凭证值原样拼接（不做 URL 编码），与旧实现一致。
 
 ## 6. 验收执行记录（Phase 1 + Phase 2）
 
 > 测试按业务域拆分为 4 个独立测试类（不集中）：**账号信息 / 账号战舰 / 公会相关 / 资源类查询**，
-> 每个类默认跑「离线段」（假上游，不联网），加 `--online` 追加「在线段」（真实服务新旧对比，建议带 `-Dwows.proxy=127.0.0.1:7890`）；
-> 公会类另有 `--full`（整季排行全量对比）。
+> 直接跑真实服务新旧对比（建议带 `-Dwows.proxy=127.0.0.1:7890`）；公会类另有 `--full`（整季排行全量对比）。
+> 2026-10-13 起按需求移除离线段与假上游基建——下表离线结果为当时的验收记录（对应测试代码已移除）。
 
 | 项 | 工具 | 结果 |
 |---|---|---|
@@ -81,15 +81,15 @@
 | 离线等价 · 账号战舰 | `RewriteAccountShipTest` | **20/20**：战斗类型支持面 / extra 与 in_garage / 徽章拒绝 / 监控键 |
 | 离线等价 · 公会相关 | `RewriteClanTest` | **36/36**：三主机路由（打错主机=404）/ 404→空 / mk_ladder / 分页游标与空页终止 / 监控键 |
 | 离线等价 · 资源类查询 | `RewriteResourceTest` | **16/16**：graphql POST 体逐字节 / 莱服语言固定 ru / PT 切换 / 监控键 |
-| 在线新旧对比 · 账号信息 | `RewriteAccountInfoTest --online` | **12/12**（ASIA/RU/CN：玩家详情/搜索、dev 详情/搜索、聚合、CN 拒绝） |
-| 在线新旧对比 · 账号战舰 | `RewriteAccountShipTest --online` | **9/9**（含 RU rating_solo、CN 带凭证、徽章） |
-| 在线新旧对比 · 公会相关 | `RewriteClanTest --online [--full]` | **25/25**（含三服排行单页/游标页；`--full` 整季 360 条全量一致） |
-| 在线新旧对比 · 资源类查询 | `RewriteResourceTest --online` | **8/8**（箱子详情/列表、资源列表、资源索引 ×2 服） |
+| 在线新旧对比 · 账号信息 | `RewriteAccountInfoTest` | **12/12**（ASIA/RU/CN：玩家详情/搜索、dev 详情/搜索、聚合、CN 拒绝） |
+| 在线新旧对比 · 账号战舰 | `RewriteAccountShipTest` | **9/9**（含 RU rating_solo、CN 带凭证、徽章） |
+| 在线新旧对比 · 公会相关 | `RewriteClanTest [--full]` | **25/25**（含三服排行单页/游标页；`--full` 整季 360 条全量一致） |
+| 在线新旧对比 · 资源类查询 | `RewriteResourceTest` | **8/8**（箱子详情/列表、资源列表、资源索引 ×2 服） |
 | 既有离线自检回归 | ExceptionHierarchy / ShipInfoSerializationCompat / 三个 field_coverage / SchemaMonitor --selftest | 全绿（exit=0） |
 
 > 在线对比的两条口径说明（均经实测确认）：
 > 1. **代理**：本机直连 WG 主机不稳定（vortex 单次直连实测 13s+，逼近超时）；走本地代理 `127.0.0.1:7890` 后稳定 &lt;2s。
 >    在线测试建议 `-Dwows.proxy=127.0.0.1:7890`（TestConfig 支持按服覆盖）。
 > 2. **服务端非确定性**：同一资源两次响应可能键序互换（`stats`）或数组重排（getGlossData 的 `achievements`），
->    对比采用规范化口径（`testkit.CanonicalJson`，对象键序无关 + 数组多重集；失败自动重试一次）；
->    逐字节保序对比由离线固定字节回放承担。旧排行实现「吞异常静默截断」的偶发行为见 `RewriteClanTest --full` 的重试说明。
+>    对比采用规范化口径（`testkit.CanonicalJson`，对象键序无关 + 数组多重集；失败自动重试一次）。
+>    旧排行实现「吞异常静默截断」的偶发行为见 `RewriteClanTest --full` 的重试说明。

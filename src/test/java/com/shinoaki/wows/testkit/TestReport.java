@@ -1,8 +1,5 @@
 package com.shinoaki.wows.testkit;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * 测试报告器：通过/失败计数、断言集与"新旧对比"统一口径。
  * <p>
@@ -42,17 +39,6 @@ public final class TestReport {
             ok(name);
         } else {
             fail(name + "\n         期望: " + expected + "\n         实际: " + actual);
-        }
-    }
-
-    /**
-     * 查询参数断言：内容一致即可（Map.equals 与插入顺序无关）。
-     */
-    public void expectQuery(String name, Map<String, String> expected, Map<String, String> actual) {
-        if (expected.equals(actual)) {
-            ok(name);
-        } else {
-            fail(name + "\n         期望: " + new TreeMap<>(expected) + "\n         实际: " + new TreeMap<>(actual));
         }
     }
 
