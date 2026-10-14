@@ -7,6 +7,7 @@ import com.shinoaki.wows.api.type.WowsBattlesType;
 import com.shinoaki.wows.api.vortex.VortexUserShip;
 import com.shinoaki.wows.api.vortex.account.VortexSearchUser;
 import com.shinoaki.wows.api.vortex.account.VortexUserInfo;
+import com.shinoaki.wows.api.vortex.account.achievements.VortexUserAchievements;
 import com.shinoaki.wows.api.vortex.resources.box.WowsLootBox;
 
 import java.util.List;
@@ -52,6 +53,16 @@ public final class VortexEndpoints {
             "/api/accounts/{accountId}/ships/{battleType}/",
             List.of(AuthSlot.optional(AuthKind.SHARE_TOKEN)),
             (node, request, profile) -> VortexUserShip.parse(WowsBattlesType.findCode(request.param("battleType")), node));
+
+    /**
+     * 玩家成就；隐藏战绩时抛 HiddenProfileException，配置 share token（?ac=）时含私有数据。
+     */
+    public static final Endpoint<VortexUserAchievements> ACCOUNT_ACHIEVEMENTS = Endpoint.of(
+            "vortex.account.achievements",
+            Channel.VORTEX,
+            "/api/accounts/{accountId}/achievements/",
+            List.of(AuthSlot.optional(AuthKind.SHARE_TOKEN)),
+            (node, request, profile) -> VortexUserAchievements.parse(node, request.accountId()));
 
     /**
      * 箱子详情；语言与箱子 ID 都在路径里（莱服固定 ru）。
