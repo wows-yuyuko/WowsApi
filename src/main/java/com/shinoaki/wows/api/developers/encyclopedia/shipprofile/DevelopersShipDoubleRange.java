@@ -1,0 +1,9 @@
+package com.shinoaki.wows.api.developers.encyclopedia.shipprofile;
+
+/**
+ * 浮点区间（min/max；字段可能为 null，解析为 0）。
+ *
+ * @author Xun
+ */
+public record DevelopersShipDoubleRange(double min, double max) {
+}

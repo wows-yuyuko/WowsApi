@@ -26,5 +26,15 @@ public enum DevNamespace {
     /**
      * 词典域：/mk/clans/glossary/**（莱服）或 /wows/clans/glossary/**（WG 服）。
      */
-    GLOSSARY
+    GLOSSARY,
+
+    /**
+     * 百科域：encyclopedia 系列（舰船/成就/指挥官/模块/收藏/地图等）。
+     */
+    ENCYCLOPEDIA,
+
+    /**
+     * 赛季域：排位赛季系列（seasons/info、shipstats、accountinfo）。
+     */
+    SEASONS
 }
